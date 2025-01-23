@@ -1,7 +1,10 @@
 import type { UserConfig } from '@unocss/core'
 import type { UserShortcuts } from 'unocss'
 
-export type Font = 'inter' | 'mona' | 'hubot'
+export type Font = 'inter' | 'mona' | 'hubot' | string
+export type FontFamily = {
+  [key in Font]: Font
+}
 export type Icon = 'heroicons' | 'hugeicons'
 export type WebFontsProviders = 'google' | 'bunny' | 'fontshare'
 export type Shortcuts = UserShortcuts
@@ -138,7 +141,7 @@ export interface UiOptions {
    * @see https://stacksjs.org/docs/fonts
    * ```
    */
-  fonts?: any
+  fontFamily?: FontFamily
 
   useWebFonts?: boolean | WebFontsProviders
 
@@ -149,7 +152,7 @@ export interface UiOptions {
    * are displayed utilizing a technique called "icons in pure css."
    * Learn more here https://antfu.me/posts/icons-in-pure-css.
    *
-   * @see https://stacks.ow3.org/config/icons — list of available icon sets
+   * @see https://stacksjs.org/config/icons — list of available icon sets
    * @todo implement this into Vite build flow
    * @example
    * ```ts

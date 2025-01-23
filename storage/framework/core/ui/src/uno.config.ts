@@ -19,6 +19,10 @@ import { presetHeadlessUi } from 'unocss-preset-primitives'
 const config: UnoConfig = {
   shortcuts: ui.shortcuts,
 
+  fontFamily: {
+    sans: 'Satoshi',
+  },
+
   content: {
     pipeline: {
       include: [/\.(stx|vue|[jt]sx|mdx?|elm|html)($|\?)/],
@@ -46,9 +50,10 @@ const config: UnoConfig = {
     }),
 
     presetWebFonts({
-      provider: 'bunny', // privacy-friendly Google Web Fonts proxy
+      provider: 'bunny',
+
       fonts: {
-        sans: 'Inter',
+        sans: 'Satoshi',
         serif: 'Inter',
         mono: 'Fira Code',
       },

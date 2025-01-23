@@ -25,5 +25,3 @@ custom-cli
 .vscode
 .zed
 ./test.ts
-resources/assets/fonts/*.woff
-resources/assets/fonts/*.woff2

@@ -281,6 +281,7 @@ Runtimes
 rustfmt
 safelist
 sasl
+Satoshi
 scanlon
 scrollback
 searchbox
