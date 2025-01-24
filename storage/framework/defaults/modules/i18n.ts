@@ -16,7 +16,7 @@ const loadedLanguages: string[] = []
 
 export const install: UserModule = async ({ app }) => {
   const glob = new Bun.Glob('*.yml')
-  const langPath = path.resolve(__dirname, '../../resources/lang')
+  const langPath = path.resolve(__dirname, '../lang') // TODO: needs to respect user files as well
 
   // Check if the directory exists
   try {

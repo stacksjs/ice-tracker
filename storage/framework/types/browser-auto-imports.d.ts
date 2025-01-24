@@ -726,7 +726,6 @@ declare module 'vue' {
     readonly useFullscreen: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFullscreen']>
     readonly useGamepad: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useGamepad']>
     readonly useGeolocation: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useGeolocation']>
-    readonly useGitStore: UnwrapRef<typeof import('../stores/git')['useGitStore']>
     readonly useHead: UnwrapRef<typeof import('@unhead/vue')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('@unhead/vue')['useHeadSafe']>
     readonly useI18n: UnwrapRef<typeof import('vue-i18n')['useI18n']>
@@ -765,7 +764,6 @@ declare module 'vue' {
     readonly usePageLeave: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePageLeave']>
     readonly useParallax: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useParallax']>
     readonly useParentElement: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useParentElement']>
-    readonly usePaymentStore: UnwrapRef<typeof import('../stores/payment')['usePaymentStore']>
     readonly usePerformanceObserver: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePerformanceObserver']>
     readonly usePermission: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePermission']>
     readonly usePointer: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePointer']>
@@ -779,7 +777,6 @@ declare module 'vue' {
     readonly usePreferredReducedMotion: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePreferredReducedMotion']>
     readonly usePrevious: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['usePrevious']>
     readonly useProjection: UnwrapRef<typeof import('../core/browser/src/utils/math')['useProjection']>
-    readonly useQueueStore: UnwrapRef<typeof import('../stores/queue')['useQueueStore']>
     readonly useRafFn: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useRafFn']>
     readonly useRefHistory: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useRefHistory']>
     readonly useResizeObserver: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useResizeObserver']>
@@ -829,7 +826,6 @@ declare module 'vue' {
     readonly useTrunc: UnwrapRef<typeof import('../core/browser/src/utils/math')['useTrunc']>
     readonly useUrlSearchParams: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useUrlSearchParams']>
     readonly useUserMedia: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useUserMedia']>
-    readonly useUserStore: UnwrapRef<typeof import('../stores/user')['useUserStore']>
     readonly useVModel: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useVModel']>
     readonly useVModels: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useVModels']>
     readonly useVibrate: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useVibrate']>

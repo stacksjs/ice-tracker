@@ -1,5 +1,7 @@
 # TODO
 
+Defaults are our way of "stubs"
+
 - [ ] stubs should be customizable when stubs are published
   - [ ] action
   - [ ] command
