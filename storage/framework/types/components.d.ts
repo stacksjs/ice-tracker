@@ -38,7 +38,7 @@ declare module 'vue' {
     Feature: typeof import('./../defaults/components/Marketing/Feature.vue')['default']
     Fields: typeof import('./../defaults/components/Marketing/Fields.vue')['default']
     FileSystemForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/FileSystemForm.vue')['default']
-    Footer: typeof import('./../defaults/components/Marketing/Footer.vue')['default']
+    Footer: typeof import('./../../../resources/components/Footer.vue')['default']
     HashingForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/HashingForm.vue')['default']
     Header: typeof import('./../defaults/components/Marketing/Header.vue')['default']
     HelloWorld: typeof import('./../../../resources/components/HelloWorld.vue')['default']
