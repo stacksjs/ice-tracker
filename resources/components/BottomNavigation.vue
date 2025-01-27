@@ -29,6 +29,15 @@
       </a>
 
       <a
+        href="https://bsky.app/profile/ice-tracker.org"
+        target="_blank"
+        class="flex flex-col items-center px-4 py-2 relative"
+      >
+        <div i-hugeicons-user-group class="text-2xl" />
+        <span class="text-xs font-sans">About</span>
+      </a>
+
+      <a
         href="https://github.com/sponsors/chrisbbreuer"
         target="_blank"
         class="flex flex-col items-center px-4 py-2 relative"

@@ -71,19 +71,13 @@ function handleReport(report: Partial<Activity>) {
 </script>
 
 <template>
-  <div class="h-screen flex flex-col">
-    <main class="flex-1 relative">
-      <Transition name="fade" mode="out-in">
-        <MapView
-          class="absolute inset-0"
-          :accidents="activities"
-          @report="handleReport"
-        />
-      </Transition>
-    </main>
-
-    <BottomNavigation />
-  </div>
+  <Transition name="fade" mode="out-in">
+    <MapView
+      class="absolute inset-0"
+      :accidents="activities"
+      @report="handleReport"
+    />
+  </Transition>
 </template>
 
 <style>
