@@ -1,3 +1,0 @@
-# Linting & Formatting
-
-wip
