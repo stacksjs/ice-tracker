@@ -9,6 +9,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     ActivePlan: typeof import('./../defaults/components/Dashboard/Billing/ActivePlan.vue')['default']
     ActivityFeed: typeof import('./../defaults/components/Dashboard/Deployments/ActivityFeed.vue')['default']
+    ActivityView: typeof import('./../../../resources/components/ActivityView.vue')['default']
     AIForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/AIForm.vue')['default']
     Alert: typeof import('./../defaults/components/Dashboard/Modals/Popups/Alert.vue')['default']
     AnalyticsForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/AnalyticsForm.vue')['default']
@@ -50,7 +51,6 @@ declare module 'vue' {
     IconButton: typeof import('./../defaults/components/Dashboard/Buttons/IconButton.vue')['default']
     Layout: typeof import('./../defaults/components/Marketing/Layout.vue')['default']
     LibraryForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/LibraryForm.vue')['default']
-    ListView: typeof import('./../../../resources/components/ListView.vue')['default']
     LiveTerminalOutput: typeof import('./../defaults/components/Dashboard/Deployments/LiveTerminalOutput.vue')['default']
     LoadingCard: typeof import('./../defaults/components/Dashboard/Skeleton/LoadingCard.vue')['default']
     LoadingDetails: typeof import('./../defaults/components/Dashboard/Skeleton/LoadingDetails.vue')['default']

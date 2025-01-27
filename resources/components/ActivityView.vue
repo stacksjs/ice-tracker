@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineProps<{
-  accidents: Array<{
+  activities: Array<{
     id: number
     title: string
     location: string
@@ -12,9 +12,9 @@ defineProps<{
 
 <template>
   <div class="p-4">
-    <h2 class="text-xl font-bold mb-4">Recent Accidents</h2>
+    <h2 class="text-xl font-bold mb-4">Recent Activity</h2>
     <div class="space-y-4">
-      <div v-for="accident in accidents" :key="accident.id"
+      <div v-for="accident in activities" :key="accident.id"
            class="bg-white rounded-lg p-4 shadow">
         <div class="flex items-start justify-between">
           <div>

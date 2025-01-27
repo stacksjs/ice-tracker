@@ -51,7 +51,6 @@ declare module 'vue-router/auto-routes' {
     '/dashboard/settings/billing': RouteRecordInfo<'/dashboard/settings/billing', '/dashboard/settings/billing', Record<never, never>, Record<never, never>>,
     '/dashboard/settings/mail': RouteRecordInfo<'/dashboard/settings/mail', '/dashboard/settings/mail', Record<never, never>, Record<never, never>>,
     '/dashboard/teams/[id]': RouteRecordInfo<'/dashboard/teams/[id]', '/dashboard/teams/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
-    '/demo': RouteRecordInfo<'/demo', '/demo', Record<never, never>, Record<never, never>>,
     '/errors/400': RouteRecordInfo<'/errors/400', '/errors/400', Record<never, never>, Record<never, never>>,
     '/errors/403': RouteRecordInfo<'/errors/403', '/errors/403', Record<never, never>, Record<never, never>>,
     '/errors/404': RouteRecordInfo<'/errors/404', '/errors/404', Record<never, never>, Record<never, never>>,
@@ -64,6 +63,7 @@ declare module 'vue-router/auto-routes' {
     '/errors/503': RouteRecordInfo<'/errors/503', '/errors/503', Record<never, never>, Record<never, never>>,
     '/errors/504': RouteRecordInfo<'/errors/504', '/errors/504', Record<never, never>, Record<never, never>>,
     '/hello-world/[name]': RouteRecordInfo<'/hello-world/[name]', '/hello-world/:name', { name: ParamValue<true> }, { name: ParamValue<false> }>,
+    '/map': RouteRecordInfo<'/map', '/map', Record<never, never>, Record<never, never>>,
     '/system-tray/': RouteRecordInfo<'/system-tray/', '/system-tray', Record<never, never>, Record<never, never>>,
     '/table/': RouteRecordInfo<'/table/', '/table', Record<never, never>, Record<never, never>>,
   }

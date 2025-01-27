@@ -351,7 +351,7 @@ function startLocationSelection() {
       class="absolute inset-0 bg-black bg-opacity-50 z-[500] flex items-center justify-center p-4"
     >
       <div class="bg-white rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
-        <h2 class="text-xl font-bold mb-4">Report Accident</h2>
+        <h2 class="text-xl font-bold mb-4">Report Activity</h2>
 
         <form @submit.prevent="submitReport" class="space-y-4">
           <div>

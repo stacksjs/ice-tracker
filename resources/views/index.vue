@@ -21,17 +21,6 @@ useHead({
     },
   ],
 })
-
-// const user = useUserStore()
-// const name = ref(user.savedName)
-
-// const router = useRouter()
-// function go() {
-//   if (name.value)
-//     router.push(`/hello-world/${encodeURIComponent(name.value)}`)
-// }
-
-// const { t } = useI18n()
 </script>
 
 <template>
@@ -39,14 +28,6 @@ useHead({
 
   <main>
     <ComingSoon />
-    <!-- <Hero /> -->
-    <!-- <PrimaryFeatures /> -->
-    <!-- <PrimaryFeatures2 />
-    <SecondaryFeatures />
-    <CallToAction />
-    <Testimonials />
-    <Pricing />
-    <Faqs /> -->
   </main>
 
   <Footer />
