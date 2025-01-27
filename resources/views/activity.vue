@@ -1,5 +1,11 @@
+<route lang="yaml">
+meta:
+  layout: app
+</route>
+
 <script setup lang="ts">
 import { ref } from 'vue'
+import { now } from '@stacksjs/browser'
 
 defineOptions({
   name: 'ActivityPage',
@@ -59,7 +65,7 @@ function handleReport(report: Partial<Activity>) {
     title: report.title || '',
     description: report.description || '',
     location: report.location || [0, 0],
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split('T')[0] || now().value.toISOString(),
     severity: report.severity || 'minor',
     images: report.images
   }

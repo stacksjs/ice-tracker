@@ -1,23 +1,23 @@
 <template>
   <nav class="bg-white border-t border-gray-200 safe-bottom">
     <div class="flex justify-around items-center h-16">
-      <button
+      <RouterLink
+        to="/map"
         class="flex flex-col items-center px-4 py-2"
-        :class="{ 'text-blue-600': activePage === 'map' }"
-        @click="activePage = 'map'"
+        :class="{ 'text-blue-600': $route.path === '/map' }"
       >
         <div i-hugeicons-maps-circle-01 class="text-2xl" />
         <span class="text-xs font-serif">Map</span>
-      </button>
+      </RouterLink>
 
-      <button
+      <RouterLink
+        to="/activity"
         class="flex flex-col items-center px-4 py-2 relative"
-        :class="{ 'text-blue-600': activePage === 'activity' }"
-        @click="activePage = 'activity'"
+        :class="{ 'text-blue-600': $route.path === '/activity' }"
       >
         <div i-hugeicons-left-to-right-list-bullet class="text-2xl" />
         <span class="text-xs font-sans">Activity</span>
-      </button>
+      </RouterLink>
 
       <a
         href="https://bsky.app/profile/ice-tracker.org"
@@ -28,14 +28,14 @@
         <span class="text-xs font-sans">News</span>
       </a>
 
-      <a
-        href="https://bsky.app/profile/ice-tracker.org"
-        target="_blank"
+      <RouterLink
+        to="/about"
         class="flex flex-col items-center px-4 py-2 relative"
+        :class="{ 'text-blue-600': $route.path === '/about' }"
       >
         <div i-hugeicons-user-group class="text-2xl" />
         <span class="text-xs font-sans">About</span>
-      </a>
+      </RouterLink>
 
       <a
         href="https://github.com/sponsors/chrisbbreuer"

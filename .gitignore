@@ -13,6 +13,7 @@ tests/unit/coverage
 dist*
 !resources/assets/fonts/Satoshi*
 resources/assets/fonts/*
+.qodo
 
 data.ms
 !.gitkeep
