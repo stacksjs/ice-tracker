@@ -49,7 +49,7 @@ export const viewsConfig: ViteConfig = {
   publicDir: p.publicPath(),
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
-  assetsInclude: [p.publicPath('**'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
+  assetsInclude: [p.publicPath('**'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*'), p.frameworkPath('defaults/public/**')],
 
   optimizeDeps: {
     exclude: ['vue'],
