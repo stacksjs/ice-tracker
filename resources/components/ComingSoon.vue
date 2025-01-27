@@ -3,7 +3,7 @@
     <div class="mx-auto max-w-7xl px-6 pb-24 pt-10 lg:flex lg:px-8 lg:py-20 sm:pb-32">
       <div class="mx-auto max-w-2xl lg:mx-0 lg:max-w-xl lg:flex-shrink-0 lg:pt-40">
         <div class="flex items-center">
-          <h1 class="mt-10 text-4xl text-gray-900 font-bold font-sans tracking-tightest sm:text-6xl">
+          <h1 class="mt-10 text-4xl text-gray-900 font-bold font-sans tracking-tight sm:text-7xl">
             ICE Tracker
           </h1>
 
