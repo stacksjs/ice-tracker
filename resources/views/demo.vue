@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import ListView from '../components/ListVue.vue'
+import { ref } from 'vue'
+import MapView from '../components/MapView.vue'
+import ListView from '../components/ListView.vue'
 
 defineOptions({
   name: 'DemoPage',
 })
 
 useHead({
-  // title: app.name,
   title: 'Ice Tracker - Demo',
   meta: [
     { name: 'description', content: 'ICE Monitoring. Coming soon.' },
@@ -24,19 +25,51 @@ useHead({
   ],
 })
 
+interface Accident {
+  id: number
+  title: string
+  description: string
+  location: [number, number]
+  date: string
+  severity: 'minor' | 'moderate' | 'severe'
+  images?: File[]
+}
+
 const activeView = ref<'map' | 'list'>('map')
-const accidents = ref([
-  { id: 1, title: 'Car collision', location: 'Main Street', date: '2024-03-20', severity: 'moderate' },
-  { id: 2, title: 'Bicycle accident', location: 'Park Avenue', date: '2024-03-19', severity: 'minor' },
+const accidents = ref<Accident[]>([
+  {
+    id: 1,
+    title: 'Car collision',
+    description: 'Two cars collided at intersection',
+    location: [51.505, -0.09],
+    date: '2024-03-20',
+    severity: 'moderate'
+  },
+  {
+    id: 2,
+    title: 'Bicycle accident',
+    description: 'Cyclist hit by opening car door',
+    location: [51.51, -0.1],
+    date: '2024-03-19',
+    severity: 'minor'
+  },
 ])
 
-function handleReport(report: any) {
-  const newAccident = {
+function handleReport(report: Partial<Accident>) {
+  const newAccident: Accident = {
     id: accidents.value.length + 1,
-    ...report,
-    date: new Date().toISOString().split('T')[0]
+    title: report.title || '',
+    description: report.description || '',
+    location: report.location || [0, 0],
+    date: new Date().toISOString().split('T')[0],
+    severity: report.severity || 'minor',
+    images: report.images
   }
+
   accidents.value.unshift(newAccident)
+
+  // Here you would typically make an API call to save the report
+  // For now, we're just storing it in memory
 }
 </script>
 
@@ -47,6 +80,7 @@ function handleReport(report: any) {
         <MapView
           v-if="activeView === 'map'"
           class="absolute inset-0"
+          :accidents="accidents"
           @report="handleReport"
         />
         <ListView
@@ -65,17 +99,16 @@ function handleReport(report: any) {
           :class="{ 'text-blue-600': activeView === 'map' }"
           @click="activeView = 'map'"
         >
-          <div i-carbon-map class="text-2xl"></div>
-          <span class="text-xs">Map</span>
+          <div i-hugeicons-maps-circle-01 class="text-2xl" />
+          <span class="text-xs font-serif">Map</span>
         </button>
-
         <button
           class="flex flex-col items-center px-4 py-2 relative"
           :class="{ 'text-blue-600': activeView === 'list' }"
           @click="activeView = 'list'"
         >
-          <div i-carbon-list class="text-2xl"></div>
-          <span class="text-xs">List</span>
+          <div i-hugeicons-left-to-right-list-bullet class="text-2xl" />
+          <span class="text-xs font-sans">List</span>
         </button>
       </div>
     </nav>

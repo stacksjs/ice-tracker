@@ -50,7 +50,7 @@ declare module 'vue' {
     IconButton: typeof import('./../defaults/components/Dashboard/Buttons/IconButton.vue')['default']
     Layout: typeof import('./../defaults/components/Marketing/Layout.vue')['default']
     LibraryForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/LibraryForm.vue')['default']
-    ListVue: typeof import('./../../../resources/components/ListVue.vue')['default']
+    ListView: typeof import('./../../../resources/components/ListView.vue')['default']
     LiveTerminalOutput: typeof import('./../defaults/components/Dashboard/Deployments/LiveTerminalOutput.vue')['default']
     LoadingCard: typeof import('./../defaults/components/Dashboard/Skeleton/LoadingCard.vue')['default']
     LoadingDetails: typeof import('./../defaults/components/Dashboard/Skeleton/LoadingDetails.vue')['default']

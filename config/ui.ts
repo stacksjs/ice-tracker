@@ -26,28 +26,6 @@ export default {
 
   icons: ['hugeicons'],
 
-  fonts: {
-    email: {
-      title: 'Satoshi',
-      text: 'Inter',
-    },
-
-    desktop: {
-      title: 'Satoshi',
-      text: 'Inter',
-    },
-
-    mobile: {
-      title: 'Satoshi',
-      text: 'Inter',
-    },
-
-    web: {
-      title: 'Satoshi',
-      text: 'Inter',
-    },
-  },
-
   theme: {
     // ...
     colors: {
