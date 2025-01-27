@@ -29,11 +29,11 @@ const handler = {
   },
 }
 
-export function process(): Env {
+export function processEnv(): Env {
   return typeof Bun !== 'undefined' ? (Bun.env as unknown as Env) : (p.env as unknown as Env)
 }
 
-export const env: Env = new Proxy(process(), handler)
+export const env: Env = new Proxy(processEnv(), handler)
 
 export function writeEnv(key: EnvKey, value: string, options?: { path: string }): void {
   const envPath = options?.path || projectPath('.env')

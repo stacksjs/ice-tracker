@@ -2,11 +2,11 @@
 import { ref } from 'vue'
 
 defineOptions({
-  name: 'MapPage',
+  name: 'ActivityPage',
 })
 
 useHead({
-  title: 'Ice Tracker - Map',
+  title: 'Ice Tracker - Activity',
   meta: [
     { name: 'description', content: 'ICE Monitoring. Coming soon.' },
     {
@@ -75,45 +75,14 @@ function handleReport(report: Partial<Activity>) {
   <div class="h-screen flex flex-col">
     <main class="flex-1 relative">
       <Transition name="fade" mode="out-in">
-        <MapView
-          class="absolute inset-0"
-          :accidents="activities"
-          @report="handleReport"
+        <ActivityView
+          class="absolute inset-0 bg-gray-50"
+          :activities="activities"
         />
       </Transition>
     </main>
 
-    <!-- Bottom Navigation -->
-    <nav class="bg-white border-t border-gray-200 safe-bottom">
-      <div class="flex justify-around items-center h-16">
-        <button
-          class="flex flex-col items-center px-4 py-2"
-          :class="{ 'text-blue-600': activeView === 'map' }"
-          @click="activeView = 'map'"
-        >
-          <div i-hugeicons-maps-circle-01 class="text-2xl" />
-          <span class="text-xs font-serif">Map</span>
-        </button>
-
-        <button
-          class="flex flex-col items-center px-4 py-2 relative"
-          :class="{ 'text-blue-600': activeView === 'activity' }"
-          @click="activeView = 'activity'"
-        >
-          <div i-hugeicons-left-to-right-list-bullet class="text-2xl" />
-          <span class="text-xs font-sans">Activity</span>
-        </button>
-
-        <a
-          href="https://bsky.app/profile/ice-tracker.org"
-          target="_blank"
-          class="flex flex-col items-center px-4 py-2 relative"
-        >
-          <div i-hugeicons-news class="text-2xl" />
-          <span class="text-xs font-sans">News</span>
-        </a>
-      </div>
-    </nav>
+    <BottomNavigation />
   </div>
 </template>
 
