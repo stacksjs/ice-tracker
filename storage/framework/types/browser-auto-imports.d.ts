@@ -40,7 +40,7 @@ declare global {
   const confirmPayment: typeof import('../core/browser/src/utils/billable')['confirmPayment']
   const controlledComputed: typeof import('../core/browser/src/utils/vendors')['controlledComputed']
   const controlledRef: typeof import('../core/browser/src/utils/vendors')['controlledRef']
-  const count: typeof import('../../../resources/functions/counter')['count']
+  const count: typeof import('../../../resources/functions/dark')['count']
   const createApp: typeof import('vue')['createApp']
   const createControlledPromise: typeof import('../core/browser/src/utils/promise')['createControlledPromise']
   const createEventHook: typeof import('../core/browser/src/utils/vendors')['createEventHook']
@@ -91,7 +91,7 @@ declare global {
   const global: typeof import('../core/browser/src/utils/regex')['global']
   const h: typeof import('vue')['h']
   const ignorableWatch: typeof import('../core/browser/src/utils/vendors')['ignorableWatch']
-  const increment: typeof import('../../../resources/functions/counter')['increment']
+  const increment: typeof import('../../../resources/functions/dark')['increment']
   const inject: typeof import('vue')['inject']
   const injectHead: typeof import('@unhead/vue')['injectHead']
   const injectLocal: typeof import('../core/browser/src/utils/vendors')['injectLocal']
@@ -484,7 +484,6 @@ declare module 'vue' {
     readonly confirmPayment: UnwrapRef<typeof import('../core/browser/src/utils/billable')['confirmPayment']>
     readonly controlledComputed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['controlledComputed']>
     readonly controlledRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['controlledRef']>
-    readonly count: UnwrapRef<typeof import('../../../resources/functions/counter')['count']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createControlledPromise: UnwrapRef<typeof import('../core/browser/src/utils/promise')['createControlledPromise']>
     readonly createEventHook: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createEventHook']>
@@ -535,10 +534,10 @@ declare module 'vue' {
     readonly global: UnwrapRef<typeof import('../core/browser/src/utils/regex')['global']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly ignorableWatch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['ignorableWatch']>
-    readonly increment: UnwrapRef<typeof import('../../../resources/functions/counter')['increment']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectHead: UnwrapRef<typeof import('@unhead/vue')['injectHead']>
     readonly injectLocal: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['injectLocal']>
+    readonly isDark: UnwrapRef<typeof import('../../../resources/functions/dark')['isDark']>
     readonly isDefined: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['isDefined']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
@@ -594,6 +593,7 @@ declare module 'vue' {
     readonly oneOrMore: UnwrapRef<typeof import('../core/browser/src/utils/regex')['oneOrMore']>
     readonly or: UnwrapRef<typeof import('../core/browser/src/utils/math')['or']>
     readonly pausableWatch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['pausableWatch']>
+    readonly preferredDark: UnwrapRef<typeof import('../../../resources/functions/dark')['preferredDark']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
     readonly provideLocal: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['provideLocal']>
     readonly publishableKey: UnwrapRef<typeof import('../core/browser/src/utils/billable')['publishableKey']>
@@ -643,6 +643,7 @@ declare module 'vue' {
     readonly toRefs: UnwrapRef<typeof import('vue')['toRefs']>
     readonly toString: UnwrapRef<typeof import('../core/browser/src/utils/base')['toString']>
     readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
+    readonly toggleDark: UnwrapRef<typeof import('../../../resources/functions/dark')['toggleDark']>
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
     readonly tryOnBeforeMount: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['tryOnBeforeMount']>
     readonly tryOnBeforeUnmount: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['tryOnBeforeUnmount']>
