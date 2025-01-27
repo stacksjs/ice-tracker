@@ -11,6 +11,8 @@ temp
 updates
 tests/unit/coverage
 dist*
+!resources/assets/fonts/Satoshi*
+resources/assets/fonts/*
 
 data.ms
 !.gitkeep
