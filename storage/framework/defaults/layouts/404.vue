@@ -36,9 +36,9 @@ const goBack = () => {
 
         <div class="">
           <h2 class="text-6xl font-bold text-slate-900 mb-4">
-            Oops! <slot></slot>
+            Oops!
           </h2>
-          <p class="text-8xl font-bold animate-bounce mb-8">
+          <p class="text-8xl font-bold mb-8 bounce" style="animation-duration: 1s; animation-iteration-count: 2;">
             404
           </p>
           <p class="text-xl text-slate-600 mb-8">
@@ -51,7 +51,7 @@ const goBack = () => {
               class="flex items-center justify-center px-6 py-3 bg-slate-500 text-white rounded-lg hover:bg-slate-600 transition-colors duration-200 w-full sm:w-auto"
             >
               <i class="i-hugeicons-home-05 h-5 w-5 mr-2" />
-              Back to Homess
+              Back to Home
             </router-link>
 
             <button
@@ -85,3 +85,36 @@ const goBack = () => {
     </div>
   </div>
 </template>
+
+<style>
+@keyframes bounce {
+  from,
+  20%,
+  53%,
+  to {
+    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    transform: translate3d(0, 0, 0);
+  }
+  40%,
+  43% {
+    animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+    transform: translate3d(0, -30px, 0) scaleY(1.1);
+  }
+  70% {
+    animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+    transform: translate3d(0, -15px, 0) scaleY(1.05);
+  }
+  80% {
+    transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    transform: translate3d(0, 0, 0) scaleY(0.95);
+  }
+  90% {
+    transform: translate3d(0, -4px, 0) scaleY(1.02);
+  }
+}
+
+.bounce {
+  animation-name: bounce;
+  transform-origin: center bottom;
+}
+</style>
