@@ -15,6 +15,7 @@ declare module 'vue' {
     AnalyticsForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/AnalyticsForm.vue')['default']
     AppButton: typeof import('./../defaults/components/Dashboard/Buttons/AppButton.vue')['default']
     AppForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/AppForm.vue')['default']
+    Banner: typeof import('./../../../resources/components/Banner.vue')['default']
     BaseButton: typeof import('./../defaults/components/Buttons/BaseButton.vue')['default']
     BaseModal: typeof import('./../defaults/components/Dashboard/Modals/BaseModal.vue')['default']
     BottomNavigation: typeof import('./../../../resources/components/BottomNavigation.vue')['default']

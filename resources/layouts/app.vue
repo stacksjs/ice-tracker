@@ -4,6 +4,7 @@
       <RouterView />
     </main>
 
+    <Banner />
     <BottomNavigation />
   </div>
 </template>

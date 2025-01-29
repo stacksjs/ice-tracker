@@ -18,7 +18,6 @@ import {
   uiEngine,
 } from '@stacksjs/vite-plugin'
 import Local from 'vite-plugin-local'
-import { viteStaticCopy } from 'vite-plugin-static-copy'
 import generateSitemap from 'vite-ssg-sitemap'
 
 // import { fonts } from './plugin/fonts'
