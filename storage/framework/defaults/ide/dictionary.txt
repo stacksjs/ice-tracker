@@ -320,6 +320,7 @@ styleci
 stylelint
 suffixless
 supabase
+svgs
 synckit
 synctex
 tauri

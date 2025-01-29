@@ -17,32 +17,25 @@ const goBack = () => {
 </script>
 
 <template>
-  <!-- <div v-if="isLoading" class="min-h-screen flex items-center justify-center">
-    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-slate-500"></div>
-  </div> -->
-
-  <!-- <div v-else class="min-h-screen flex flex-col lg:flex-row"> -->
   <div class="min-h-screen flex flex-col lg:flex-row">
     <!-- Left side content -->
     <div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gradient-to-br from-slate-50 to-slate-100">
       <div class="max-w-xl w-full">
         <div class="flex items-center justify-between mb-16">
           <div class="flex items-center space-x-2">
-            <!-- <div class="h-8 w-8 bg-blue-500 rounded-lg flex items-center justify-center">
-            </div> -->
             <h1 class="text-xl font-bold text-slate-900">Your App</h1>
           </div>
         </div>
 
         <div class="">
           <h2 class="text-6xl font-bold text-slate-900 mb-4">
-            Oops! <slot></slot>
+            Access Denied <slot></slot>
           </h2>
           <p class="text-8xl font-bold animate-bounce mb-8">
-            404
+            403
           </p>
           <p class="text-xl text-slate-600 mb-8">
-            We can’t seem to find the page you’re looking for.
+            Sorry, you don't have permission to access this page.
           </p>
 
           <div class="flex sm:flex-row gap-4">
@@ -78,8 +71,8 @@ const goBack = () => {
     <!-- Right side SVG -->
     <div class="w-full lg:w-1/2 h-screen bg-white">
       <img
-        src="/svgs/404.svg"
-        alt="404 illustration"
+        src="/svgs/403.svg"
+        alt="403 illustration"
         class="w-full h-full object-cover"
       />
     </div>
