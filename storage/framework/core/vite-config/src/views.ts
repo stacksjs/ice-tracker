@@ -87,11 +87,7 @@ export const viewsConfig: ViteConfig = {
       type: 'views',
     }),
 
-    layouts({
-      extensions: ['stx', 'vue'],
-      layoutsDirs: p.layoutsPath('', { relative: true }),
-    }),
-
+    layouts(),
     autoImports(),
     components(),
     cssEngine(),

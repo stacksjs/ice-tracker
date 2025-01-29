@@ -51,7 +51,7 @@ const goBack = () => {
               class="flex items-center justify-center px-6 py-3 bg-slate-500 text-white rounded-lg hover:bg-slate-600 transition-colors duration-200 w-full sm:w-auto"
             >
               <i class="i-hugeicons-home-05 h-5 w-5 mr-2" />
-              Back to Home
+              Back to Homess
             </router-link>
 
             <button
