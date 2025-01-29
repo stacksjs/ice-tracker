@@ -29,9 +29,9 @@ const goBack = () => {
 
         <div class="">
           <h2 class="text-6xl font-bold text-slate-900 mb-4">
-            Access Denied <slot></slot>
+            Access Denied
           </h2>
-          <p class="text-8xl font-bold animate-bounce mb-8">
+          <p class="text-8xl font-bold mb-8">
             403
           </p>
           <p class="text-xl text-slate-600 mb-8">
