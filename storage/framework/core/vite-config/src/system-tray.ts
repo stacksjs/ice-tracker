@@ -25,7 +25,7 @@ export const systemTrayConfig: ViteConfig = {
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
 
-  assetsInclude: [p.publicPath('**/*'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
+  assetsInclude: [p.publicPath('**/*'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*'), p.frameworkPath('defaults/public/**')],
 
   optimizeDeps: {
     exclude: ['bun:test', 'webpack', 'chokidar', 'fsevents', '@intlify/unplugin-vue-i18n', '@stacksjs/ui'],

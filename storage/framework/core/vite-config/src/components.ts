@@ -2,7 +2,7 @@ import type { ViteConfig } from '@stacksjs/types'
 import type { ViteBuildOptions } from '.'
 import { alias } from '@stacksjs/alias'
 import { config as c } from '@stacksjs/config'
-import { libraryEntryPath, libsPath, projectPath, publicPath, resourcesPath } from '@stacksjs/path'
+import { frameworkPath, libraryEntryPath, libsPath, projectPath, publicPath, resourcesPath } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
 import { autoImports, components, cssEngine, devtools, inspect, uiEngine } from '@stacksjs/vite-plugin'
 
@@ -13,7 +13,7 @@ export const componentsConfig: ViteConfig = {
   publicDir: publicPath(),
   base: '/libs/',
 
-  assetsInclude: [publicPath('**/*'), resourcesPath('assets/*'), resourcesPath('assets/**/*')],
+  assetsInclude: [publicPath('**/*'), resourcesPath('assets/*'), resourcesPath('assets/**/*'), frameworkPath('defaults/public/**')],
 
   server: server({
     type: 'library',

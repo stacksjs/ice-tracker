@@ -19,7 +19,7 @@ export const dashboardConfig: ViteConfig = {
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
 
-  assetsInclude: [p.publicPath('**/*'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
+  assetsInclude: [p.publicPath('**/*'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*'), p.frameworkPath('defaults/public/**')],
 
   server: {
     hmr: {
