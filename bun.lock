@@ -1356,7 +1356,7 @@
         "vite": "^6.0.11",
         "vite-plugin-full-reload": "^1.2.0",
         "vite-plugin-inspect": "^10.1.0",
-        "vite-plugin-local": "^0.4.1",
+        "vite-plugin-local": "^0.5.0",
         "vite-plugin-pages": "^0.32.4",
         "vite-plugin-pwa": "^0.21.1",
         "vite-ssg": "^25.0.0",
@@ -4966,7 +4966,7 @@
 
     "vite-plugin-inspect": ["vite-plugin-inspect@10.1.0", "", { "dependencies": { "debug": "^4.4.0", "error-stack-parser-es": "^1.0.5", "open": "^10.1.0", "picocolors": "^1.1.1", "sirv": "^3.0.0" }, "peerDependencies": { "vite": "^6.0.0" } }, "sha512-solJQhkZULyR7Qq2CRGbO/8ijNPTwmxxLDMx3FkMzGQAuVqKrgqmV2cw/u8SXBsKDHgSMykipW+78MBMZz3O0g=="],
 
-    "vite-plugin-local": ["vite-plugin-local@0.4.1", "", {}, "sha512-GV9Mdq6Gtskj0P9ytasjF7OKC9uSo7wN/ekRdLeaSZRmm3N67MQLlq2khVSq7le80iweb61UXPbG0WdpfLL5Xw=="],
+    "vite-plugin-local": ["vite-plugin-local@0.5.0", "", {}, "sha512-fY33ZzFnAQT+2s+U885YokrW9yfME0gD9pePAofko5cVFNY8FVeowlSxpNZOeQrilCfTEF3wYLObPUgPZAzMpg=="],
 
     "vite-plugin-pages": ["vite-plugin-pages@0.32.4", "", { "dependencies": { "@types/debug": "^4.1.12", "debug": "^4.3.7", "dequal": "^2.0.3", "extract-comments": "^1.1.0", "fast-glob": "^3.3.2", "json5": "^2.2.3", "local-pkg": "^0.5.1", "picocolors": "^1.1.1", "yaml": "^2.6.1" }, "peerDependencies": { "@vue/compiler-sfc": "^2.7.0 || ^3.0.0", "vite": "^2.0.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0 || ^6.0.0" }, "optionalPeers": ["@vue/compiler-sfc"] }, "sha512-OM8CNb8mAzyYR8ASRC0+2LXVB8ecR/5JHc5RpxbWtF+CmhjhmIELs0iV5y8qvU48soZbk+NsFOYlhoIcjw3+ew=="],
 

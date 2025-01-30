@@ -24,7 +24,7 @@ const goBack = () => {
             Access Denied
           </h2>
           <p class="text-8xl font-bold mb-8 bounce" style="animation-duration: 1s; animation-iteration-count: 2;">
-            403
+            503
           </p>
           <p class="text-xl text-slate-600 mb-8">
             Sorry, you don't have permission to access this page.

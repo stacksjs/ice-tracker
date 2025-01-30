@@ -25,7 +25,11 @@ export function router(options?: RouterOptions): Plugin {
     // @ts-expect-error - somehow a pwa error happens when we type `name` in antfus plugins, so ignore it for now
     return VueRouter({
       exclude: ['/dashboard/**', '/errors/**', '/system-tray/**', '/docs/**', '/api/**'], // these are provided by the framework, and that's why they cannot be reused
-      ...opts,
+      // ...opts,
+      routesFolder: [
+        // p.frameworkPath('defaults/views'),
+        p.resourcesPath('views'),
+      ],
     })
   }
 
