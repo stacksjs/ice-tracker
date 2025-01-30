@@ -14,6 +14,7 @@ export default {
     useSeeder: {
       count: 10,
     },
+    useApi: true,
     likeable: {
       table: 'likes',
       foreignKey: 'activity_id',
