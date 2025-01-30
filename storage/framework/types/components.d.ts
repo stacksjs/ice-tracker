@@ -33,6 +33,8 @@ declare module 'vue' {
     DeploymentHistory: typeof import('./../defaults/components/Dashboard/Deployments/DeploymentHistory.vue')['default']
     DeploymentList: typeof import('./../defaults/components/Dashboard/Deployments/DeploymentList.vue')['default']
     DeployScript: typeof import('./../defaults/components/Dashboard/Deployments/DeployScript.vue')['default']
+    Dialog: typeof import('./../core/components/dialog/src/components/Dialog.vue')['default']
+    DialogPanel: typeof import('./../core/components/dialog/src/components/DialogPanel.vue')['default']
     DNSForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/DNSForm.vue')['default']
     Dropdown: typeof import('./../defaults/components/Dashboard/Elements/Dropdown.vue')['default']
     EmailForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/EmailForm.vue')['default']

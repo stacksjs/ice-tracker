@@ -28,6 +28,7 @@ export function autoImports(options?: AutoImportsOptions): Plugin {
     dirs: [
       p.resourcesPath('components'),
       p.frameworkPath('defaults/components'),
+      p.corePath('components/dialog/src/components'),
       p.resourcesPath('functions'),
       p.frameworkPath('defaults/functions'),
       p.resourcesPath('stores'),

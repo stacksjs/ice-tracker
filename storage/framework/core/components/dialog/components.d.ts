@@ -9,15 +9,9 @@ declare module 'vue' {
   export interface GlobalComponents {
     Dialog: typeof import('./src/components/Dialog.vue')['default']
     DialogPanel: typeof import('./src/components/DialogPanel.vue')['default']
-    Footer: typeof import('./src/components/Footer.vue')['default']
-    Hero: typeof import('./src/components/Hero.vue')['default']
-    Installation: typeof import('./src/components/Installation.vue')['default']
-    Options: typeof import('./src/components/Options.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Starport: typeof import('vue-starport')['Starport']
     StarportCarrier: typeof import('vue-starport')['StarportCarrier']
-    Transitions: typeof import('./src/components/Transitions.vue')['default']
-    Usage: typeof import('./src/components/Usage.vue')['default']
   }
 }

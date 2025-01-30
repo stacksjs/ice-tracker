@@ -10,6 +10,7 @@ export function components(options?: ComponentOptions): Plugin {
     dirs: [
       p.resourcesPath('components/'),
       p.frameworkPath('defaults/components/'),
+      p.corePath('components/dialog/src/components'),
       // viewsPath(),
     ],
     dts: p.frameworkPath('types/components.d.ts'),
