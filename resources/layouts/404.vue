@@ -1,14 +1,7 @@
 <script setup>
-import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const searchQuery = ref('')
-
-const handleSearch = (e) => {
-  e.preventDefault()
-  console.log('Searching for:', searchQuery.value)
-}
 
 const goBack = () => {
   router.back()
