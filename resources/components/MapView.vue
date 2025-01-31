@@ -5,31 +5,44 @@ import type { Map as LeafletMap, LatLng, Marker } from 'leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
+// -- Component emits
 const emit = defineEmits(['report'])
+
+// -- Template refs
 const mapContainer = ref<HTMLElement | null>(null)
 const map = ref<LeafletMap | null>(null)
-const showReportForm = ref(false)
-const selectedLocation = ref<[number, number] | null>(null)
-const currentMarker = ref<Marker | null>(null)
-const manualAddress = ref('')
+
+// -- Dialog visibility
+const showActivityDialog = ref(false)
 const isSelectingLocation = ref(false)
 
-// Use geolocation
-const { coords, locatedAt, error: geoError } = useGeolocation()
+// -- Location + Marker
+const selectedLocation = ref<[number, number] | null>(null)
+const currentMarker = ref<Marker | null>(null)
 
-const reportForm = ref({
+// -- Geolocation
+const { coords } = useGeolocation()
+
+// -- Form data
+const activityForm = ref({
   title: '',
   description: '',
-  severity: 'minor',
+  address: '',
+  latlng: '',         // will store as "lat, lng" before submit
+  infoSource: 'news', // default value
+  wereDetained: null as boolean | null,
   images: [] as File[],
-  location: null as [number, number] | null,
-  address: ''
 })
 
+// -- Like/Upvote state
+const likeCount = ref(0)
+const liked = ref(false)
+
+// -- For detecting a "long press"
 const pressTimer = ref<number | null>(null)
 const pressPosition = ref<LatLng | null>(null)
 
-// Cleanup function for map instance
+// -- Cleanup function for map instance
 const cleanupMap = () => {
   if (map.value) {
     map.value.remove()
@@ -37,10 +50,21 @@ const cleanupMap = () => {
   }
 }
 
-// Check if we're in browser environment
 const isBrowser = typeof window !== 'undefined'
 
-// Map event handlers
+// -- Utility function to validate coordinates
+function isValidLatLng(lat: number, lng: number): boolean {
+  return (
+    !isNaN(lat) &&
+    !isNaN(lng) &&
+    lat >= -90 &&
+    lat <= 90 &&
+    lng >= -180 &&
+    lng <= 180
+  )
+}
+
+// -- Map/Mouse events
 function initMapEvents(mapInstance: LeafletMap) {
   // Handle mousedown for long press
   mapInstance.on('mousedown', (e) => {
@@ -50,7 +74,7 @@ function initMapEvents(mapInstance: LeafletMap) {
     }, 500)
   })
 
-  // Clear timer if mouse moves significantly or mouseup happens before timeout
+  // Clear timer if mouse moves significantly or mouseup
   mapInstance.on('mousemove', (e) => {
     if (pressPosition.value && pressTimer.value) {
       const movedDistance = pressPosition.value.distanceTo(e.latlng)
@@ -74,9 +98,8 @@ function initMapEvents(mapInstance: LeafletMap) {
   mapInstance.on('click', (e) => {
     if (isSelectingLocation.value) {
       selectedLocation.value = [e.latlng.lat, e.latlng.lng]
-      reportForm.value.location = selectedLocation.value
+      activityForm.value.latlng = `${e.latlng.lat}, ${e.latlng.lng}`
 
-      // Update marker
       if (currentMarker.value) {
         currentMarker.value.setLatLng(e.latlng)
       } else {
@@ -85,12 +108,12 @@ function initMapEvents(mapInstance: LeafletMap) {
 
       // Show the form again after selection
       isSelectingLocation.value = false
-      showReportForm.value = true
+      showActivityDialog.value = true
     }
   })
 }
 
-// Touch event handlers
+// -- Touch events for long press
 function initTouchEvents(container: HTMLElement, mapInstance: LeafletMap) {
   let touchStartTime = 0
   let touchStartPosition: Touch | null = null
@@ -119,7 +142,6 @@ function initTouchEvents(container: HTMLElement, mapInstance: LeafletMap) {
             touchEndPosition.clientY
           ])
 
-          // Validate coordinates before handling
           if (isValidLatLng(point.lat, point.lng)) {
             handleLongPress(point)
           }
@@ -128,8 +150,6 @@ function initTouchEvents(container: HTMLElement, mapInstance: LeafletMap) {
         }
       }
     }
-
-    // Reset touch state
     touchStartPosition = null
   })
 
@@ -145,39 +165,29 @@ function initTouchEvents(container: HTMLElement, mapInstance: LeafletMap) {
   })
 }
 
-// Utility function to validate coordinates
-function isValidLatLng(lat: number, lng: number): boolean {
-  return (
-    !isNaN(lat) &&
-    !isNaN(lng) &&
-    lat >= -90 &&
-    lat <= 90 &&
-    lng >= -180 &&
-    lng <= 180
-  )
-}
-
+// -- Map initialization
 onMounted(() => {
   if (!isBrowser || !mapContainer.value) return
 
   try {
-    // Set default coordinates
+    // Default coordinates
     const defaultLat = 34.0522
     const defaultLng = -118.2437
 
-    // Initialize map with default coordinates
     let initialLat = defaultLat
     let initialLng = defaultLng
 
-    // Only use geolocation coordinates if they're available and valid
-    if (coords.value && typeof coords.value.latitude === 'number' && typeof coords.value.longitude === 'number') {
+    if (
+      coords.value &&
+      typeof coords.value.latitude === 'number' &&
+      typeof coords.value.longitude === 'number'
+    ) {
       if (isValidLatLng(coords.value.latitude, coords.value.longitude)) {
         initialLat = coords.value.latitude
         initialLng = coords.value.longitude
       }
     }
 
-    // Double-check coordinates are valid before creating map
     if (!isValidLatLng(initialLat, initialLng)) {
       console.warn('Using fallback coordinates')
       initialLat = defaultLat
@@ -188,7 +198,7 @@ onMounted(() => {
       zoomControl: false,
       minZoom: 3,
       maxBounds: [
-        [-85, -180], // Adjusted to prevent invalid coordinates
+        [-85, -180],
         [85, 180]
       ],
       maxBoundsViscosity: 1.0
@@ -196,17 +206,15 @@ onMounted(() => {
 
     map.value = mapInstance
 
-    // Add zoom control to top-right
-    L.control.zoom({
-      position: 'topright'
-    }).addTo(mapInstance)
+    // Add zoom control
+    L.control.zoom({ position: 'topright' }).addTo(mapInstance)
 
-    // Use retina tiles if available
+    // OSM tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       detectRetina: true,
       maxZoom: 19,
-      maxNativeZoom: 18
+      maxNativeZoom: 18,
     }).addTo(mapInstance)
 
     // Initialize events
@@ -218,25 +226,25 @@ onMounted(() => {
   }
 })
 
-// Cleanup when component is unmounted
 onUnmounted(() => {
   cleanupMap()
 })
 
-function handleImageUpload(event: Event) {
+// -- Handle image/video uploads
+function handleMediaUpload(event: Event) {
   const input = event.target as HTMLInputElement
   if (input.files?.length) {
-    reportForm.value.images = Array.from(input.files)
+    activityForm.value.images = Array.from(input.files)
   }
 }
 
+// -- Use current location
 function useCurrentLocation() {
   if (!coords.value || !map.value) return
 
   const { latitude, longitude } = coords.value
   selectedLocation.value = [latitude, longitude]
-  reportForm.value.location = selectedLocation.value
-
+  activityForm.value.latlng = `${latitude}, ${longitude}`
   map.value.setView([latitude, longitude], 16)
 
   if (currentMarker.value) {
@@ -246,57 +254,62 @@ function useCurrentLocation() {
   }
 }
 
-function submitReport() {
-  if (!reportForm.value.location && !reportForm.value.address) {
-    alert('Please select a location on the map or enter an address')
+// -- Submit the "activity"
+function submitActivity() {
+  // Basic validation
+  if (!activityForm.value.latlng && !activityForm.value.address) {
+    alert('Please select a location on the map or enter an address.')
     return
   }
 
+  // Example FormData usage (front-end only, no actual API call)
   const formData = new FormData()
-  formData.append('title', reportForm.value.title)
-  formData.append('description', reportForm.value.description)
-  formData.append('severity', reportForm.value.severity)
-  if (reportForm.value.location) {
-    formData.append('location', JSON.stringify(reportForm.value.location))
-  }
-  if (reportForm.value.address) {
-    formData.append('address', reportForm.value.address)
-  }
-  reportForm.value.images.forEach((image, index) => {
-    formData.append(`image${index}`, image)
+  formData.append('title', activityForm.value.title)
+  formData.append('description', activityForm.value.description)
+  formData.append('address', activityForm.value.address)
+  formData.append('latlng', activityForm.value.latlng)
+  formData.append('infoSource', activityForm.value.infoSource)
+  formData.append('wereDetained', String(activityForm.value.wereDetained ?? 'null'))
+
+  // Attach files
+  activityForm.value.images.forEach((file, index) => {
+    formData.append(`file${index}`, file)
   })
 
+  // Emit event with activity data
   emit('report', {
-    title: reportForm.value.title,
-    description: reportForm.value.description,
-    severity: reportForm.value.severity,
-    location: reportForm.value.location,
-    address: reportForm.value.address,
-    images: reportForm.value.images
+    ...activityForm.value,
+    // We'll keep the array of files in case you want them
+    images: activityForm.value.images,
   })
 
   // Reset form
-  reportForm.value = {
+  activityForm.value = {
     title: '',
     description: '',
-    severity: 'minor',
+    address: '',
+    latlng: '',
+    infoSource: 'news',
+    wereDetained: null,
     images: [],
-    location: null,
-    address: ''
   }
+  selectedLocation.value = null
+
   if (currentMarker.value && map.value) {
     currentMarker.value.remove()
     currentMarker.value = null
   }
-  showReportForm.value = false
+
+  showActivityDialog.value = false
   isSelectingLocation.value = false
 }
 
+// -- Handling a long-press on the map
 function handleLongPress(latlng: LatLng) {
   if (!map.value || !isValidLatLng(latlng.lat, latlng.lng)) return
 
   selectedLocation.value = [latlng.lat, latlng.lng]
-  reportForm.value.location = selectedLocation.value
+  activityForm.value.latlng = `${latlng.lat}, ${latlng.lng}`
 
   if (currentMarker.value) {
     currentMarker.value.setLatLng(latlng)
@@ -304,23 +317,33 @@ function handleLongPress(latlng: LatLng) {
     currentMarker.value = L.marker(latlng).addTo(map.value)
   }
 
-  showReportForm.value = true
+  showActivityDialog.value = true
   isSelectingLocation.value = false
 }
 
+// -- Start location selection mode
 function startLocationSelection() {
   isSelectingLocation.value = true
-  showReportForm.value = false
+  showActivityDialog.value = false
+}
+
+// -- Simple upvote
+function upvoteActivity() {
+  if (!liked.value) {
+    likeCount.value += 1
+    liked.value = true
+  }
 }
 </script>
 
 <template>
   <div class="relative h-full">
-    <div ref="mapContainer" class="w-full h-full z-0"></div>
+    <!-- The Map Container -->
+    <div ref="mapContainer" class="w-full h-full"></div>
 
-    <!-- Report Button -->
+    <!-- Floating Button to open the Activity Dialog -->
     <button
-      @click="showReportForm = true"
+      @click="showActivityDialog = true"
       class="absolute bottom-24 right-4 bg-blue-600 text-white rounded-full p-4 shadow-lg z-[400]"
     >
       <div i-carbon-add class="text-2xl" />
@@ -329,15 +352,15 @@ function startLocationSelection() {
     <!-- Location Selection Mode Notification -->
     <div
       v-if="isSelectingLocation"
-      class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white rounded-lg p-4 shadow-lg z-[400] max-w-sm w-full mx-4"
+      class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white rounded-lg p-4 shadow-lg max-w-sm w-full mx-4 z-[400]"
     >
       <div class="flex items-center justify-between">
         <div>
           <h3 class="text-sm font-medium">Click anywhere on the map to select the location</h3>
-          <p class="text-xs text-gray-500 mt-1">The form will reappear after selection</p>
+          <p class="text-xs text-gray-500 mt-1">The form will reappear after selection.</p>
         </div>
         <button
-          @click="isSelectingLocation = false; showReportForm = true"
+          @click="isSelectingLocation = false; showActivityDialog = true"
           class="ml-4 p-2 text-gray-400 hover:text-gray-600"
         >
           <div i-carbon-close class="text-xl" />
@@ -345,112 +368,176 @@ function startLocationSelection() {
       </div>
     </div>
 
-    <!-- Report Form Modal -->
-    <div
-      v-if="showReportForm && !isSelectingLocation"
-      class="absolute inset-0 bg-black bg-opacity-50 z-[500] flex items-center justify-center p-4"
+    <!-- Dialog for Activity Form -->
+    <Dialog
+      v-if="showActivityDialog && !isSelectingLocation"
+      @close="showActivityDialog = false"
+      class="relative z-[500]"
     >
-      <div class="bg-white rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
-        <h2 class="text-xl font-bold mb-4">Report Activity</h2>
+      <!-- Overlay -->
+      <div class="fixed inset-0 bg-black bg-opacity-50" aria-hidden="true"></div>
 
-        <form @submit.prevent="submitReport" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Title</label>
-            <input
-              v-model="reportForm.title"
-              type="text"
-              required
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            >
-          </div>
+      <!-- Dialog Panel Wrapper -->
+      <div class="fixed inset-0 flex items-center justify-center p-4">
+        <DialogPanel class="bg-white rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+          <!-- Title (since <Dialog.Title> isn't recognized in your setup) -->
+          <h2 class="text-xl font-bold mb-4">Create Activity</h2>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Description</label>
-            <textarea
-              v-model="reportForm.description"
-              required
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            ></textarea>
-          </div>
+          <!-- Activity Form -->
+          <form @submit.prevent="submitActivity" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Title</label>
+              <input
+                v-model="activityForm.title"
+                type="text"
+                required
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              >
+            </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Severity</label>
-            <select
-              v-model="reportForm.severity"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            >
-              <option value="minor">Minor</option>
-              <option value="moderate">Moderate</option>
-              <option value="severe">Severe</option>
-            </select>
-          </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Description</label>
+              <textarea
+                v-model="activityForm.description"
+                required
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Images</label>
-            <input
-              type="file"
-              @change="handleImageUpload"
-              multiple
-              accept="image/*"
-              class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            >
-          </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Address</label>
+              <input
+                v-model="activityForm.address"
+                type="text"
+                placeholder="Enter address or use map"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Location</label>
-            <div class="space-y-2">
-              <div class="flex space-x-2">
-                <button
-                  type="button"
-                  @click="startLocationSelection"
-                  class="flex-1 px-4 py-2 bg-blue-100 text-blue-700 rounded-md text-sm font-medium hover:bg-blue-200"
-                >
-                  Select on Map
-                </button>
-                <button
-                  type="button"
-                  @click="useCurrentLocation"
-                  class="flex-1 px-4 py-2 bg-green-100 text-green-700 rounded-md text-sm font-medium hover:bg-green-200"
-                  :disabled="!coords"
-                >
-                  Use My Location
-                </button>
-              </div>
+            <div class="flex items-center space-x-2">
+              <button
+                type="button"
+                @click="startLocationSelection"
+                class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md text-sm font-medium hover:bg-blue-200"
+              >
+                Select on Map
+              </button>
+              <button
+                type="button"
+                @click="useCurrentLocation"
+                class="px-4 py-2 bg-green-100 text-green-700 rounded-md text-sm font-medium hover:bg-green-200"
+                :disabled="!coords"
+              >
+                Use My Location
+              </button>
+            </div>
 
-              <div class="space-y-1">
-                <input
-                  v-model="reportForm.address"
-                  type="text"
-                  placeholder="Or enter address manually"
-                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-                <p class="text-sm text-gray-500">
-                  Either select a location on the map or enter an address
-                </p>
-              </div>
+            <div v-if="selectedLocation" class="text-sm text-gray-700">
+              Selected: {{ selectedLocation[0].toFixed(6) }}, {{ selectedLocation[1].toFixed(6) }}
+            </div>
 
-              <div v-if="selectedLocation" class="text-sm text-gray-700">
-                Selected coordinates: {{ selectedLocation[0].toFixed(6) }}, {{ selectedLocation[1].toFixed(6) }}
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Info Source</label>
+              <select
+                v-model="activityForm.infoSource"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              >
+                <option value="news">News</option>
+                <option value="social-media">Social Media</option>
+                <option value="friends">Friends</option>
+                <option value="family">Family</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Were Detained?</label>
+              <!-- example: a small radio group for yes/no/not sure -->
+              <div class="flex items-center space-x-2">
+                <label class="inline-flex items-center">
+                  <input
+                    type="radio"
+                    value="true"
+                    v-model="activityForm.wereDetained"
+                    class="text-blue-600 focus:ring-blue-500"
+                  />
+                  <span class="ml-2">Yes</span>
+                </label>
+                <label class="inline-flex items-center">
+                  <input
+                    type="radio"
+                    value="false"
+                    v-model="activityForm.wereDetained"
+                    class="text-blue-600 focus:ring-blue-500"
+                  />
+                  <span class="ml-2">No</span>
+                </label>
+                <label class="inline-flex items-center">
+                  <input
+                    type="radio"
+                    :value="null"
+                    v-model="activityForm.wereDetained"
+                    class="text-blue-600 focus:ring-blue-500"
+                  />
+                  <span class="ml-2">Not sure</span>
+                </label>
               </div>
             </div>
-          </div>
 
-          <div class="flex justify-end space-x-2">
-            <button
-              type="button"
-              @click="showReportForm = false"
-              class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
-            >
-              Submit Report
-            </button>
-          </div>
-        </form>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Media (images or video)</label>
+              <input
+                type="file"
+                @change="handleMediaUpload"
+                multiple
+                accept="image/*,video/*"
+                class="mt-1 block w-full text-sm text-gray-500
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-full file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-blue-50 file:text-blue-700
+                      hover:file:bg-blue-100"
+              />
+            </div>
+
+            <!-- Upvote / Like Section (simple local state) -->
+            <div class="flex items-center space-x-2">
+              <button
+                type="button"
+                @click="upvoteActivity"
+                :class="[
+                  'px-4 py-2 rounded-md text-sm font-medium',
+                  liked ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                ]"
+              >
+                <div i-hugeicons-thumbs-up class="inline-block mr-1" />
+                {{ liked ? 'Upvoted!' : 'Upvote' }}
+              </button>
+              <span class="text-sm text-gray-700">Likes: {{ likeCount }}</span>
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-4">
+              <button
+                type="button"
+                @click="showActivityDialog = false"
+                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
+              >
+                Submit Activity
+              </button>
+            </div>
+          </form>
+        </DialogPanel>
       </div>
-    </div>
+    </Dialog>
   </div>
 </template>
 
-<style>
+<style scoped>
 /* Ensure proper Leaflet controls z-index */
 :deep(.leaflet-control) {
   z-index: 300;

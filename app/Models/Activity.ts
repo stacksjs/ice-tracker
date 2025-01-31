@@ -27,8 +27,8 @@ export default {
       validation: {
         rule: schema.string(),
         message: {
-          string: 'title must be a string',
-          required: 'title is required',
+          string: '`title` must be a string',
+          required: '`title` is required',
         },
       },
 
@@ -40,7 +40,7 @@ export default {
       validation: {
         rule: schema.string().nullable(),
         message: {
-          string: 'description must be a string',
+          string: '`description` must be a string',
         },
       },
 
@@ -52,8 +52,8 @@ export default {
       validation: {
         rule: schema.string(),
         message: {
-          string: 'address must be a string',
-          required: 'address is required',
+          string: '`address` must be a string',
+          required: '`address` is required',
         },
       },
 
@@ -65,8 +65,8 @@ export default {
       validation: {
         rule: schema.string(),
         message: {
-          string: 'latlng must be of format "latitude, longitude"',
-          required: 'latlng is required',
+          string: '`latlng` must be of format "latitude, longitude"',
+          required: '`latlng` is required',
         },
       },
 
@@ -76,10 +76,10 @@ export default {
     infoSource: {
       fillable: true,
       validation: {
-        rule: schema.enum(['news', 'social-media', 'friends', 'family']),
+        rule: schema.enum(['first-hand', 'news', 'radio', 'social-media', 'friends', 'family']),
         message: {
-          string: 'infoSource must be either news, social-media, friends or family',
-          required: 'infoSource is required',
+          string: '`infoSource` must be either first-hand, news, radio, social-media, friends or family',
+          required: '`infoSource` is required',
         },
       },
 
