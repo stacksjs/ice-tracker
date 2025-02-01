@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useGeolocation } from '@vueuse/core'
 import type { Map as LeafletMap, LatLng, Marker } from 'leaflet'
 import L from 'leaflet'
@@ -14,6 +14,7 @@ const map = ref<LeafletMap | null>(null)
 
 // -- Dialog visibility
 const showActivityDialog = ref(false)
+const showLoginDialog = ref(false)
 const isSelectingLocation = ref(false)
 
 // -- Location + Marker
@@ -121,7 +122,7 @@ function initTouchEvents(container: HTMLElement, mapInstance: LeafletMap) {
   container.addEventListener('touchstart', (e) => {
     if (e.touches.length === 1) {
       touchStartTime = Date.now()
-      touchStartPosition = e.touches[0]
+      touchStartPosition = e.touches[0]!
     }
   })
 
@@ -141,7 +142,6 @@ function initTouchEvents(container: HTMLElement, mapInstance: LeafletMap) {
             touchEndPosition.clientX,
             touchEndPosition.clientY
           ])
-
           if (isValidLatLng(point.lat, point.lng)) {
             handleLongPress(point)
           }
@@ -211,7 +211,7 @@ onMounted(() => {
 
     // OSM tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      attribution: '&copy; OpenStreetMap contributors',
       detectRetina: true,
       maxZoom: 19,
       maxNativeZoom: 18,
@@ -279,7 +279,6 @@ function submitActivity() {
   // Emit event with activity data
   emit('report', {
     ...activityForm.value,
-    // We'll keep the array of files in case you want them
     images: activityForm.value.images,
   })
 
@@ -302,6 +301,9 @@ function submitActivity() {
 
   showActivityDialog.value = false
   isSelectingLocation.value = false
+
+  // ----> Show login on submit
+  showLoginDialog.value = true
 }
 
 // -- Handling a long-press on the map
@@ -380,7 +382,7 @@ function upvoteActivity() {
       <!-- Dialog Panel Wrapper -->
       <div class="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel class="bg-white rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
-          <!-- Title (since <Dialog.Title> isn't recognized in your setup) -->
+          <!-- Title -->
           <h2 class="text-xl font-bold mb-4">Create Activity</h2>
 
           <!-- Activity Form -->
@@ -451,7 +453,6 @@ function upvoteActivity() {
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Were Detained?</label>
-              <!-- example: a small radio group for yes/no/not sure -->
               <div class="flex items-center space-x-2">
                 <label class="inline-flex items-center">
                   <input
@@ -499,7 +500,7 @@ function upvoteActivity() {
               />
             </div>
 
-            <!-- Upvote / Like Section (simple local state) -->
+            <!-- Upvote / Like Section -->
             <div class="flex items-center space-x-2">
               <button
                 type="button"
@@ -531,6 +532,24 @@ function upvoteActivity() {
               </button>
             </div>
           </form>
+        </DialogPanel>
+      </div>
+    </Dialog>
+
+    <!-- Dialog for Login (shown after submit) -->
+    <Dialog
+      v-if="showLoginDialog"
+      @close="showLoginDialog = false"
+      class="relative z-[600]"
+    >
+      <!-- Overlay -->
+      <div class="fixed inset-0 bg-black bg-opacity-50" aria-hidden="true"></div>
+
+      <!-- Dialog Panel Wrapper -->
+      <div class="fixed inset-0 flex items-center justify-center p-4">
+        <DialogPanel class="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
+          <!-- <Login /> component -->
+          <Login />
         </DialogPanel>
       </div>
     </Dialog>
