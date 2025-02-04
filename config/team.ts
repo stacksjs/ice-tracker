@@ -19,6 +19,7 @@ export default {
     glenn: 'glenn@stacksjs.org',
     dorell: 'dorell@stacksjs.org',
     avery: 'avery@stacksjs.org',
+    adelino: 'adelino@stacksjs.org',
     germaine: 'germaine@stacksjs.org',
     harley: 'harley@stacksjs.org',
     michael: 'michael@stacksjs.org',
