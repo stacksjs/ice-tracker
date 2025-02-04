@@ -34,6 +34,8 @@ declare module 'vue' {
     DeploymentHistory: typeof import('./../defaults/components/Dashboard/Deployments/DeploymentHistory.vue')['default']
     DeploymentList: typeof import('./../defaults/components/Dashboard/Deployments/DeploymentList.vue')['default']
     DeployScript: typeof import('./../defaults/components/Dashboard/Deployments/DeployScript.vue')['default']
+    Dialog: typeof import('./../core/components/dialog/src/components/Dialog.vue')['default']
+    DialogPanel: typeof import('./../core/components/dialog/src/components/DialogPanel.vue')['default']
     DNSForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/DNSForm.vue')['default']
     Dropdown: typeof import('./../defaults/components/Dashboard/Elements/Dropdown.vue')['default']
     EmailForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/EmailForm.vue')['default']
@@ -56,6 +58,7 @@ declare module 'vue' {
     LiveTerminalOutput: typeof import('./../defaults/components/Dashboard/Deployments/LiveTerminalOutput.vue')['default']
     LoadingCard: typeof import('./../defaults/components/Dashboard/Skeleton/LoadingCard.vue')['default']
     LoadingDetails: typeof import('./../defaults/components/Dashboard/Skeleton/LoadingDetails.vue')['default']
+    Login: typeof import('./../core/components/auth/src/components/Login.vue')['default']
     Logo: typeof import('./../../../resources/components/Logo.vue')['default']
     MapView: typeof import('./../../../resources/components/MapView.vue')['default']
     MobileSidebar: typeof import('./../defaults/components/Dashboard/MobileSidebar.vue')['default']
@@ -85,6 +88,7 @@ declare module 'vue' {
     SettingsHeader: typeof import('./../defaults/components/Dashboard/SettingsHeader.vue')['default']
     SettingsSidebar: typeof import('./../defaults/components/Dashboard/SettingsSidebar.vue')['default']
     Sidebar: typeof import('./../defaults/components/Dashboard/Sidebar.vue')['default']
+    Signup: typeof import('./../core/components/auth/src/components/Signup.vue')['default']
     Starport: typeof import('vue-starport')['Starport']
     StarportCarrier: typeof import('vue-starport')['StarportCarrier']
     StorageForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/StorageForm.vue')['default']
@@ -96,5 +100,6 @@ declare module 'vue' {
     ToastWrapper: typeof import('./../defaults/components/Dashboard/Modals/ToastWrapper.vue')['default']
     ToggleDark: typeof import('./../defaults/components/Buttons/ToggleDark.vue')['default']
     Transaction: typeof import('./../defaults/components/Dashboard/Transaction/index.vue')['default']
+    TwoFactorChallenge: typeof import('./../core/components/auth/src/components/TwoFactorChallenge.vue')['default']
   }
 }
