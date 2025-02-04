@@ -9,7 +9,7 @@ defineOptions({
 })
 
 useHead({
-  title: 'Ice Tracker - Activity',
+  title: 'ICE Tracker » Activity',
   meta: [
     { name: 'description', content: 'ICE Monitoring. Coming soon.' },
     {

@@ -11,7 +11,7 @@ defineOptions({
 })
 
 useHead({
-  title: 'Ice Tracker - Map',
+  title: 'ICE Tracker » Map',
   meta: [
     { name: 'description', content: 'ICE Monitoring. Coming soon.' },
     {
