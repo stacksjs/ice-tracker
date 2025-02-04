@@ -1,8 +1,8 @@
 import type { UserConfig } from '@unocss/core'
 import type { UserShortcuts } from 'unocss'
 
-export type Font = 'inter' | 'mona' | 'hubot' | 'satoshi' | string
-export type Icon = 'heroicons' | 'hugeicons' | string
+export type Font = 'inter' | 'mona' | 'hubot'
+export type Icon = 'heroicons' | 'hugeicons'
 export type WebFontsProviders = 'google' | 'bunny' | 'fontshare'
 export type Shortcuts = UserShortcuts
 
@@ -129,7 +129,7 @@ export interface UiOptions {
   reset?: ResetPreset
 
   /**
-   * **Font Family**
+   * **Fonts**
    *
    * Define the fonts you want to use. By default, Stacks provides support
    * for several local font providers. You may set this value to
@@ -138,7 +138,7 @@ export interface UiOptions {
    * @see https://stacksjs.org/docs/fonts
    * ```
    */
-  fontFamily?: Font | Font[]
+  fonts?: any
 
   useWebFonts?: boolean | WebFontsProviders
 

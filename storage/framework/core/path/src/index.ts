@@ -61,10 +61,7 @@ export function userComponentsPath(path?: string): string {
   return libsPath(`components/${path || ''}`)
 }
 
-export function userViewsPath(path?: string, options?: { relative: boolean }): string {
-  if (options?.relative)
-    return relative(process.cwd(), viewsPath(path))
-
+export function userViewsPath(path?: string): string {
   return resourcesPath(`views/${path || ''}`)
 }
 
@@ -1388,7 +1385,7 @@ export interface Path {
   healthPath: (path?: string) => string
   examplesPath: (type?: 'vue-components' | 'web-components') => string
   fakerPath: (path?: string) => string
-  frameworkPath: (path?: string, options?: { relative?: boolean, cwd?: string }) => string
+  frameworkPath: (path?: string) => string
   browserPath: (path?: string) => string
   storagePath: (path?: string) => string
   functionsPath: (path?: string) => string
@@ -1420,7 +1417,7 @@ export interface Path {
   queryBuilderPath: (path?: string) => string
   queuePath: (path?: string) => string
   realtimePath: (path?: string) => string
-  resourcesPath: (path?: string, options?: { relative?: boolean }) => string
+  resourcesPath: (path?: string) => string
   replPath: (path?: string) => string
   routerPath: (path?: string) => string
   routesPath: (path?: string) => string

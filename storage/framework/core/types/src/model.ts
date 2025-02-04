@@ -5,7 +5,7 @@ import type { SearchOptions } from './search-engine'
 
 export type Model = Partial<ModelOptions>
 
-interface BaseRelation {
+export interface BaseRelation {
   foreignKey?: string
   relationName?: string
 }
@@ -43,6 +43,10 @@ export interface ModelElement {
 export interface AuthOptions {
   useTwoFactor?: boolean
   usePasskey?: boolean
+}
+export interface LikeableOptions {
+  table?: string
+  foreignKey?: string
 }
 
 type ActionPath = string
@@ -135,6 +139,8 @@ export interface ModelOptions extends Base {
     observe?: string[] | boolean
     billable?: boolean
     useActivityLog?: boolean | ActivityLogOption
+
+    likeable?: boolean | LikeableOptions
   }
 
   attributes?: Attributes
@@ -170,6 +176,7 @@ export interface Attribute {
   required?: boolean
   hidden?: boolean
   fillable?: boolean
+  guarded?: boolean
   factory?: () => any
   validation?: {
     rule: VineType

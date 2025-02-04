@@ -2,8 +2,10 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
+import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import User from './User'
 
@@ -57,45 +59,22 @@ interface QueryOptions {
 export class DeploymentModel {
   private readonly hidden: Array<keyof DeploymentJsonResponse> = []
   private readonly fillable: Array<keyof DeploymentJsonResponse> = ['commit_sha', 'commit_message', 'branch', 'status', 'execution_time', 'deploy_script', 'terminal_output', 'uuid', 'user_id']
+  private readonly guarded: Array<keyof DeploymentJsonResponse> = []
+  protected attributes: Partial<DeploymentType> = {}
+  protected originalAttributes: Partial<DeploymentType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
-  public user_id: number | undefined
-  public user: UserModel | undefined
-  public id: number | undefined
-  public uuid: string | undefined
-  public commit_sha: string | undefined
-  public commit_message: string | undefined
-  public branch: string | undefined
-  public status: string | undefined
-  public execution_time: number | undefined
-  public deploy_script: string | undefined
-  public terminal_output: string | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
 
   constructor(deployment: Partial<DeploymentType> | null) {
     if (deployment) {
-      this.user_id = deployment?.user_id
-      this.user = deployment?.user
-      this.id = deployment?.id || 1
-      this.uuid = deployment?.uuid
-      this.commit_sha = deployment?.commit_sha
-      this.commit_message = deployment?.commit_message
-      this.branch = deployment?.branch
-      this.status = deployment?.status
-      this.execution_time = deployment?.execution_time
-      this.deploy_script = deployment?.deploy_script
-      this.terminal_output = deployment?.terminal_output
-
-      this.created_at = deployment?.created_at
-
-      this.updated_at = deployment?.updated_at
+      this.attributes = { ...deployment }
+      this.originalAttributes = { ...deployment }
 
       Object.keys(deployment).forEach((key) => {
         if (!(key in this)) {
@@ -105,13 +84,151 @@ export class DeploymentModel {
     }
 
     this.withRelations = []
-    this.selectFromQuery = db.selectFrom('deployments')
-    this.updateFromQuery = db.updateTable('deployments')
-    this.deleteFromQuery = db.deleteFrom('deployments')
+    this.selectFromQuery = DB.instance.selectFrom('deployments')
+    this.updateFromQuery = DB.instance.updateTable('deployments')
+    this.deleteFromQuery = DB.instance.deleteFrom('deployments')
     this.hasSelect = false
+    this.hasSaved = false
   }
 
-  static select(params: (keyof DeploymentType)[] | RawBuilder<string>): DeploymentModel {
+  get user_id(): number | undefined {
+    return this.attributes.user_id
+  }
+
+  get user(): UserModel | undefined {
+    return this.attributes.user
+  }
+
+  get id(): number | undefined {
+    return this.attributes.id
+  }
+
+  get uuid(): string | undefined {
+    return this.attributes.uuid
+  }
+
+  get commit_sha(): string | undefined {
+    return this.attributes.commit_sha
+  }
+
+  get commit_message(): string | undefined {
+    return this.attributes.commit_message
+  }
+
+  get branch(): string | undefined {
+    return this.attributes.branch
+  }
+
+  get status(): string | undefined {
+    return this.attributes.status
+  }
+
+  get execution_time(): number | undefined {
+    return this.attributes.execution_time
+  }
+
+  get deploy_script(): string | undefined {
+    return this.attributes.deploy_script
+  }
+
+  get terminal_output(): string | undefined {
+    return this.attributes.terminal_output
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
+  }
+
+  set uuid(value: string) {
+    this.attributes.uuid = value
+  }
+
+  set commit_sha(value: string) {
+    this.attributes.commit_sha = value
+  }
+
+  set commit_message(value: string) {
+    this.attributes.commit_message = value
+  }
+
+  set branch(value: string) {
+    this.attributes.branch = value
+  }
+
+  set status(value: string) {
+    this.attributes.status = value
+  }
+
+  set execution_time(value: number) {
+    this.attributes.execution_time = value
+  }
+
+  set deploy_script(value: string) {
+    this.attributes.deploy_script = value
+  }
+
+  set terminal_output(value: string) {
+    this.attributes.terminal_output = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
+  getOriginal(column?: keyof DeploymentType): Partial<DeploymentType> | any {
+    if (column) {
+      return this.originalAttributes[column]
+    }
+
+    return this.originalAttributes
+  }
+
+  getChanges(): Partial<DeploymentJsonResponse> {
+    return this.fillable.reduce<Partial<DeploymentJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof DeploymentsTable]
+      const originalValue = this.originalAttributes[key as keyof DeploymentsTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
+      }
+
+      return changes
+    }, {})
+  }
+
+  isDirty(column?: keyof DeploymentType): boolean {
+    if (column) {
+      return this.attributes[column] !== this.originalAttributes[column]
+    }
+
+    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this.attributes as any)[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
+  isClean(column?: keyof DeploymentType): boolean {
+    return !this.isDirty(column)
+  }
+
+  wasChanged(column?: keyof DeploymentType): boolean {
+    return this.hasSaved && this.isDirty(column)
+  }
+
+  select(params: (keyof DeploymentType)[] | RawBuilder<string> | string): DeploymentModel {
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
+  }
+
+  static select(params: (keyof DeploymentType)[] | RawBuilder<string> | string): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     // Initialize a query with the table name and selected fields
@@ -122,11 +239,8 @@ export class DeploymentModel {
     return instance
   }
 
-  // Method to find a Deployment by ID
-  async find(id: number): Promise<DeploymentModel | undefined> {
-    const query = db.selectFrom('deployments').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+  async applyFind(id: number): Promise<DeploymentModel | undefined> {
+    const model = await DB.instance.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -140,9 +254,25 @@ export class DeploymentModel {
     return data
   }
 
+  async find(id: number): Promise<DeploymentModel | undefined> {
+    return await this.applyFind(id)
+  }
+
   // Method to find a Deployment by ID
   static async find(id: number): Promise<DeploymentModel | undefined> {
-    const model = await db.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
+    const instance = new DeploymentModel(null)
+
+    return await instance.applyFind(id)
+  }
+
+  async first(): Promise<DeploymentModel | undefined> {
+    return await DeploymentModel.first()
+  }
+
+  static async first(): Promise<DeploymentModel | undefined> {
+    const model = await DB.instance.selectFrom('deployments')
+      .selectAll()
+      .executeTakeFirst()
 
     if (!model)
       return undefined
@@ -153,7 +283,24 @@ export class DeploymentModel {
 
     const data = new DeploymentModel(result as DeploymentType)
 
-    cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
+    return data
+  }
+
+  async firstOrFail(): Promise<DeploymentModel | undefined> {
+    return await DeploymentModel.firstOrFail()
+  }
+
+  static async firstOrFail(): Promise<DeploymentModel | undefined> {
+    const instance = new DeploymentModel(null)
+
+    const model = await instance.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No DeploymentModel results found for query')
+
+    const result = await instance.mapWith(model)
+
+    const data = new DeploymentModel(result as DeploymentType)
 
     return data
   }
@@ -167,7 +314,7 @@ export class DeploymentModel {
   }
 
   static async all(): Promise<DeploymentModel[]> {
-    const models = await db.selectFrom('deployments').selectAll().execute()
+    const models = await DB.instance.selectFrom('deployments').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: DeploymentType) => {
       const instance = new DeploymentModel(model)
@@ -180,8 +327,12 @@ export class DeploymentModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<DeploymentModel> {
+    return await DeploymentModel.findOrFail(id)
+  }
+
   static async findOrFail(id: number): Promise<DeploymentModel> {
-    const model = await db.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new DeploymentModel(null)
 
@@ -197,23 +348,8 @@ export class DeploymentModel {
     return data
   }
 
-  async findOrFail(id: number): Promise<DeploymentModel> {
-    const model = await db.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No DeploymentModel results for ${id}`)
-
-    cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
-
-    const result = await this.mapWith(model)
-
-    const data = new DeploymentModel(result as DeploymentType)
-
-    return data
-  }
-
   static async findMany(ids: number[]): Promise<DeploymentModel[]> {
-    let query = db.selectFrom('deployments').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('deployments').where('id', 'in', ids)
 
     const instance = new DeploymentModel(null)
 
@@ -221,19 +357,131 @@ export class DeploymentModel {
 
     const model = await query.execute()
 
-    return model.map(modelItem => instance.parseResult(new DeploymentModel(modelItem)))
+    return model.map((modelItem: DeploymentModel) => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
-  static async get(): Promise<DeploymentModel[]> {
+  skip(count: number): DeploymentModel {
+    return DeploymentModel.skip(count)
+  }
+
+  static skip(count: number): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    let models
+    instance.selectFromQuery = instance.selectFromQuery.offset(count)
+
+    return instance
+  }
+
+  async chunk(size: number, callback: (models: DeploymentModel[]) => Promise<void>): Promise<void> {
+    await DeploymentModel.chunk(size, callback)
+  }
+
+  static async chunk(size: number, callback: (models: DeploymentModel[]) => Promise<void>): Promise<void> {
+    let page = 1
+    let hasMore = true
+
+    while (hasMore) {
+      const instance = new DeploymentModel(null)
+
+      // Get one batch
+      const models = await instance.selectFromQuery
+        .limit(size)
+        .offset((page - 1) * size)
+        .execute()
+
+      // If we got fewer results than chunk size, this is the last batch
+      if (models.length < size) {
+        hasMore = false
+      }
+
+      // Process this batch
+      if (models.length > 0) {
+        await callback(models)
+      }
+
+      page++
+    }
+  }
+
+  take(count: number): DeploymentModel {
+    return DeploymentModel.take(count)
+  }
+
+  static take(count: number): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.limit(count)
+
+    return instance
+  }
+
+  static async pluck<K extends keyof DeploymentModel>(field: K): Promise<DeploymentModel[K][]> {
+    const instance = new DeploymentModel(null)
 
     if (instance.hasSelect) {
-      models = await instance.selectFromQuery.execute()
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: DeploymentModel) => modelItem[field])
+    }
+
+    const model = await instance.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: DeploymentModel) => modelItem[field])
+  }
+
+  async pluck<K extends keyof DeploymentModel>(field: K): Promise<DeploymentModel[K][]> {
+    return DeploymentModel.pluck(field)
+  }
+
+  static async count(): Promise<number> {
+    const instance = new DeploymentModel(null)
+
+    const result = await instance.selectFromQuery
+      .select(sql`COUNT(*) as count`)
+      .executeTakeFirst()
+
+    return result.count || 0
+  }
+
+  async count(): Promise<number> {
+    const result = await this.selectFromQuery
+      .select(sql`COUNT(*) as count`)
+      .executeTakeFirst()
+
+    return result.count || 0
+  }
+
+  async max(field: keyof DeploymentModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async min(field: keyof DeploymentModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async avg(field: keyof DeploymentModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  async sum(field: keyof DeploymentModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  async applyGet(): Promise<DeploymentModel[]> {
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
     }
     else {
-      models = await instance.selectFromQuery.selectAll().execute()
+      models = await this.selectFromQuery.selectAll().execute()
     }
 
     const data = await Promise.all(models.map(async (model: DeploymentModel) => {
@@ -247,98 +495,219 @@ export class DeploymentModel {
     return data
   }
 
-  // Method to get a Deployment by criteria
   async get(): Promise<DeploymentModel[]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-
-      return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-
-    return model.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
+    return await this.applyGet()
   }
 
-  static async count(): Promise<number> {
+  static async get(): Promise<DeploymentModel[]> {
     const instance = new DeploymentModel(null)
 
-    const results = await instance.selectFromQuery.selectAll().execute()
-
-    return results.length
+    return await instance.applyGet()
   }
 
-  async count(): Promise<number> {
-    if (this.hasSelect) {
-      const results = await this.selectFromQuery.execute()
-
-      return results.length
-    }
-
-    const results = await this.selectFromQuery.execute()
-
-    return results.length
+  has(relation: string): DeploymentModel {
+    return DeploymentModel.has(relation)
   }
 
-  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<DeploymentResponse> {
-    const totalRecordsResult = await db.selectFrom('deployments')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+  static has(relation: string): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.deployment_id`, '=', 'deployments.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static whereExists(callback: (qb: any) => any): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(callback({ exists, selectFrom })),
+    )
+
+    return instance
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): DeploymentModel {
+    return DeploymentModel.whereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): DeploymentModel {
+    const instance = new DeploymentModel(null)
+    const subqueryBuilder = new SubqueryBuilder()
+
+    callback(subqueryBuilder)
+    const conditions = subqueryBuilder.getConditions()
+
+    instance.selectFromQuery = instance.selectFromQuery
+      .where(({ exists, selectFrom }: any) => {
+        let subquery = selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.deployment_id`, '=', 'deployments.id')
+
+        conditions.forEach((condition) => {
+          switch (condition.method) {
+            case 'where':
+              if (condition.type === 'and') {
+                subquery = subquery.where(condition.column, condition.operator!, condition.value)
+              }
+              else {
+                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
+              }
+              break
+
+            case 'whereIn':
+              if (condition.operator === 'not') {
+                subquery = subquery.whereNotIn(condition.column, condition.values!)
+              }
+              else {
+                subquery = subquery.whereIn(condition.column, condition.values!)
+              }
+
+              break
+
+            case 'whereNull':
+              subquery = subquery.whereNull(condition.column)
+              break
+
+            case 'whereNotNull':
+              subquery = subquery.whereNotNull(condition.column)
+              break
+
+            case 'whereBetween':
+              subquery = subquery.whereBetween(condition.column, condition.values!)
+              break
+
+            case 'whereExists': {
+              const nestedBuilder = new SubqueryBuilder()
+              condition.callback!(nestedBuilder)
+              break
+            }
+          }
+        })
+
+        return exists(subquery)
+      })
+
+    return instance
+  }
+
+  applyDoesntHave(relation: string): DeploymentModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.deployment_id`, '=', 'deployments.id'),
+        ),
+      ),
+    )
+
+    return this
+  }
+
+  doesntHave(relation: string): DeploymentModel {
+    return this.applyDoesntHave(relation)
+  }
+
+  static doesntHave(relation: string): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    return instance.doesntHave(relation)
+  }
+
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): DeploymentModel {
+    const subqueryBuilder = new SubqueryBuilder()
+
+    callback(subqueryBuilder)
+    const conditions = subqueryBuilder.getConditions()
+
+    this.selectFromQuery = this.selectFromQuery
+      .where(({ exists, selectFrom, not }: any) => {
+        let subquery = selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.deployment_id`, '=', 'deployments.id')
+
+        conditions.forEach((condition) => {
+          switch (condition.method) {
+            case 'where':
+              if (condition.type === 'and') {
+                subquery = subquery.where(condition.column, condition.operator!, condition.value)
+              }
+              else {
+                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
+              }
+              break
+
+            case 'whereIn':
+              if (condition.operator === 'not') {
+                subquery = subquery.whereNotIn(condition.column, condition.values!)
+              }
+              else {
+                subquery = subquery.whereIn(condition.column, condition.values!)
+              }
+
+              break
+
+            case 'whereNull':
+              subquery = subquery.whereNull(condition.column)
+              break
+
+            case 'whereNotNull':
+              subquery = subquery.whereNotNull(condition.column)
+              break
+
+            case 'whereBetween':
+              subquery = subquery.whereBetween(condition.column, condition.values!)
+              break
+
+            case 'whereExists': {
+              const nestedBuilder = new SubqueryBuilder()
+              condition.callback!(nestedBuilder)
+              break
+            }
+          }
+        })
+
+        return not(exists(subquery))
+      })
+
+    return this
+  }
+
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): DeploymentModel {
+    return this.applyWhereDoesntHave(relation, callback)
+  }
+
+  static whereDoesntHave(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    return instance.applyWhereDoesntHave(relation, callback)
+  }
+
+  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<DeploymentResponse> {
+    const totalRecordsResult = await DB.instance.selectFrom('deployments')
+      .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    if (this.hasSelect) {
-      const deploymentsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-        .limit((options.limit ?? 10) + 1)
-        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-        .execute()
-
-      let nextCursor = null
-      if (deploymentsWithExtra.length > (options.limit ?? 10))
-        nextCursor = deploymentsWithExtra.pop()?.id ?? null
-
-      return {
-        data: deploymentsWithExtra,
-        paging: {
-          total_records: totalRecords,
-          page: options.page || 1,
-          total_pages: totalPages,
-        },
-        next_cursor: nextCursor,
-      }
-    }
-
-    const deploymentsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-      .limit((options.limit ?? 10) + 1)
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (deploymentsWithExtra.length > (options.limit ?? 10))
-      nextCursor = deploymentsWithExtra.pop()?.id ?? null
-
-    return {
-      data: deploymentsWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
-    }
-  }
-
-  // Method to get all deployments
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<DeploymentResponse> {
-    const totalRecordsResult = await db.selectFrom('deployments')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    const deploymentsWithExtra = await db.selectFrom('deployments')
+    const deploymentsWithExtra = await DB.instance.selectFrom('deployments')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -360,45 +729,62 @@ export class DeploymentModel {
     }
   }
 
-  // Method to create a new deployment
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<DeploymentResponse> {
+    return await this.applyPaginate(options)
+  }
+
+  // Method to get all deployments
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<DeploymentResponse> {
+    const instance = new DeploymentModel(null)
+
+    return await instance.applyPaginate(options)
+  }
+
   static async create(newDeployment: NewDeployment): Promise<DeploymentModel> {
     const instance = new DeploymentModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newDeployment).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newDeployment).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewDeployment
 
     filteredValues.uuid = randomUUIDv7()
 
-    const result = await db.insertInto('deployments')
+    const result = await DB.instance.insertInto('deployments')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as DeploymentModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as DeploymentModel
+
+    if (model)
+      dispatch('deployment:created', model)
 
     return model
   }
 
-  static async createMany(newDeployments: NewDeployment[]): Promise<void> {
+  static async createMany(newDeployment: NewDeployment[]): Promise<void> {
     const instance = new DeploymentModel(null)
 
-    const filteredValues = newDeployments.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewDeployment,
-    )
+    const valuesFiltered = newDeployment.map((newDeployment: NewDeployment) => {
+      const filteredValues = Object.fromEntries(
+        Object.entries(newDeployment).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewDeployment
 
-    filteredValues.forEach((model) => {
-      model.uuid = randomUUIDv7()
+      filteredValues.uuid = randomUUIDv7()
+
+      return filteredValues
     })
 
-    await db.insertInto('deployments')
-      .values(filteredValues)
+    await DB.instance.insertInto('deployments')
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newDeployment: NewDeployment): Promise<DeploymentModel> {
-    const result = await db.insertInto('deployments')
+    const result = await DB.instance.insertInto('deployments')
       .values(newDeployment)
       .executeTakeFirst()
 
@@ -409,116 +795,133 @@ export class DeploymentModel {
 
   // Method to remove a Deployment
   static async remove(id: number): Promise<any> {
-    return await db.deleteFrom('deployments')
+    return await DB.instance.deleteFrom('deployments')
       .where('id', '=', id)
       .execute()
   }
 
-  where(...args: (string | number | boolean | undefined | null)[]): DeploymentModel {
-    let column: any
-    let operator: any
-    let value: any
+  applyWhere(instance: DeploymentModel, column: string, ...args: any[]): DeploymentModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
 
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
-    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
-    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
-
-    return this
-  }
-
-  orWhere(...args: Array<[string, string, any]>): DeploymentModel {
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    return this
-  }
-
-  static orWhere(...args: Array<[string, string, any]>): DeploymentModel {
-    const instance = new DeploymentModel(null)
-
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
 
     return instance
   }
 
-  static where(...args: (string | number | boolean | undefined | null)[]): DeploymentModel {
-    let column: any
-    let operator: any
-    let value: any
+  where(column: string, ...args: any[]): DeploymentModel {
+    return this.applyWhere(this, column, ...args)
+  }
 
+  static where(column: string, ...args: any[]): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
+    return instance.applyWhere(instance, column, ...args)
+  }
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
+  whereColumn(first: string, operator: string, second: string): DeploymentModel {
+    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+    return this
+  }
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+  static whereColumn(first: string, operator: string, second: string): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
     return instance
+  }
+
+  whereRef(column: string, ...args: string[]): DeploymentModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
+
+    const instance = new DeploymentModel(null)
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
+
+    return instance
+  }
+
+  whereRef(column: string, ...args: string[]): DeploymentModel {
+    return this.whereRef(column, ...args)
+  }
+
+  static whereRef(column: string, ...args: string[]): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    return instance.whereRef(column, ...args)
+  }
+
+  whereRaw(sqlStatement: string): DeploymentModel {
+    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return this
+  }
+
+  static whereRaw(sqlStatement: string): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return instance
+  }
+
+  orWhere(...conditions: [string, any][]): DeploymentModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    return this
+  }
+
+  static orWhere(...conditions: [string, any][]): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    return instance
+  }
+
+  when(
+    condition: boolean,
+    callback: (query: DeploymentModel) => DeploymentModel,
+  ): DeploymentModel {
+    return DeploymentModel.when(condition, callback)
   }
 
   static when(
@@ -533,14 +936,8 @@ export class DeploymentModel {
     return instance
   }
 
-  when(
-    condition: boolean,
-    callback: (query: DeploymentModel) => DeploymentModel,
-  ): DeploymentModel {
-    if (condition)
-      callback(this.selectFromQuery)
-
-    return this
+  whereNull(column: string): DeploymentModel {
+    return DeploymentModel.whereNull(column)
   }
 
   static whereNull(column: string): DeploymentModel {
@@ -555,18 +952,6 @@ export class DeploymentModel {
     )
 
     return instance
-  }
-
-  whereNull(column: string): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
   }
 
   static whereCommitSha(value: string): DeploymentModel {
@@ -626,13 +1011,7 @@ export class DeploymentModel {
   }
 
   whereIn(column: keyof DeploymentType, values: any[]): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
+    return DeploymentModel.whereIn(column, values)
   }
 
   static whereIn(column: keyof DeploymentType, values: any[]): DeploymentModel {
@@ -647,9 +1026,29 @@ export class DeploymentModel {
     return instance
   }
 
+  whereBetween(column: keyof DeploymentType, range: [any, any]): DeploymentModel {
+    return DeploymentModel.whereBetween(column, range)
+  }
+
+  whereLike(column: keyof DeploymentType, value: string): DeploymentModel {
+    return DeploymentModel.whereLike(column, value)
+  }
+
+  static whereLike(column: keyof DeploymentType, value: string): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    return instance
+  }
+
   static whereBetween(column: keyof DeploymentType, range: [any, any]): DeploymentModel {
     if (range.length !== 2) {
-      throw new Error('Range must have exactly two values: [min, max]')
+      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
 
     const instance = new DeploymentModel(null)
@@ -661,6 +1060,10 @@ export class DeploymentModel {
     instance.deleteFromQuery = instance.deleteFromQuery.where(query)
 
     return instance
+  }
+
+  whereNotIn(column: keyof DeploymentType, values: any[]): DeploymentModel {
+    return DeploymentModel.whereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof DeploymentType, values: any[]): DeploymentModel {
@@ -675,69 +1078,14 @@ export class DeploymentModel {
     return instance
   }
 
-  whereNotIn(column: keyof DeploymentType, values: any[]): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
-  }
-
-  async first(): Promise<DeploymentModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new DeploymentModel(result as DeploymentType)
-
-    return data
-  }
-
-  async firstOrFail(): Promise<DeploymentModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No DeploymentModel results found for query')
-
-    const instance = new DeploymentModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new DeploymentModel(result as DeploymentType)
-
-    return data
-  }
-
   async exists(): Promise<boolean> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
   }
 
-  static async first(): Promise<DeploymentType | undefined> {
-    const model = await db.selectFrom('deployments')
-      .selectAll()
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new DeploymentModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new DeploymentModel(result as DeploymentType)
-
-    return data
-  }
-
   static async latest(): Promise<DeploymentType | undefined> {
-    const model = await db.selectFrom('deployments')
+    const model = await DB.instance.selectFrom('deployments')
       .selectAll()
       .orderBy('created_at', 'desc')
       .executeTakeFirst()
@@ -753,7 +1101,7 @@ export class DeploymentModel {
   }
 
   static async oldest(): Promise<DeploymentType | undefined> {
-    const model = await db.selectFrom('deployments')
+    const model = await DB.instance.selectFrom('deployments')
       .selectAll()
       .orderBy('created_at', 'asc')
       .executeTakeFirst()
@@ -776,13 +1124,13 @@ export class DeploymentModel {
     const key = Object.keys(condition)[0] as keyof DeploymentType
 
     if (!key) {
-      throw new Error('Condition must contain at least one key-value pair')
+      throw new HttpError(500, 'Condition must contain at least one key-value pair')
     }
 
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingDeployment = await db.selectFrom('deployments')
+    const existingDeployment = await DB.instance.selectFrom('deployments')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -793,7 +1141,6 @@ export class DeploymentModel {
       return new DeploymentModel(result as DeploymentType)
     }
     else {
-      // If not found, create a new user
       return await this.create(newDeployment)
     }
   }
@@ -802,39 +1149,43 @@ export class DeploymentModel {
     condition: Partial<DeploymentType>,
     newDeployment: NewDeployment,
   ): Promise<DeploymentModel> {
+    const instance = new DeploymentModel(null)
+
     const key = Object.keys(condition)[0] as keyof DeploymentType
 
     if (!key) {
-      throw new Error('Condition must contain at least one key-value pair')
+      throw new HttpError(500, 'Condition must contain at least one key-value pair')
     }
 
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingDeployment = await db.selectFrom('deployments')
+    const existingDeployment = await DB.instance.selectFrom('deployments')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
 
     if (existingDeployment) {
       // If found, update the existing record
-      await db.updateTable('deployments')
+      await DB.instance.updateTable('deployments')
         .set(newDeployment)
         .where(key, '=', value)
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedDeployment = await db.selectFrom('deployments')
+      const updatedDeployment = await DB.instance.selectFrom('deployments')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
 
       if (!updatedDeployment) {
-        throw new Error('Failed to fetch updated record')
+        throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const instance = new DeploymentModel(null)
       const result = await instance.mapWith(updatedDeployment)
+
+      instance.hasSaved = true
+
       return new DeploymentModel(result as DeploymentType)
     }
     else {
@@ -844,9 +1195,7 @@ export class DeploymentModel {
   }
 
   with(relations: string[]): DeploymentModel {
-    this.withRelations = relations
-
-    return this
+    return DeploymentModel.with(relations)
   }
 
   static with(relations: string[]): DeploymentModel {
@@ -858,14 +1207,14 @@ export class DeploymentModel {
   }
 
   async last(): Promise<DeploymentType | undefined> {
-    return await db.selectFrom('deployments')
+    return await DB.instance.selectFrom('deployments')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<DeploymentType | undefined> {
-    const model = await db.selectFrom('deployments').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('deployments').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
@@ -879,12 +1228,20 @@ export class DeploymentModel {
     return data
   }
 
+  orderBy(column: keyof DeploymentType, order: 'asc' | 'desc'): DeploymentModel {
+    return DeploymentModel.orderBy(column, order)
+  }
+
   static orderBy(column: keyof DeploymentType, order: 'asc' | 'desc'): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
+  }
+
+  groupBy(column: keyof DeploymentType): DeploymentModel {
+    return DeploymentModel.groupBy(column)
   }
 
   static groupBy(column: keyof DeploymentType): DeploymentModel {
@@ -895,7 +1252,11 @@ export class DeploymentModel {
     return instance
   }
 
-  static having(column: keyof PaymentMethodType, operator: string, value: any): DeploymentModel {
+  having(column: keyof DeploymentType, operator: string, value: any): DeploymentModel {
+    return DeploymentModel.having(column, operator, value)
+  }
+
+  static having(column: keyof DeploymentType, operator: string, value: any): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -903,20 +1264,20 @@ export class DeploymentModel {
     return instance
   }
 
-  orderBy(column: keyof DeploymentType, order: 'asc' | 'desc'): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
+  inRandomOrder(): DeploymentModel {
+    return DeploymentModel.inRandomOrder()
   }
 
-  having(column: keyof DeploymentType, operator: string, value: any): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+  static inRandomOrder(): DeploymentModel {
+    const instance = new DeploymentModel(null)
 
-    return this
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return instance
   }
 
-  groupBy(column: keyof DeploymentType): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+  orderByDesc(column: keyof DeploymentType): DeploymentModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
@@ -929,10 +1290,8 @@ export class DeploymentModel {
     return instance
   }
 
-  orderByDesc(column: keyof DeploymentType): DeploymentModel {
-    this.selectFromQuery = this.orderBy(column, 'desc')
-
-    return this
+  orderByAsc(column: keyof DeploymentType): DeploymentModel {
+    return DeploymentModel.orderByAsc(column)
   }
 
   static orderByAsc(column: keyof DeploymentType): DeploymentModel {
@@ -943,18 +1302,14 @@ export class DeploymentModel {
     return instance
   }
 
-  orderByAsc(column: keyof DeploymentType): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
-  }
-
-  async update(deployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
+  async update(newDeployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(deployment).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newDeployment).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
     ) as NewDeployment
 
-    await db.updateTable('deployments')
+    await DB.instance.updateTable('deployments')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -965,6 +1320,8 @@ export class DeploymentModel {
       return model
     }
 
+    this.hasSaved = true
+
     return undefined
   }
 
@@ -973,13 +1330,15 @@ export class DeploymentModel {
       this.updateFromQuery.set(deployment).execute()
     }
 
-    await db.updateTable('deployments')
+    await DB.instance.updateTable('deployments')
       .set(deployment)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       const model = await this.find(this.id)
+
+      this.hasSaved = true
 
       return model
     }
@@ -991,14 +1350,46 @@ export class DeploymentModel {
     if (!this)
       throw new HttpError(500, 'Deployment data is undefined')
 
+    const filteredValues = Object.fromEntries(
+      Object.entries(this).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewDeployment
+
     if (this.id === undefined) {
-      await db.insertInto('deployments')
-        .values(this as NewDeployment)
+      await DB.instance.insertInto('deployments')
+        .values(filteredValues)
         .executeTakeFirstOrThrow()
     }
     else {
       await this.update(this)
     }
+
+    this.hasSaved = true
+  }
+
+  fill(data: Partial<DeploymentType>): DeploymentModel {
+    const filteredValues = Object.fromEntries(
+      Object.entries(data).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewDeployment
+
+    this.attributes = {
+      ...this.attributes,
+      ...filteredValues,
+    }
+
+    return this
+  }
+
+  forceFill(data: Partial<DeploymentType>): DeploymentModel {
+    this.attributes = {
+      ...this.attributes,
+      ...data,
+    }
+
+    return this
   }
 
   // Method to delete (soft delete) the deployment instance
@@ -1006,7 +1397,7 @@ export class DeploymentModel {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await db.deleteFrom('deployments')
+    return await DB.instance.deleteFrom('deployments')
       .where('id', '=', this.id)
       .execute()
   }
@@ -1058,7 +1449,7 @@ export class DeploymentModel {
   }
 
   static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(db)
+    return await sql`${rawQuery}`.execute(DB.instance)
   }
 
   toJSON(): Partial<DeploymentJsonResponse> {
@@ -1095,7 +1486,7 @@ export class DeploymentModel {
 }
 
 async function find(id: number): Promise<DeploymentModel | undefined> {
-  const query = db.selectFrom('deployments').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('deployments').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1112,7 +1503,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newDeployment: NewDeployment): Promise<DeploymentModel> {
-  const result = await db.insertInto('deployments')
+  const result = await DB.instance.insertInto('deployments')
     .values(newDeployment)
     .executeTakeFirstOrThrow()
 
@@ -1120,62 +1511,62 @@ export async function create(newDeployment: NewDeployment): Promise<DeploymentMo
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(db)
+  return await sql`${rawQuery}`.execute(DB.instance)
 }
 
 export async function remove(id: number): Promise<void> {
-  await db.deleteFrom('deployments')
+  await DB.instance.deleteFrom('deployments')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereCommitSha(value: string): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('commit_sha', '=', value)
+  const query = DB.instance.selectFrom('deployments').where('commit_sha', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new DeploymentModel(modelItem))
+  return results.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
 }
 
 export async function whereCommitMessage(value: string): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('commit_message', '=', value)
+  const query = DB.instance.selectFrom('deployments').where('commit_message', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new DeploymentModel(modelItem))
+  return results.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
 }
 
 export async function whereBranch(value: string): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('branch', '=', value)
+  const query = DB.instance.selectFrom('deployments').where('branch', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new DeploymentModel(modelItem))
+  return results.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
 }
 
 export async function whereStatus(value: string): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('status', '=', value)
+  const query = DB.instance.selectFrom('deployments').where('status', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new DeploymentModel(modelItem))
+  return results.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
 }
 
 export async function whereExecutionTime(value: number): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('execution_time', '=', value)
+  const query = DB.instance.selectFrom('deployments').where('execution_time', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new DeploymentModel(modelItem))
+  return results.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
 }
 
 export async function whereDeployScript(value: string): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('deploy_script', '=', value)
+  const query = DB.instance.selectFrom('deployments').where('deploy_script', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new DeploymentModel(modelItem))
+  return results.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
 }
 
 export async function whereTerminalOutput(value: string): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('terminal_output', '=', value)
+  const query = DB.instance.selectFrom('deployments').where('terminal_output', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new DeploymentModel(modelItem))
+  return results.map((modelItem: DeploymentModel) => new DeploymentModel(modelItem))
 }
 
 export const Deployment = DeploymentModel

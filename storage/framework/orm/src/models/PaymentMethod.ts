@@ -3,8 +3,11 @@ import type { TransactionModel } from './Transaction'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
+
+import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import Transaction from './Transaction'
 
@@ -61,47 +64,22 @@ interface QueryOptions {
 export class PaymentMethodModel {
   private readonly hidden: Array<keyof PaymentMethodJsonResponse> = []
   private readonly fillable: Array<keyof PaymentMethodJsonResponse> = ['type', 'last_four', 'brand', 'exp_month', 'exp_year', 'is_default', 'provider_id', 'uuid', 'user_id']
+  private readonly guarded: Array<keyof PaymentMethodJsonResponse> = []
+  protected attributes: Partial<PaymentMethodType> = {}
+  protected originalAttributes: Partial<PaymentMethodType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
-  public user_id: number | undefined
-  public user: UserModel | undefined
-  public transactions: TransactionModel[] | undefined
-  public id: number | undefined
-  public uuid: string | undefined
-  public type: string | undefined
-  public last_four: number | undefined
-  public brand: string | undefined
-  public exp_month: number | undefined
-  public exp_year: number | undefined
-  public is_default: boolean | undefined
-  public provider_id: string | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
 
   constructor(paymentmethod: Partial<PaymentMethodType> | null) {
     if (paymentmethod) {
-      this.user_id = paymentmethod?.user_id
-      this.user = paymentmethod?.user
-      this.transactions = paymentmethod?.transactions
-      this.id = paymentmethod?.id || 1
-      this.uuid = paymentmethod?.uuid
-      this.type = paymentmethod?.type
-      this.last_four = paymentmethod?.last_four
-      this.brand = paymentmethod?.brand
-      this.exp_month = paymentmethod?.exp_month
-      this.exp_year = paymentmethod?.exp_year
-      this.is_default = paymentmethod?.is_default
-      this.provider_id = paymentmethod?.provider_id
-
-      this.created_at = paymentmethod?.created_at
-
-      this.updated_at = paymentmethod?.updated_at
+      this.attributes = { ...paymentmethod }
+      this.originalAttributes = { ...paymentmethod }
 
       Object.keys(paymentmethod).forEach((key) => {
         if (!(key in this)) {
@@ -111,13 +89,155 @@ export class PaymentMethodModel {
     }
 
     this.withRelations = []
-    this.selectFromQuery = db.selectFrom('payment_methods')
-    this.updateFromQuery = db.updateTable('payment_methods')
-    this.deleteFromQuery = db.deleteFrom('payment_methods')
+    this.selectFromQuery = DB.instance.selectFrom('payment_methods')
+    this.updateFromQuery = DB.instance.updateTable('payment_methods')
+    this.deleteFromQuery = DB.instance.deleteFrom('payment_methods')
     this.hasSelect = false
+    this.hasSaved = false
   }
 
-  static select(params: (keyof PaymentMethodType)[] | RawBuilder<string>): PaymentMethodModel {
+  get user_id(): number | undefined {
+    return this.attributes.user_id
+  }
+
+  get user(): UserModel | undefined {
+    return this.attributes.user
+  }
+
+  get transactions(): TransactionModel[] | undefined {
+    return this.attributes.transactions
+  }
+
+  get id(): number | undefined {
+    return this.attributes.id
+  }
+
+  get uuid(): string | undefined {
+    return this.attributes.uuid
+  }
+
+  get type(): string | undefined {
+    return this.attributes.type
+  }
+
+  get last_four(): number | undefined {
+    return this.attributes.last_four
+  }
+
+  get brand(): string | undefined {
+    return this.attributes.brand
+  }
+
+  get exp_month(): number | undefined {
+    return this.attributes.exp_month
+  }
+
+  get exp_year(): number | undefined {
+    return this.attributes.exp_year
+  }
+
+  get is_default(): boolean | undefined {
+    return this.attributes.is_default
+  }
+
+  get provider_id(): string | undefined {
+    return this.attributes.provider_id
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
+  }
+
+  set uuid(value: string) {
+    this.attributes.uuid = value
+  }
+
+  set type(value: string) {
+    this.attributes.type = value
+  }
+
+  set last_four(value: number) {
+    this.attributes.last_four = value
+  }
+
+  set brand(value: string) {
+    this.attributes.brand = value
+  }
+
+  set exp_month(value: number) {
+    this.attributes.exp_month = value
+  }
+
+  set exp_year(value: number) {
+    this.attributes.exp_year = value
+  }
+
+  set is_default(value: boolean) {
+    this.attributes.is_default = value
+  }
+
+  set provider_id(value: string) {
+    this.attributes.provider_id = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
+  getOriginal(column?: keyof PaymentMethodType): Partial<PaymentMethodType> | any {
+    if (column) {
+      return this.originalAttributes[column]
+    }
+
+    return this.originalAttributes
+  }
+
+  getChanges(): Partial<PaymentMethodJsonResponse> {
+    return this.fillable.reduce<Partial<PaymentMethodJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof PaymentMethodsTable]
+      const originalValue = this.originalAttributes[key as keyof PaymentMethodsTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
+      }
+
+      return changes
+    }, {})
+  }
+
+  isDirty(column?: keyof PaymentMethodType): boolean {
+    if (column) {
+      return this.attributes[column] !== this.originalAttributes[column]
+    }
+
+    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this.attributes as any)[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
+  isClean(column?: keyof PaymentMethodType): boolean {
+    return !this.isDirty(column)
+  }
+
+  wasChanged(column?: keyof PaymentMethodType): boolean {
+    return this.hasSaved && this.isDirty(column)
+  }
+
+  select(params: (keyof PaymentMethodType)[] | RawBuilder<string> | string): PaymentMethodModel {
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
+  }
+
+  static select(params: (keyof PaymentMethodType)[] | RawBuilder<string> | string): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     // Initialize a query with the table name and selected fields
@@ -128,11 +248,8 @@ export class PaymentMethodModel {
     return instance
   }
 
-  // Method to find a PaymentMethod by ID
-  async find(id: number): Promise<PaymentMethodModel | undefined> {
-    const query = db.selectFrom('payment_methods').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
+  async applyFind(id: number): Promise<PaymentMethodModel | undefined> {
+    const model = await DB.instance.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -146,9 +263,25 @@ export class PaymentMethodModel {
     return data
   }
 
+  async find(id: number): Promise<PaymentMethodModel | undefined> {
+    return await this.applyFind(id)
+  }
+
   // Method to find a PaymentMethod by ID
   static async find(id: number): Promise<PaymentMethodModel | undefined> {
-    const model = await db.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
+    const instance = new PaymentMethodModel(null)
+
+    return await instance.applyFind(id)
+  }
+
+  async first(): Promise<PaymentMethodModel | undefined> {
+    return await PaymentMethodModel.first()
+  }
+
+  static async first(): Promise<PaymentMethodModel | undefined> {
+    const model = await DB.instance.selectFrom('payment_methods')
+      .selectAll()
+      .executeTakeFirst()
 
     if (!model)
       return undefined
@@ -159,7 +292,24 @@ export class PaymentMethodModel {
 
     const data = new PaymentMethodModel(result as PaymentMethodType)
 
-    cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
+    return data
+  }
+
+  async firstOrFail(): Promise<PaymentMethodModel | undefined> {
+    return await PaymentMethodModel.firstOrFail()
+  }
+
+  static async firstOrFail(): Promise<PaymentMethodModel | undefined> {
+    const instance = new PaymentMethodModel(null)
+
+    const model = await instance.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No PaymentMethodModel results found for query')
+
+    const result = await instance.mapWith(model)
+
+    const data = new PaymentMethodModel(result as PaymentMethodType)
 
     return data
   }
@@ -177,7 +327,7 @@ export class PaymentMethodModel {
   }
 
   static async all(): Promise<PaymentMethodModel[]> {
-    const models = await db.selectFrom('payment_methods').selectAll().execute()
+    const models = await DB.instance.selectFrom('payment_methods').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: PaymentMethodType) => {
       const instance = new PaymentMethodModel(model)
@@ -190,8 +340,12 @@ export class PaymentMethodModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<PaymentMethodModel> {
+    return await PaymentMethodModel.findOrFail(id)
+  }
+
   static async findOrFail(id: number): Promise<PaymentMethodModel> {
-    const model = await db.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new PaymentMethodModel(null)
 
@@ -207,23 +361,8 @@ export class PaymentMethodModel {
     return data
   }
 
-  async findOrFail(id: number): Promise<PaymentMethodModel> {
-    const model = await db.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No PaymentMethodModel results for ${id}`)
-
-    cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
-
-    const result = await this.mapWith(model)
-
-    const data = new PaymentMethodModel(result as PaymentMethodType)
-
-    return data
-  }
-
   static async findMany(ids: number[]): Promise<PaymentMethodModel[]> {
-    let query = db.selectFrom('payment_methods').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('payment_methods').where('id', 'in', ids)
 
     const instance = new PaymentMethodModel(null)
 
@@ -231,19 +370,131 @@ export class PaymentMethodModel {
 
     const model = await query.execute()
 
-    return model.map(modelItem => instance.parseResult(new PaymentMethodModel(modelItem)))
+    return model.map((modelItem: PaymentMethodModel) => instance.parseResult(new PaymentMethodModel(modelItem)))
   }
 
-  static async get(): Promise<PaymentMethodModel[]> {
+  skip(count: number): PaymentMethodModel {
+    return PaymentMethodModel.skip(count)
+  }
+
+  static skip(count: number): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
-    let models
+    instance.selectFromQuery = instance.selectFromQuery.offset(count)
+
+    return instance
+  }
+
+  async chunk(size: number, callback: (models: PaymentMethodModel[]) => Promise<void>): Promise<void> {
+    await PaymentMethodModel.chunk(size, callback)
+  }
+
+  static async chunk(size: number, callback: (models: PaymentMethodModel[]) => Promise<void>): Promise<void> {
+    let page = 1
+    let hasMore = true
+
+    while (hasMore) {
+      const instance = new PaymentMethodModel(null)
+
+      // Get one batch
+      const models = await instance.selectFromQuery
+        .limit(size)
+        .offset((page - 1) * size)
+        .execute()
+
+      // If we got fewer results than chunk size, this is the last batch
+      if (models.length < size) {
+        hasMore = false
+      }
+
+      // Process this batch
+      if (models.length > 0) {
+        await callback(models)
+      }
+
+      page++
+    }
+  }
+
+  take(count: number): PaymentMethodModel {
+    return PaymentMethodModel.take(count)
+  }
+
+  static take(count: number): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.limit(count)
+
+    return instance
+  }
+
+  static async pluck<K extends keyof PaymentMethodModel>(field: K): Promise<PaymentMethodModel[K][]> {
+    const instance = new PaymentMethodModel(null)
 
     if (instance.hasSelect) {
-      models = await instance.selectFromQuery.execute()
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: PaymentMethodModel) => modelItem[field])
+    }
+
+    const model = await instance.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: PaymentMethodModel) => modelItem[field])
+  }
+
+  async pluck<K extends keyof PaymentMethodModel>(field: K): Promise<PaymentMethodModel[K][]> {
+    return PaymentMethodModel.pluck(field)
+  }
+
+  static async count(): Promise<number> {
+    const instance = new PaymentMethodModel(null)
+
+    const result = await instance.selectFromQuery
+      .select(sql`COUNT(*) as count`)
+      .executeTakeFirst()
+
+    return result.count || 0
+  }
+
+  async count(): Promise<number> {
+    const result = await this.selectFromQuery
+      .select(sql`COUNT(*) as count`)
+      .executeTakeFirst()
+
+    return result.count || 0
+  }
+
+  async max(field: keyof PaymentMethodModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async min(field: keyof PaymentMethodModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async avg(field: keyof PaymentMethodModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  async sum(field: keyof PaymentMethodModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  async applyGet(): Promise<PaymentMethodModel[]> {
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
     }
     else {
-      models = await instance.selectFromQuery.selectAll().execute()
+      models = await this.selectFromQuery.selectAll().execute()
     }
 
     const data = await Promise.all(models.map(async (model: PaymentMethodModel) => {
@@ -257,98 +508,219 @@ export class PaymentMethodModel {
     return data
   }
 
-  // Method to get a PaymentMethod by criteria
   async get(): Promise<PaymentMethodModel[]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-
-      return model.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-
-    return model.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
+    return await this.applyGet()
   }
 
-  static async count(): Promise<number> {
+  static async get(): Promise<PaymentMethodModel[]> {
     const instance = new PaymentMethodModel(null)
 
-    const results = await instance.selectFromQuery.selectAll().execute()
-
-    return results.length
+    return await instance.applyGet()
   }
 
-  async count(): Promise<number> {
-    if (this.hasSelect) {
-      const results = await this.selectFromQuery.execute()
-
-      return results.length
-    }
-
-    const results = await this.selectFromQuery.execute()
-
-    return results.length
+  has(relation: string): PaymentMethodModel {
+    return PaymentMethodModel.has(relation)
   }
 
-  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PaymentMethodResponse> {
-    const totalRecordsResult = await db.selectFrom('payment_methods')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+  static has(relation: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.paymentmethod_id`, '=', 'payment_methods.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static whereExists(callback: (qb: any) => any): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(callback({ exists, selectFrom })),
+    )
+
+    return instance
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): PaymentMethodModel {
+    return PaymentMethodModel.whereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+    const subqueryBuilder = new SubqueryBuilder()
+
+    callback(subqueryBuilder)
+    const conditions = subqueryBuilder.getConditions()
+
+    instance.selectFromQuery = instance.selectFromQuery
+      .where(({ exists, selectFrom }: any) => {
+        let subquery = selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.paymentmethod_id`, '=', 'payment_methods.id')
+
+        conditions.forEach((condition) => {
+          switch (condition.method) {
+            case 'where':
+              if (condition.type === 'and') {
+                subquery = subquery.where(condition.column, condition.operator!, condition.value)
+              }
+              else {
+                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
+              }
+              break
+
+            case 'whereIn':
+              if (condition.operator === 'not') {
+                subquery = subquery.whereNotIn(condition.column, condition.values!)
+              }
+              else {
+                subquery = subquery.whereIn(condition.column, condition.values!)
+              }
+
+              break
+
+            case 'whereNull':
+              subquery = subquery.whereNull(condition.column)
+              break
+
+            case 'whereNotNull':
+              subquery = subquery.whereNotNull(condition.column)
+              break
+
+            case 'whereBetween':
+              subquery = subquery.whereBetween(condition.column, condition.values!)
+              break
+
+            case 'whereExists': {
+              const nestedBuilder = new SubqueryBuilder()
+              condition.callback!(nestedBuilder)
+              break
+            }
+          }
+        })
+
+        return exists(subquery)
+      })
+
+    return instance
+  }
+
+  applyDoesntHave(relation: string): PaymentMethodModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.paymentmethod_id`, '=', 'payment_methods.id'),
+        ),
+      ),
+    )
+
+    return this
+  }
+
+  doesntHave(relation: string): PaymentMethodModel {
+    return this.applyDoesntHave(relation)
+  }
+
+  static doesntHave(relation: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    return instance.doesntHave(relation)
+  }
+
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): PaymentMethodModel {
+    const subqueryBuilder = new SubqueryBuilder()
+
+    callback(subqueryBuilder)
+    const conditions = subqueryBuilder.getConditions()
+
+    this.selectFromQuery = this.selectFromQuery
+      .where(({ exists, selectFrom, not }: any) => {
+        let subquery = selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.paymentmethod_id`, '=', 'payment_methods.id')
+
+        conditions.forEach((condition) => {
+          switch (condition.method) {
+            case 'where':
+              if (condition.type === 'and') {
+                subquery = subquery.where(condition.column, condition.operator!, condition.value)
+              }
+              else {
+                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
+              }
+              break
+
+            case 'whereIn':
+              if (condition.operator === 'not') {
+                subquery = subquery.whereNotIn(condition.column, condition.values!)
+              }
+              else {
+                subquery = subquery.whereIn(condition.column, condition.values!)
+              }
+
+              break
+
+            case 'whereNull':
+              subquery = subquery.whereNull(condition.column)
+              break
+
+            case 'whereNotNull':
+              subquery = subquery.whereNotNull(condition.column)
+              break
+
+            case 'whereBetween':
+              subquery = subquery.whereBetween(condition.column, condition.values!)
+              break
+
+            case 'whereExists': {
+              const nestedBuilder = new SubqueryBuilder()
+              condition.callback!(nestedBuilder)
+              break
+            }
+          }
+        })
+
+        return not(exists(subquery))
+      })
+
+    return this
+  }
+
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): PaymentMethodModel {
+    return this.applyWhereDoesntHave(relation, callback)
+  }
+
+  static whereDoesntHave(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    return instance.applyWhereDoesntHave(relation, callback)
+  }
+
+  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PaymentMethodResponse> {
+    const totalRecordsResult = await DB.instance.selectFrom('payment_methods')
+      .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    if (this.hasSelect) {
-      const payment_methodsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-        .limit((options.limit ?? 10) + 1)
-        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-        .execute()
-
-      let nextCursor = null
-      if (payment_methodsWithExtra.length > (options.limit ?? 10))
-        nextCursor = payment_methodsWithExtra.pop()?.id ?? null
-
-      return {
-        data: payment_methodsWithExtra,
-        paging: {
-          total_records: totalRecords,
-          page: options.page || 1,
-          total_pages: totalPages,
-        },
-        next_cursor: nextCursor,
-      }
-    }
-
-    const payment_methodsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-      .limit((options.limit ?? 10) + 1)
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (payment_methodsWithExtra.length > (options.limit ?? 10))
-      nextCursor = payment_methodsWithExtra.pop()?.id ?? null
-
-    return {
-      data: payment_methodsWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
-    }
-  }
-
-  // Method to get all payment_methods
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PaymentMethodResponse> {
-    const totalRecordsResult = await db.selectFrom('payment_methods')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    const payment_methodsWithExtra = await db.selectFrom('payment_methods')
+    const payment_methodsWithExtra = await DB.instance.selectFrom('payment_methods')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -370,45 +742,62 @@ export class PaymentMethodModel {
     }
   }
 
-  // Method to create a new paymentmethod
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PaymentMethodResponse> {
+    return await this.applyPaginate(options)
+  }
+
+  // Method to get all payment_methods
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PaymentMethodResponse> {
+    const instance = new PaymentMethodModel(null)
+
+    return await instance.applyPaginate(options)
+  }
+
   static async create(newPaymentMethod: NewPaymentMethod): Promise<PaymentMethodModel> {
     const instance = new PaymentMethodModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newPaymentMethod).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newPaymentMethod).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewPaymentMethod
 
     filteredValues.uuid = randomUUIDv7()
 
-    const result = await db.insertInto('payment_methods')
+    const result = await DB.instance.insertInto('payment_methods')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as PaymentMethodModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as PaymentMethodModel
+
+    if (model)
+      dispatch('paymentmethod:created', model)
 
     return model
   }
 
-  static async createMany(newPaymentMethods: NewPaymentMethod[]): Promise<void> {
+  static async createMany(newPaymentMethod: NewPaymentMethod[]): Promise<void> {
     const instance = new PaymentMethodModel(null)
 
-    const filteredValues = newPaymentMethods.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewPaymentMethod,
-    )
+    const valuesFiltered = newPaymentMethod.map((newPaymentMethod: NewPaymentMethod) => {
+      const filteredValues = Object.fromEntries(
+        Object.entries(newPaymentMethod).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewPaymentMethod
 
-    filteredValues.forEach((model) => {
-      model.uuid = randomUUIDv7()
+      filteredValues.uuid = randomUUIDv7()
+
+      return filteredValues
     })
 
-    await db.insertInto('payment_methods')
-      .values(filteredValues)
+    await DB.instance.insertInto('payment_methods')
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newPaymentMethod: NewPaymentMethod): Promise<PaymentMethodModel> {
-    const result = await db.insertInto('payment_methods')
+    const result = await DB.instance.insertInto('payment_methods')
       .values(newPaymentMethod)
       .executeTakeFirst()
 
@@ -419,116 +808,133 @@ export class PaymentMethodModel {
 
   // Method to remove a PaymentMethod
   static async remove(id: number): Promise<any> {
-    return await db.deleteFrom('payment_methods')
+    return await DB.instance.deleteFrom('payment_methods')
       .where('id', '=', id)
       .execute()
   }
 
-  where(...args: (string | number | boolean | undefined | null)[]): PaymentMethodModel {
-    let column: any
-    let operator: any
-    let value: any
+  applyWhere(instance: PaymentMethodModel, column: string, ...args: any[]): PaymentMethodModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
 
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
-    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
-    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
-
-    return this
-  }
-
-  orWhere(...args: Array<[string, string, any]>): PaymentMethodModel {
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    return this
-  }
-
-  static orWhere(...args: Array<[string, string, any]>): PaymentMethodModel {
-    const instance = new PaymentMethodModel(null)
-
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
 
     return instance
   }
 
-  static where(...args: (string | number | boolean | undefined | null)[]): PaymentMethodModel {
-    let column: any
-    let operator: any
-    let value: any
+  where(column: string, ...args: any[]): PaymentMethodModel {
+    return this.applyWhere(this, column, ...args)
+  }
 
+  static where(column: string, ...args: any[]): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
+    return instance.applyWhere(instance, column, ...args)
+  }
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
+  whereColumn(first: string, operator: string, second: string): PaymentMethodModel {
+    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+    return this
+  }
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+  static whereColumn(first: string, operator: string, second: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
     return instance
+  }
+
+  whereRef(column: string, ...args: string[]): PaymentMethodModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
+
+    const instance = new PaymentMethodModel(null)
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
+
+    return instance
+  }
+
+  whereRef(column: string, ...args: string[]): PaymentMethodModel {
+    return this.whereRef(column, ...args)
+  }
+
+  static whereRef(column: string, ...args: string[]): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    return instance.whereRef(column, ...args)
+  }
+
+  whereRaw(sqlStatement: string): PaymentMethodModel {
+    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return this
+  }
+
+  static whereRaw(sqlStatement: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return instance
+  }
+
+  orWhere(...conditions: [string, any][]): PaymentMethodModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    return this
+  }
+
+  static orWhere(...conditions: [string, any][]): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    return instance
+  }
+
+  when(
+    condition: boolean,
+    callback: (query: PaymentMethodModel) => PaymentMethodModel,
+  ): PaymentMethodModel {
+    return PaymentMethodModel.when(condition, callback)
   }
 
   static when(
@@ -543,14 +949,8 @@ export class PaymentMethodModel {
     return instance
   }
 
-  when(
-    condition: boolean,
-    callback: (query: PaymentMethodModel) => PaymentMethodModel,
-  ): PaymentMethodModel {
-    if (condition)
-      callback(this.selectFromQuery)
-
-    return this
+  whereNull(column: string): PaymentMethodModel {
+    return PaymentMethodModel.whereNull(column)
   }
 
   static whereNull(column: string): PaymentMethodModel {
@@ -565,18 +965,6 @@ export class PaymentMethodModel {
     )
 
     return instance
-  }
-
-  whereNull(column: string): PaymentMethodModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
   }
 
   static whereType(value: string): PaymentMethodModel {
@@ -636,13 +1024,7 @@ export class PaymentMethodModel {
   }
 
   whereIn(column: keyof PaymentMethodType, values: any[]): PaymentMethodModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
+    return PaymentMethodModel.whereIn(column, values)
   }
 
   static whereIn(column: keyof PaymentMethodType, values: any[]): PaymentMethodModel {
@@ -657,9 +1039,29 @@ export class PaymentMethodModel {
     return instance
   }
 
+  whereBetween(column: keyof PaymentMethodType, range: [any, any]): PaymentMethodModel {
+    return PaymentMethodModel.whereBetween(column, range)
+  }
+
+  whereLike(column: keyof PaymentMethodType, value: string): PaymentMethodModel {
+    return PaymentMethodModel.whereLike(column, value)
+  }
+
+  static whereLike(column: keyof PaymentMethodType, value: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    return instance
+  }
+
   static whereBetween(column: keyof PaymentMethodType, range: [any, any]): PaymentMethodModel {
     if (range.length !== 2) {
-      throw new Error('Range must have exactly two values: [min, max]')
+      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
 
     const instance = new PaymentMethodModel(null)
@@ -671,6 +1073,10 @@ export class PaymentMethodModel {
     instance.deleteFromQuery = instance.deleteFromQuery.where(query)
 
     return instance
+  }
+
+  whereNotIn(column: keyof PaymentMethodType, values: any[]): PaymentMethodModel {
+    return PaymentMethodModel.whereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof PaymentMethodType, values: any[]): PaymentMethodModel {
@@ -685,69 +1091,14 @@ export class PaymentMethodModel {
     return instance
   }
 
-  whereNotIn(column: keyof PaymentMethodType, values: any[]): PaymentMethodModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
-  }
-
-  async first(): Promise<PaymentMethodModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new PaymentMethodModel(result as PaymentMethodType)
-
-    return data
-  }
-
-  async firstOrFail(): Promise<PaymentMethodModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No PaymentMethodModel results found for query')
-
-    const instance = new PaymentMethodModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new PaymentMethodModel(result as PaymentMethodType)
-
-    return data
-  }
-
   async exists(): Promise<boolean> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
   }
 
-  static async first(): Promise<PaymentMethodType | undefined> {
-    const model = await db.selectFrom('payment_methods')
-      .selectAll()
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new PaymentMethodModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new PaymentMethodModel(result as PaymentMethodType)
-
-    return data
-  }
-
   static async latest(): Promise<PaymentMethodType | undefined> {
-    const model = await db.selectFrom('payment_methods')
+    const model = await DB.instance.selectFrom('payment_methods')
       .selectAll()
       .orderBy('created_at', 'desc')
       .executeTakeFirst()
@@ -763,7 +1114,7 @@ export class PaymentMethodModel {
   }
 
   static async oldest(): Promise<PaymentMethodType | undefined> {
-    const model = await db.selectFrom('payment_methods')
+    const model = await DB.instance.selectFrom('payment_methods')
       .selectAll()
       .orderBy('created_at', 'asc')
       .executeTakeFirst()
@@ -786,13 +1137,13 @@ export class PaymentMethodModel {
     const key = Object.keys(condition)[0] as keyof PaymentMethodType
 
     if (!key) {
-      throw new Error('Condition must contain at least one key-value pair')
+      throw new HttpError(500, 'Condition must contain at least one key-value pair')
     }
 
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingPaymentMethod = await db.selectFrom('payment_methods')
+    const existingPaymentMethod = await DB.instance.selectFrom('payment_methods')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -803,7 +1154,6 @@ export class PaymentMethodModel {
       return new PaymentMethodModel(result as PaymentMethodType)
     }
     else {
-      // If not found, create a new user
       return await this.create(newPaymentMethod)
     }
   }
@@ -812,39 +1162,43 @@ export class PaymentMethodModel {
     condition: Partial<PaymentMethodType>,
     newPaymentMethod: NewPaymentMethod,
   ): Promise<PaymentMethodModel> {
+    const instance = new PaymentMethodModel(null)
+
     const key = Object.keys(condition)[0] as keyof PaymentMethodType
 
     if (!key) {
-      throw new Error('Condition must contain at least one key-value pair')
+      throw new HttpError(500, 'Condition must contain at least one key-value pair')
     }
 
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingPaymentMethod = await db.selectFrom('payment_methods')
+    const existingPaymentMethod = await DB.instance.selectFrom('payment_methods')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
 
     if (existingPaymentMethod) {
       // If found, update the existing record
-      await db.updateTable('payment_methods')
+      await DB.instance.updateTable('payment_methods')
         .set(newPaymentMethod)
         .where(key, '=', value)
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedPaymentMethod = await db.selectFrom('payment_methods')
+      const updatedPaymentMethod = await DB.instance.selectFrom('payment_methods')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
 
       if (!updatedPaymentMethod) {
-        throw new Error('Failed to fetch updated record')
+        throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const instance = new PaymentMethodModel(null)
       const result = await instance.mapWith(updatedPaymentMethod)
+
+      instance.hasSaved = true
+
       return new PaymentMethodModel(result as PaymentMethodType)
     }
     else {
@@ -854,9 +1208,7 @@ export class PaymentMethodModel {
   }
 
   with(relations: string[]): PaymentMethodModel {
-    this.withRelations = relations
-
-    return this
+    return PaymentMethodModel.with(relations)
   }
 
   static with(relations: string[]): PaymentMethodModel {
@@ -868,14 +1220,14 @@ export class PaymentMethodModel {
   }
 
   async last(): Promise<PaymentMethodType | undefined> {
-    return await db.selectFrom('payment_methods')
+    return await DB.instance.selectFrom('payment_methods')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<PaymentMethodType | undefined> {
-    const model = await db.selectFrom('payment_methods').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('payment_methods').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
@@ -889,12 +1241,20 @@ export class PaymentMethodModel {
     return data
   }
 
+  orderBy(column: keyof PaymentMethodType, order: 'asc' | 'desc'): PaymentMethodModel {
+    return PaymentMethodModel.orderBy(column, order)
+  }
+
   static orderBy(column: keyof PaymentMethodType, order: 'asc' | 'desc'): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
+  }
+
+  groupBy(column: keyof PaymentMethodType): PaymentMethodModel {
+    return PaymentMethodModel.groupBy(column)
   }
 
   static groupBy(column: keyof PaymentMethodType): PaymentMethodModel {
@@ -905,6 +1265,10 @@ export class PaymentMethodModel {
     return instance
   }
 
+  having(column: keyof PaymentMethodType, operator: string, value: any): PaymentMethodModel {
+    return PaymentMethodModel.having(column, operator, value)
+  }
+
   static having(column: keyof PaymentMethodType, operator: string, value: any): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
@@ -913,20 +1277,20 @@ export class PaymentMethodModel {
     return instance
   }
 
-  orderBy(column: keyof PaymentMethodType, order: 'asc' | 'desc'): PaymentMethodModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
+  inRandomOrder(): PaymentMethodModel {
+    return PaymentMethodModel.inRandomOrder()
   }
 
-  having(column: keyof PaymentMethodType, operator: string, value: any): PaymentMethodModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+  static inRandomOrder(): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
 
-    return this
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return instance
   }
 
-  groupBy(column: keyof PaymentMethodType): PaymentMethodModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+  orderByDesc(column: keyof PaymentMethodType): PaymentMethodModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
@@ -939,10 +1303,8 @@ export class PaymentMethodModel {
     return instance
   }
 
-  orderByDesc(column: keyof PaymentMethodType): PaymentMethodModel {
-    this.selectFromQuery = this.orderBy(column, 'desc')
-
-    return this
+  orderByAsc(column: keyof PaymentMethodType): PaymentMethodModel {
+    return PaymentMethodModel.orderByAsc(column)
   }
 
   static orderByAsc(column: keyof PaymentMethodType): PaymentMethodModel {
@@ -953,18 +1315,14 @@ export class PaymentMethodModel {
     return instance
   }
 
-  orderByAsc(column: keyof PaymentMethodType): PaymentMethodModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
-  }
-
-  async update(paymentmethod: PaymentMethodUpdate): Promise<PaymentMethodModel | undefined> {
+  async update(newPaymentMethod: PaymentMethodUpdate): Promise<PaymentMethodModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(paymentmethod).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newPaymentMethod).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
     ) as NewPaymentMethod
 
-    await db.updateTable('payment_methods')
+    await DB.instance.updateTable('payment_methods')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -975,6 +1333,8 @@ export class PaymentMethodModel {
       return model
     }
 
+    this.hasSaved = true
+
     return undefined
   }
 
@@ -983,13 +1343,15 @@ export class PaymentMethodModel {
       this.updateFromQuery.set(paymentmethod).execute()
     }
 
-    await db.updateTable('payment_methods')
+    await DB.instance.updateTable('payment_methods')
       .set(paymentmethod)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       const model = await this.find(this.id)
+
+      this.hasSaved = true
 
       return model
     }
@@ -1001,14 +1363,46 @@ export class PaymentMethodModel {
     if (!this)
       throw new HttpError(500, 'PaymentMethod data is undefined')
 
+    const filteredValues = Object.fromEntries(
+      Object.entries(this).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewPaymentMethod
+
     if (this.id === undefined) {
-      await db.insertInto('payment_methods')
-        .values(this as NewPaymentMethod)
+      await DB.instance.insertInto('payment_methods')
+        .values(filteredValues)
         .executeTakeFirstOrThrow()
     }
     else {
       await this.update(this)
     }
+
+    this.hasSaved = true
+  }
+
+  fill(data: Partial<PaymentMethodType>): PaymentMethodModel {
+    const filteredValues = Object.fromEntries(
+      Object.entries(data).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewPaymentMethod
+
+    this.attributes = {
+      ...this.attributes,
+      ...filteredValues,
+    }
+
+    return this
+  }
+
+  forceFill(data: Partial<PaymentMethodType>): PaymentMethodModel {
+    this.attributes = {
+      ...this.attributes,
+      ...data,
+    }
+
+    return this
   }
 
   // Method to delete (soft delete) the paymentmethod instance
@@ -1016,7 +1410,7 @@ export class PaymentMethodModel {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await db.deleteFrom('payment_methods')
+    return await DB.instance.deleteFrom('payment_methods')
       .where('id', '=', this.id)
       .execute()
   }
@@ -1039,13 +1433,13 @@ export class PaymentMethodModel {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const results = await db.selectFrom('transactions')
+    const results = await DB.instance.selectFrom('transactions')
       .where('payment_method_id', '=', this.id)
       .limit(5)
       .selectAll()
       .execute()
 
-    return results.map(modelItem => new Transaction(modelItem))
+    return results.map((modelItem: PaymentMethodModel) => new Transaction(modelItem))
   }
 
   distinct(column: keyof PaymentMethodType): PaymentMethodModel {
@@ -1081,7 +1475,7 @@ export class PaymentMethodModel {
   }
 
   static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(db)
+    return await sql`${rawQuery}`.execute(DB.instance)
   }
 
   toJSON(): Partial<PaymentMethodJsonResponse> {
@@ -1119,7 +1513,7 @@ export class PaymentMethodModel {
 }
 
 async function find(id: number): Promise<PaymentMethodModel | undefined> {
-  const query = db.selectFrom('payment_methods').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('payment_methods').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1136,7 +1530,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newPaymentMethod: NewPaymentMethod): Promise<PaymentMethodModel> {
-  const result = await db.insertInto('payment_methods')
+  const result = await DB.instance.insertInto('payment_methods')
     .values(newPaymentMethod)
     .executeTakeFirstOrThrow()
 
@@ -1144,62 +1538,62 @@ export async function create(newPaymentMethod: NewPaymentMethod): Promise<Paymen
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(db)
+  return await sql`${rawQuery}`.execute(DB.instance)
 }
 
 export async function remove(id: number): Promise<void> {
-  await db.deleteFrom('payment_methods')
+  await DB.instance.deleteFrom('payment_methods')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereType(value: string): Promise<PaymentMethodModel[]> {
-  const query = db.selectFrom('payment_methods').where('type', '=', value)
+  const query = DB.instance.selectFrom('payment_methods').where('type', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new PaymentMethodModel(modelItem))
+  return results.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
 }
 
 export async function whereLastFour(value: number): Promise<PaymentMethodModel[]> {
-  const query = db.selectFrom('payment_methods').where('last_four', '=', value)
+  const query = DB.instance.selectFrom('payment_methods').where('last_four', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new PaymentMethodModel(modelItem))
+  return results.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
 }
 
 export async function whereBrand(value: string): Promise<PaymentMethodModel[]> {
-  const query = db.selectFrom('payment_methods').where('brand', '=', value)
+  const query = DB.instance.selectFrom('payment_methods').where('brand', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new PaymentMethodModel(modelItem))
+  return results.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
 }
 
 export async function whereExpMonth(value: number): Promise<PaymentMethodModel[]> {
-  const query = db.selectFrom('payment_methods').where('exp_month', '=', value)
+  const query = DB.instance.selectFrom('payment_methods').where('exp_month', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new PaymentMethodModel(modelItem))
+  return results.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
 }
 
 export async function whereExpYear(value: number): Promise<PaymentMethodModel[]> {
-  const query = db.selectFrom('payment_methods').where('exp_year', '=', value)
+  const query = DB.instance.selectFrom('payment_methods').where('exp_year', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new PaymentMethodModel(modelItem))
+  return results.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
 }
 
 export async function whereIsDefault(value: boolean): Promise<PaymentMethodModel[]> {
-  const query = db.selectFrom('payment_methods').where('is_default', '=', value)
+  const query = DB.instance.selectFrom('payment_methods').where('is_default', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new PaymentMethodModel(modelItem))
+  return results.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
 }
 
 export async function whereProviderId(value: string): Promise<PaymentMethodModel[]> {
-  const query = db.selectFrom('payment_methods').where('provider_id', '=', value)
+  const query = DB.instance.selectFrom('payment_methods').where('provider_id', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new PaymentMethodModel(modelItem))
+  return results.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
 }
 
 export const PaymentMethod = PaymentMethodModel

@@ -26,8 +26,6 @@ import generateSitemap from 'vite-ssg-sitemap'
 // const maintenancePath = isMaintenanceMode ? '' : './maintenance'
 
 export const viewsConfig: ViteConfig = {
-  base: '/', // Set this to your application's base URL
-
   build: {
     rollupOptions: {
       external: [
@@ -51,12 +49,7 @@ export const viewsConfig: ViteConfig = {
   publicDir: p.publicPath(),
   envDir: p.projectPath(),
   envPrefix: 'FRONTEND_',
-  assetsInclude: [
-    p.publicPath('**'),
-    p.resourcesPath('assets/*'),
-    p.resourcesPath('assets/**/*'),
-    p.frameworkPath('defaults/public/**'),
-  ],
+  assetsInclude: [p.publicPath('**'), p.resourcesPath('assets/*'), p.resourcesPath('assets/**/*')],
 
   optimizeDeps: {
     exclude: ['vue'],

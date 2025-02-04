@@ -1,7 +1,14 @@
-<script setup>
+a<script setup>
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+const searchQuery = ref('')
+
+const handleSearch = (e) => {
+  e.preventDefault()
+  console.log('Searching for:', searchQuery.value)
+}
 
 const goBack = () => {
   router.back()
@@ -23,7 +30,7 @@ const goBack = () => {
           <h2 class="text-6xl font-bold text-slate-900 mb-4">
             Access Denied
           </h2>
-          <p class="text-8xl font-bold mb-8 heartBeat" style="animation-duration: 2s; animation-iteration-count: 1;">
+          <p class="text-8xl font-bold mb-8 bounce" style="animation-duration: 1s; animation-iteration-count: 2;">
             403
           </p>
           <p class="text-xl text-slate-600 mb-8">
@@ -178,34 +185,6 @@ const goBack = () => {
 </template>
 
 <style>
-@keyframes heartBeat {
-  0% {
-    transform: scale(1);
-  }
-
-  14% {
-    transform: scale(1.2);
-  }
-
-  28% {
-    transform: scale(1);
-  }
-
-  42% {
-    transform: scale(1.2);
-  }
-
-  70% {
-    transform: scale(1);
-  }
-}
-
-.heartBeat {
-  animation-name: heartBeat;
-  animation-duration: calc(var(--animate-duration) * 1.3);
-  animation-timing-function: ease-in-out;
-}
-
 @keyframes floatMoon {
   0% { transform: translateX(0); }
   50% { transform: translateX(20px); }

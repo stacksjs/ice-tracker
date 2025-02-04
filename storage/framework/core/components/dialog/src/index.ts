@@ -10,5 +10,4 @@ const plugin: Plugin = {
 }
 
 export { Dialog, DialogPanel }
-
 export default plugin

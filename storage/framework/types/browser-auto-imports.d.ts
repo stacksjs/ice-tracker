@@ -40,7 +40,7 @@ declare global {
   const confirmPayment: typeof import('../core/browser/src/utils/billable')['confirmPayment']
   const controlledComputed: typeof import('../core/browser/src/utils/vendors')['controlledComputed']
   const controlledRef: typeof import('../core/browser/src/utils/vendors')['controlledRef']
-  const count: typeof import('../../../resources/functions/dark')['count']
+  const count: typeof import('../../../resources/functions/counter')['count']
   const createApp: typeof import('vue')['createApp']
   const createControlledPromise: typeof import('../core/browser/src/utils/promise')['createControlledPromise']
   const createEventHook: typeof import('../core/browser/src/utils/vendors')['createEventHook']
@@ -64,7 +64,6 @@ declare global {
   const customRandom: typeof import('../core/browser/src/utils/random')['customRandom']
   const customRef: typeof import('vue')['customRef']
   const customStorageEventName: typeof import('../core/browser/src/utils/vendors')['customStorageEventName']
-  const dateFormat: typeof import('../core/datetime/dist/index.js')['dateFormat']
   const debounce: typeof import('../core/browser/src/utils/debounce')['debounce']
   const debouncedRef: typeof import('../core/browser/src/utils/vendors')['debouncedRef']
   const debouncedWatch: typeof import('../core/browser/src/utils/vendors')['debouncedWatch']
@@ -83,7 +82,6 @@ declare global {
   const exactly: typeof import('../core/browser/src/utils/regex')['exactly']
   const executeTransition: typeof import('../core/browser/src/utils/vendors')['executeTransition']
   const extendRef: typeof import('../core/browser/src/utils/vendors')['extendRef']
-  const format: typeof import('../core/datetime/dist/index.js')['format']
   const formatTimeAgo: typeof import('../core/browser/src/utils/vendors')['formatTimeAgo']
   const getActiveHead: typeof import('@unhead/vue')['getActiveHead']
   const getActivePinia: typeof import('pinia')['getActivePinia']
@@ -93,7 +91,7 @@ declare global {
   const global: typeof import('../core/browser/src/utils/regex')['global']
   const h: typeof import('vue')['h']
   const ignorableWatch: typeof import('../core/browser/src/utils/vendors')['ignorableWatch']
-  const increment: typeof import('../../../resources/functions/dark')['increment']
+  const increment: typeof import('../../../resources/functions/counter')['increment']
   const inject: typeof import('vue')['inject']
   const injectHead: typeof import('@unhead/vue')['injectHead']
   const injectLocal: typeof import('../core/browser/src/utils/vendors')['injectLocal']
@@ -127,7 +125,6 @@ declare global {
   const not: typeof import('../core/browser/src/utils/regex')['not']
   const notNullish: typeof import('../core/browser/src/utils/guards')['notNullish']
   const notUndefined: typeof import('../core/browser/src/utils/guards')['notUndefined']
-  const now: typeof import('../core/datetime/dist/index.js')['now']
   const onActivated: typeof import('vue')['onActivated']
   const onBeforeMount: typeof import('vue')['onBeforeMount']
   const onBeforeRouteLeave: typeof import('vue-router')['onBeforeRouteLeave']
@@ -153,7 +150,6 @@ declare global {
   const onWatcherCleanup: typeof import('vue')['onWatcherCleanup']
   const oneOrMore: typeof import('../core/browser/src/utils/regex')['oneOrMore']
   const or: typeof import('../core/browser/src/utils/math')['or']
-  const parse: typeof import('../core/datetime/dist/index.js')['parse']
   const pausableWatch: typeof import('../core/browser/src/utils/vendors')['pausableWatch']
   const preferredDark: typeof import('../../../resources/functions/dark')['preferredDark']
   const provide: typeof import('vue')['provide']
@@ -488,6 +484,7 @@ declare module 'vue' {
     readonly confirmPayment: UnwrapRef<typeof import('../core/browser/src/utils/billable')['confirmPayment']>
     readonly controlledComputed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['controlledComputed']>
     readonly controlledRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['controlledRef']>
+    readonly count: UnwrapRef<typeof import('../../../resources/functions/counter')['count']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createControlledPromise: UnwrapRef<typeof import('../core/browser/src/utils/promise')['createControlledPromise']>
     readonly createEventHook: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createEventHook']>
@@ -511,7 +508,6 @@ declare module 'vue' {
     readonly customRandom: UnwrapRef<typeof import('../core/browser/src/utils/random')['customRandom']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly customStorageEventName: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['customStorageEventName']>
-    readonly dateFormat: UnwrapRef<typeof import('../core/datetime/dist/index.js')['dateFormat']>
     readonly debounce: UnwrapRef<typeof import('../core/browser/src/utils/debounce')['debounce']>
     readonly debouncedRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['debouncedRef']>
     readonly debouncedWatch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['debouncedWatch']>
@@ -530,7 +526,6 @@ declare module 'vue' {
     readonly exactly: UnwrapRef<typeof import('../core/browser/src/utils/regex')['exactly']>
     readonly executeTransition: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['executeTransition']>
     readonly extendRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['extendRef']>
-    readonly format: UnwrapRef<typeof import('../core/datetime/dist/index.js')['format']>
     readonly formatTimeAgo: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['formatTimeAgo']>
     readonly getActiveHead: UnwrapRef<typeof import('@unhead/vue')['getActiveHead']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
@@ -540,6 +535,7 @@ declare module 'vue' {
     readonly global: UnwrapRef<typeof import('../core/browser/src/utils/regex')['global']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly ignorableWatch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['ignorableWatch']>
+    readonly increment: UnwrapRef<typeof import('../../../resources/functions/counter')['increment']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectHead: UnwrapRef<typeof import('@unhead/vue')['injectHead']>
     readonly injectLocal: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['injectLocal']>
@@ -573,7 +569,6 @@ declare module 'vue' {
     readonly not: UnwrapRef<typeof import('../core/browser/src/utils/regex')['not']>
     readonly notNullish: UnwrapRef<typeof import('../core/browser/src/utils/guards')['notNullish']>
     readonly notUndefined: UnwrapRef<typeof import('../core/browser/src/utils/guards')['notUndefined']>
-    readonly now: UnwrapRef<typeof import('../core/datetime/dist/index.js')['now']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
     readonly onBeforeRouteLeave: UnwrapRef<typeof import('vue-router')['onBeforeRouteLeave']>
@@ -599,7 +594,6 @@ declare module 'vue' {
     readonly onWatcherCleanup: UnwrapRef<typeof import('vue')['onWatcherCleanup']>
     readonly oneOrMore: UnwrapRef<typeof import('../core/browser/src/utils/regex')['oneOrMore']>
     readonly or: UnwrapRef<typeof import('../core/browser/src/utils/math')['or']>
-    readonly parse: UnwrapRef<typeof import('../core/datetime/dist/index.js')['parse']>
     readonly pausableWatch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['pausableWatch']>
     readonly preferredDark: UnwrapRef<typeof import('../../../resources/functions/dark')['preferredDark']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>

@@ -176,7 +176,6 @@ kstenerud
 kysely
 laravel
 latexmk
-latlng
 leex
 lighthouserc
 lintstagedrc
@@ -268,7 +267,6 @@ pubspec
 pullapprove
 pyproject
 pyrightconfig
-qodo
 qrcode
 rangav
 raycast
@@ -283,7 +281,6 @@ Runtimes
 rustfmt
 safelist
 sasl
-satoshi
 scanlon
 scrollback
 searchbox
@@ -320,7 +317,6 @@ styleci
 stylelint
 suffixless
 supabase
-svgs
 synckit
 synctex
 tauri

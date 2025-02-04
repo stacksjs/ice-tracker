@@ -11,15 +11,7 @@ const result = await Bun.build({
   format: 'esm',
   target: 'browser',
   // sourcemap: 'linked',
-  external: [
-    '@stacksjs/path',
-    '@stacksjs/error-handling',
-    'bun',
-    'export-size',
-    '@stacksjs/cli',
-    '@stacksjs/database',
-    '@stacksjs/storage',
-  ],
+  external: ['@stacksjs/path', '@stacksjs/error-handling'],
   // minify: true,
   plugins: [dts()],
 })
