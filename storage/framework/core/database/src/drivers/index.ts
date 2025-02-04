@@ -179,8 +179,8 @@ export function findCharacterLength(rule: VineType): { min: number, max: number 
   const result: any = {}
 
   // Find min and max length validations
-  const minLengthValidation = rule.validations.find((v: any) => v.options?.min !== undefined)
-  const maxLengthValidation = rule.validations.find((v: any) => v.options?.max !== undefined)
+  const minLengthValidation = rule.validations?.find((v: any) => v.options?.min !== undefined)
+  const maxLengthValidation = rule.validations?.find((v: any) => v.options?.max !== undefined)
 
   if (minLengthValidation === undefined || maxLengthValidation === undefined) {
     return undefined
