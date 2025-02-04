@@ -4,9 +4,6 @@ meta:
 </route>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { now } from '@stacksjs/browser'
-
 defineOptions({
   name: 'ActivityPage',
 })

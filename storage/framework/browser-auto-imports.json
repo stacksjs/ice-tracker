@@ -442,6 +442,8 @@
     "withIndices": true,
     "word": true,
     "wordBoundary": true,
-    "wordChar": true
+    "wordChar": true,
+    "dateFormat": true,
+    "now": true
   }
 }

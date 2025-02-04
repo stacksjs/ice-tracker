@@ -346,9 +346,9 @@ function upvoteActivity() {
     <!-- Floating Button to open the Activity Dialog -->
     <button
       @click="showActivityDialog = true"
-      class="absolute bottom-24 right-4 bg-blue-600 text-white rounded-full p-4 shadow-lg z-[400]"
+      class="absolute bottom-24 right-4 bg-teal-600 text-white rounded-full p-4 shadow-lg z-[400]"
     >
-      <div i-carbon-add class="text-2xl" />
+      <div i-hugeicons-add-01 class="text-2xl" />
     </button>
 
     <!-- Location Selection Mode Notification -->
@@ -393,7 +393,7 @@ function upvoteActivity() {
                 v-model="activityForm.title"
                 type="text"
                 required
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
               >
             </div>
 
@@ -402,7 +402,7 @@ function upvoteActivity() {
               <textarea
                 v-model="activityForm.description"
                 required
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
               />
             </div>
 
@@ -412,7 +412,7 @@ function upvoteActivity() {
                 v-model="activityForm.address"
                 type="text"
                 placeholder="Enter address or use map"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
               />
             </div>
 
@@ -420,7 +420,7 @@ function upvoteActivity() {
               <button
                 type="button"
                 @click="startLocationSelection"
-                class="px-4 py-2 bg-blue-100 text-blue-700 rounded-md text-sm font-medium hover:bg-blue-200"
+                class="px-4 py-2 bg-teal-100 text-teal-700 rounded-md text-sm font-medium hover:bg-teal-200"
               >
                 Select on Map
               </button>
@@ -442,7 +442,7 @@ function upvoteActivity() {
               <label class="block text-sm font-medium text-gray-700">Info Source</label>
               <select
                 v-model="activityForm.infoSource"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
               >
                 <option value="news">News</option>
                 <option value="social-media">Social Media</option>
@@ -459,7 +459,7 @@ function upvoteActivity() {
                     type="radio"
                     value="true"
                     v-model="activityForm.wereDetained"
-                    class="text-blue-600 focus:ring-blue-500"
+                    class="text-teal-600 focus:ring-teal-500"
                   />
                   <span class="ml-2">Yes</span>
                 </label>
@@ -468,7 +468,7 @@ function upvoteActivity() {
                     type="radio"
                     value="false"
                     v-model="activityForm.wereDetained"
-                    class="text-blue-600 focus:ring-blue-500"
+                    class="text-teal-600 focus:ring-teal-500"
                   />
                   <span class="ml-2">No</span>
                 </label>
@@ -477,7 +477,7 @@ function upvoteActivity() {
                     type="radio"
                     :value="null"
                     v-model="activityForm.wereDetained"
-                    class="text-blue-600 focus:ring-blue-500"
+                    class="text-teal-600 focus:ring-teal-500"
                   />
                   <span class="ml-2">Not sure</span>
                 </label>
@@ -495,8 +495,8 @@ function upvoteActivity() {
                       file:mr-4 file:py-2 file:px-4
                       file:rounded-full file:border-0
                       file:text-sm file:font-semibold
-                      file:bg-blue-50 file:text-blue-700
-                      hover:file:bg-blue-100"
+                      file:bg-teal-50 file:text-teal-700
+                      hover:file:bg-teal-100"
               />
             </div>
 
@@ -526,7 +526,7 @@ function upvoteActivity() {
               </button>
               <button
                 type="submit"
-                class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
+                class="px-4 py-2 bg-teal-600 text-white rounded-md text-sm font-medium hover:bg-teal-700"
               >
                 Submit Activity
               </button>

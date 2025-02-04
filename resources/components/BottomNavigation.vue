@@ -4,7 +4,7 @@
       <RouterLink
         to="/map"
         class="flex flex-col items-center px-4 py-2"
-        :class="{ 'text-blue-600': $route.path === '/map' }"
+        :class="{ 'text-teal-600': $route.path === '/map' }"
       >
         <div i-hugeicons-maps-circle-01 class="text-2xl" />
         <span class="text-xs font-serif">Map</span>
@@ -13,7 +13,7 @@
       <RouterLink
         to="/activity"
         class="flex flex-col items-center px-4 py-2 relative"
-        :class="{ 'text-blue-600': $route.path === '/activity' }"
+        :class="{ 'text-teal-600': $route.path === '/activity' }"
       >
         <div i-hugeicons-left-to-right-list-bullet class="text-2xl" />
         <span class="text-xs font-sans">Activity</span>
@@ -31,7 +31,7 @@
       <RouterLink
         to="/about"
         class="flex flex-col items-center px-4 py-2 relative"
-        :class="{ 'text-blue-600': $route.path === '/about' }"
+        :class="{ 'text-teal-600': $route.path === '/about' }"
       >
         <div i-hugeicons-user-group class="text-2xl" />
         <span class="text-xs font-sans">About</span>

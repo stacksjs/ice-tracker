@@ -176,6 +176,7 @@ kstenerud
 kysely
 laravel
 latexmk
+latlng
 leex
 lighthouserc
 lintstagedrc
