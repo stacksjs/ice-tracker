@@ -152,8 +152,7 @@ async function createTableMigration(modelPath: string) {
   const tableName = getTableName(model, modelPath)
   const modelName = getModelName(model, modelPath)
 
-  const twoFactorEnabled
-    = model.traits?.useAuth && typeof model.traits.useAuth !== 'boolean' ? model.traits.useAuth.useTwoFactor : false
+  const twoFactorEnabled = model.traits?.useAuth && typeof model.traits.useAuth !== 'boolean' ? model.traits.useAuth.useTwoFactor : false
 
   await createPivotTableMigration(model, modelPath)
   const otherModelRelations = await fetchOtherModelRelations(modelName)
@@ -165,9 +164,8 @@ async function createTableMigration(modelPath: string) {
   const useBillable = model.traits?.billable || false
   const useUuid = model.traits?.useUuid || false
 
-  if (usePasskey && tableName === 'users') {
+  if (usePasskey && tableName === 'users')
     await createPasskeyMigration()
-  }
 
   if (model.traits?.likeable === true || typeof model.traits?.likeable === 'object')
     await createUpvoteMigration(model, modelName, tableName)
@@ -304,11 +302,9 @@ async function createPasskeyMigration() {
   const timestamp = new Date().getTime().toString()
   const migrationFileName = `${timestamp}-create-passkeys-table.ts`
 
-  const migrationFilePath = path.userMigrationsPath(migrationFileName)
+  Bun.write(path.userMigrationsPath(migrationFileName), migrationContent)
 
-  Bun.write(migrationFilePath, migrationContent)
-
-  log.success(`Created migration: ${italic(migrationFileName)}`)
+  log.success(`Created migrations: ${italic(migrationFileName)}`)
 }
 
 async function createUpvoteMigration(model: Model, modelName: string, tableName: string) {

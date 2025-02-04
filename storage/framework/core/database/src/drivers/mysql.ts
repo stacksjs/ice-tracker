@@ -115,8 +115,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
   const model = (await import(modelPath)).default as Model
   const tableName = getTableName(model, modelPath)
 
-  const twoFactorEnabled
-    = model.traits?.useAuth && typeof model.traits.useAuth !== 'boolean' ? model.traits.useAuth.useTwoFactor : false
+  const twoFactorEnabled = model.traits?.useAuth && typeof model.traits.useAuth !== 'boolean' ? model.traits.useAuth.useTwoFactor : false
 
   await createPivotTableMigration(model, modelPath)
   const otherModelRelations = await fetchOtherModelRelations(modelPath)
@@ -128,7 +127,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
   const useBillable = model.traits?.billable || false
   const useUuid = model.traits?.useUuid || false
 
-  if (usePasskey)
+  if (usePasskey && tableName === 'users')
     await createPasskeyMigration()
 
   if (useBillable && tableName === 'users')
