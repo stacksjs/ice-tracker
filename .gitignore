@@ -17,8 +17,7 @@ resources/assets/fonts/*
 
 data.ms
 !.gitkeep
-database/stacks_testing.sqlite
-database/stacks.sqlite
+database/*.sqlite
 custom-cli
 *bun-build
 
