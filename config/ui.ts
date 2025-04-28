@@ -8,10 +8,6 @@ import type { UiConfig } from '@stacksjs/types'
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  fontFamily: {
-    sans: 'Satoshi',
-  },
-
   shortcuts: [
     [
       'btn',
@@ -24,7 +20,29 @@ export default {
   classPrefix: 'stx-',
   reset: 'tailwind',
 
-  icons: ['hugeicons'],
+  icons: ['heroicons'],
+
+  fonts: {
+    email: {
+      title: 'Mona',
+      text: 'Hubot',
+    },
+
+    desktop: {
+      title: 'Mona',
+      text: 'Hubot',
+    },
+
+    mobile: {
+      title: 'Mona',
+      text: 'Hubot',
+    },
+
+    web: {
+      title: 'Mona',
+      text: 'Hubot',
+    },
+  },
 
   theme: {
     // ...
