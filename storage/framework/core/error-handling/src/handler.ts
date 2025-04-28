@@ -1,12 +1,12 @@
 import type { ErrorOptions } from '@stacksjs/logging'
-import { access, appendFile, mkdir } from 'node:fs/promises'
+import { appendFile, mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import process from 'node:process'
 import { italic, stripAnsi } from '@stacksjs/cli'
-import { config } from '@stacksjs/config'
 import * as path from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
+import fs from 'fs-extra'
 
 type ErrorMessage = string
 
@@ -97,50 +97,77 @@ export class ErrorHandler {
   }
 }
 
-export function handleError(err: string | Error | object | unknown, options?: ErrorOptions): Error {
-  let errorMessage: string
-
-  if (isString(err)) {
-    errorMessage = err
-  }
-  else if (err instanceof Error) {
-    errorMessage = err.message
-  }
-  else if (options instanceof Error) {
-    errorMessage = options.message
-  }
-  else {
-    errorMessage = String(err)
-  }
-
-  writeToLogFile(`ERROR: ${stripAnsi(errorMessage)}`)
-
-  return ErrorHandler.handle(err, options)
-}
-
 interface WriteOptions {
   logFile?: string
 }
 
+// Default log path that will be used if config isn't initialized yet
+let defaultLogPath = 'storage/logs/stacks.log'
+
+// Function to update the default log path when config is available
+export function setLogPath(path: string): void {
+  defaultLogPath = path
+}
+
 export async function writeToLogFile(message: string, options?: WriteOptions): Promise<void> {
-  const formattedMessage = `[${new Date().toISOString()}] ${message}\n`
+  const timestamp = new Date().toISOString()
+  const formattedMessage = `[${timestamp}] ${message}\n`
 
-  try {
-    const logFile = options?.logFile ?? config.logging.logsPath ?? 'storage/logs/stacks.log'
+  // Use options or default path instead of config
+  const logFile = options?.logFile ?? defaultLogPath
+  const dirPath = dirname(logFile)
 
-    try {
-      // Check if the file exists
-      await access(logFile)
-    }
-    catch {
-      // File doesn't exist, create the directory
-      await mkdir(dirname(logFile), { recursive: true })
-    }
-
-    // Append the message to the log file
-    await appendFile(logFile, formattedMessage)
+  if (!fs.existsSync(dirPath)) {
+    await mkdir(dirPath, { recursive: true })
   }
-  catch (error) {
-    console.error('Failed to write to log file:', error)
+
+  // Write to the log file
+  await appendFile(logFile, formattedMessage)
+}
+
+export function handleError(
+  err: string | Error | object | unknown,
+  options?: ErrorOptions | Record<string, any>,
+): Error {
+  let errorMessage: string
+  let contextData: Record<string, any> | undefined
+
+  // Check if options is a context object (not an ErrorOptions)
+  if (options
+    && typeof options === 'object'
+    && !('shouldExit' in options)
+    && !('silent' in options)
+    && !('message' in options)) {
+    contextData = options as Record<string, any>
+    options = undefined
   }
+
+  if (options && 'message' in options) {
+    // If options is provided with a message, use options.message as error message
+    errorMessage = options.message
+  }
+  else {
+    // If options is not provided or doesn't have a message, handle err based on its type
+    if (isString(err)) {
+      errorMessage = err
+    }
+    else if (err instanceof Error) {
+      // For Error objects, include both message and stack if available
+      errorMessage = err.stack || err.message
+    }
+    else {
+      // Stringify any other type of error
+      errorMessage = String(err)
+    }
+  }
+
+  // Build log message with context if available
+  let logMessage = `ERROR: ${stripAnsi(errorMessage)}`
+  if (contextData) {
+    logMessage += `\nContext: ${JSON.stringify(contextData, null, 2)}`
+  }
+
+  writeToLogFile(logMessage)
+
+  return ErrorHandler.handle(err, options as ErrorOptions)
 }

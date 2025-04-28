@@ -228,6 +228,7 @@ export const alias: Record<string, string> = {
   '~/config/ai': p.projectConfigPath('ai.ts'),
   '~/config/analytics': p.projectConfigPath('analytics.ts'),
   '~/config/app': p.projectConfigPath('app.ts'),
+  '~/config/broadcasting': p.projectConfigPath('broadcasting.ts'),
   '~/config/cache': p.projectConfigPath('cache.ts'),
   '~/config/cli': p.projectConfigPath('cli.ts'),
   '~/config/cloud': p.projectConfigPath('cloud.ts'),
@@ -235,7 +236,7 @@ export const alias: Record<string, string> = {
   '~/config/dns': p.projectConfigPath('dns.ts'),
   '~/config/docs': p.docsPath('config.ts'),
   '~/config/errors': p.projectConfigPath('errors.ts'),
-  '~/config/env': p.projectConfigPath('env.ts'),
+  '~/.env': p.projectConfigPath('env.ts'),
   '~/config/email': p.projectConfigPath('email.ts'),
   '~/config/git': p.projectConfigPath('git.ts'),
   '~/config/hashing': p.projectConfigPath('hashing.ts'),
@@ -258,4 +259,5 @@ export const alias: Record<string, string> = {
   '~/views': p.viewsPath(),
   '~/views/*': p.viewsPath('*'),
   '~/*': p.projectPath('*'),
+  '@/*': p.resourcesPath('*'),
 }

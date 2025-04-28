@@ -1,6 +1,7 @@
 import type { StacksOptions } from '@stacksjs/types'
-import defaults from './defaults'
-import overrides from './overrides'
+import { initializeDbConfig } from '../../database/src/utils'
+import { defaults } from './defaults'
+import { overrides } from './overrides'
 
 // merged defaults and overrides
 export const config: StacksOptions = {
@@ -8,9 +9,17 @@ export const config: StacksOptions = {
   ...overrides,
 }
 
+// Initialize the database config to avoid circular dependencies
+initializeDbConfig(config)
+
+export function getConfig(): StacksOptions {
+  return config
+}
+
 export const ai: StacksOptions['ai'] = config.ai
 export const analytics: StacksOptions['analytics'] = config.analytics
 export const app: StacksOptions['app'] = config.app
+export const broadcasting: StacksOptions['broadcasting'] = config.broadcasting
 export const cache: StacksOptions['cache'] = config.cache
 export const cloud: StacksOptions['cloud'] = config.cloud
 export const cli: StacksOptions['cli'] = config.cli
@@ -35,17 +44,18 @@ export const storage: StacksOptions['storage'] = config.storage
 export const team: StacksOptions['team'] = config.team
 export const ui: StacksOptions['ui'] = config.ui
 
+export * from './helpers'
 export { defaults, overrides }
 
-export * from './helpers'
+type AppEnv = 'dev' | 'stage' | 'prod' | string
 
-export function determineAppEnv(): string {
-  if (app.env === 'local')
+export function determineAppEnv(): AppEnv {
+  if (app.env === 'local' || app.env === 'development')
     return 'dev'
-  if (app.env === 'development')
-    return 'dev'
+
   if (app.env === 'staging')
     return 'stage'
+
   if (app.env === 'production')
     return 'prod'
 

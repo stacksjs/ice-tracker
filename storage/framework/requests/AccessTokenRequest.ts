@@ -1,6 +1,7 @@
+import type { schema } from '@stacksjs/validation'
 import type { AccessTokenRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
-import { customValidate, type schema, validateField } from '@stacksjs/validation'
+import { customValidate, validateField } from '@stacksjs/validation'
 
 interface ValidationField {
   rule: ReturnType<typeof schema.string>
@@ -15,20 +16,32 @@ interface RequestDataAccessToken {
   name: string
   token: string
   plain_text_token: string
-  abilities: string[]
+  abilities: string[] | string
+  last_used_at: date
+  expires_at: date
+  revoked_at: date
+  ip_address: string
+  device_name: string
+  is_single_use: boolean
   team_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class AccessTokenRequest extends Request<RequestDataAccessToken> implements AccessTokenRequestType {
   public id = 1
   public name = ''
   public token = ''
   public plain_text_token = ''
-  public abilities = ''
+  public abilities = []
+  public last_used_at = ''
+  public expires_at = ''
+  public revoked_at = ''
+  public ip_address = ''
+  public device_name = ''
+  public is_single_use = false
   public team_id = 0
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
@@ -40,4 +53,4 @@ export class AccessTokenRequest extends Request<RequestDataAccessToken> implemen
   }
 }
 
-export const accesstokenRequest = new AccessTokenRequest()
+export const accessTokenRequest = new AccessTokenRequest()

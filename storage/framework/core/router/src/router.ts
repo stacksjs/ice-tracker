@@ -7,6 +7,7 @@ import { path as p } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 import { kebabCase, pascalCase } from '@stacksjs/strings'
 import { customValidate, isObjectNotEmpty } from '@stacksjs/validation'
+import { staticRoute } from './'
 import { extractDefaultRequest, findRequestInstance } from './utils'
 
 type ActionPath = string
@@ -18,7 +19,7 @@ export class Router implements RouterInterface {
   private addRoute(
     method: Route['method'],
     uri: string,
-    callback: Route['callback'] | string | object,
+    callback: Route['callback'] | string,
     statusCode: StatusCode,
   ): this {
     const name = uri.replace(/\//g, '.').replace(/:/g, '') // we can improve this
@@ -59,8 +60,15 @@ export class Router implements RouterInterface {
     log.debug(`Normalized Path: ${this.path}`)
 
     const uri = this.prepareUri(this.path)
-
     log.debug(`Prepared URI: ${uri}`)
+
+    // If callback is a string and ends with .html, treat it as a view
+    if (typeof callback === 'string' && callback.endsWith('.html')) {
+      // Add to static manager
+      staticRoute.addHtmlFile(uri, callback)
+      // Register as a route for consistency
+      return this.addRoute('GET', uri, async () => callback, 200)
+    }
 
     return this.addRoute('GET', uri, callback, 200)
   }
@@ -95,8 +103,12 @@ export class Router implements RouterInterface {
   public async job(path: Route['url']): Promise<this> {
     path = pascalCase(path)
 
-    // removes the potential `JobJob` suffix in case the user does not choose to use the Job suffix in their file name
     const job = (await import(p.userJobsPath(`${path}.ts`))).default as Job
+
+    if (!job.handle) {
+      handleError(`Job at path ${path} does not have a handle method`)
+      return this
+    }
 
     return this.addRoute('GET', this.prepareUri(path), job.handle, 200)
   }
@@ -135,12 +147,20 @@ export class Router implements RouterInterface {
     return this.addRoute('POST', uri, callback, 201)
   }
 
-  public view(path: Route['url'], callback: Route['callback']): this {
+  public view(path: Route['url'], htmlFile: any): this {
     this.path = this.normalizePath(path)
-
     const uri = this.prepareUri(this.path)
 
-    return this.addRoute('GET', uri, callback, 200)
+    // Add to static manager
+    staticRoute.addHtmlFile(uri, htmlFile)
+
+    // Register as a route for consistency
+    return this.addRoute('GET', uri, async () => htmlFile, 200)
+  }
+
+  // New method to get static configuration
+  public getStaticConfig(): Record<string, any> {
+    return staticRoute.getStaticConfig()
   }
 
   public redirect(path: Route['url'], callback: Route['callback'], _status?: RedirectCode): this {
@@ -245,10 +265,14 @@ export class Router implements RouterInterface {
   }
 
   public async getRoutes(): Promise<Route[]> {
-    await import('../../../../../routes/api') // user routes
-    await import('../../../orm/routes') // auto-generated routes
+    await this.importRoutes()
 
     return this.routes
+  }
+
+  public async importRoutes(): Promise<void> {
+    await import('../../../../../routes/api') // user routes
+    await import('../../../orm/routes') // auto-generated routes
   }
 
   public async resolveCallback(callback: Route['callback']): Promise<Route['callback']> {

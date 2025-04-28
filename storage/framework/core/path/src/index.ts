@@ -1,3 +1,4 @@
+import type { ParsedPath } from 'node:path'
 import os from 'node:os'
 import {
   basename,
@@ -8,14 +9,13 @@ import {
   join,
   normalize,
   parse,
-  type ParsedPath,
+
   relative,
   resolve,
   sep,
   toNamespacedPath,
 } from 'node:path'
 import process from 'node:process'
-import { runCommandSync } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 
 /**
@@ -726,6 +726,7 @@ export function langPath(path?: string): string {
  * @param path - The relative path to the file or directory within the `layouts` directory.
  * @param options - Optional. An object containing configuration settings.
  * @param options.relative - If true, returns the path relative to the current working directory.
+ * @param options.defaults - If true, returns the path to the `defaults/layouts` directory.
  * @returns The absolute or relative path to the specified file or directory within the `layouts` directory.
  */
 export function layoutsPath(path?: string, options?: { relative?: boolean, defaults?: boolean }): string {
@@ -935,7 +936,7 @@ export function projectPath(filePath = '', options?: { relative: boolean }): str
  * @throws Error if the project with the specified name cannot be found.
  */
 export async function findProjectPath(project: string): Promise<string> {
-  const projectList = await runCommandSync('buddy projects:list --quiet')
+  const projectList = Bun.spawnSync(['buddy', 'projects:list', '--quiet']).stdout.toString()
   log.debug(`ProjectList in findProjectPath ${projectList}`)
 
   // get the list of all Stacks project paths (on the system)

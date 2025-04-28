@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/strings",
   "type": "module",
-  "version": "0.68.2",
+  "version": "0.70.23",
   "description": "The Stacks string utilities.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
@@ -55,8 +55,8 @@
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@types/validator": "^13.12.2",
+    "@types/validator": "^13.15.0",
     "macroable": "^7.0.2",
-    "validator": "^13.12.0"
+    "validator": "^13.15.0"
   }
 }

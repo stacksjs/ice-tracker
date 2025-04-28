@@ -1,12 +1,13 @@
 import type { Model, RelationConfig } from '@stacksjs/types'
-import { randomUUIDv7 } from 'bun'
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
-import { fetchOtherModelRelations, getModelName, getRelationType, getTableName } from '@stacksjs/orm'
+import { faker } from '@stacksjs/faker'
+import { fetchOtherModelRelations, findCoreModel, getModelName, getRelationType, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { makeHash } from '@stacksjs/security'
 import { fs } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
+import { globSync } from 'tinyglobby'
 
 async function seedModel(name: string, modelPath: string, model: Model) {
   if (model?.traits?.useSeeder === false || model?.traits?.seedable === false) {
@@ -25,8 +26,6 @@ async function seedModel(name: string, modelPath: string, model: Model) {
 
   const tableName = await getTableName(model, modelPath)
 
-  const ormModel = (await import(path.storagePath(`framework/orm/src/models/${name}`))).default
-
   const seedCount
     = typeof model.traits?.useSeeder === 'object' && model.traits?.useSeeder?.count ? model.traits.useSeeder.count : 10
 
@@ -36,6 +35,10 @@ async function seedModel(name: string, modelPath: string, model: Model) {
 
   const otherRelations = await fetchOtherModelRelations(modelName)
 
+  const modelInstance = await getModelInstance(modelName)
+
+  const useUuid = modelInstance?.traits?.useUuid || false
+
   for (let i = 0; i < seedCount; i++) {
     const record: any = {}
 
@@ -43,10 +46,10 @@ async function seedModel(name: string, modelPath: string, model: Model) {
       const formattedFieldName = snakeCase(fieldName)
       const field = model.attributes[fieldName]
 
-      // Use the factory function if available, otherwise leave the field undefined
+      // Pass faker to the factory function
       if (formattedFieldName === 'password')
         record[formattedFieldName] = field?.factory ? await makeHash('Test@123', { algorithm: 'bcrypt' }) : undefined
-      else record[formattedFieldName] = field?.factory ? field.factory() : undefined
+      else record[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
     }
 
     if (otherRelations?.length) {
@@ -64,20 +67,20 @@ async function seedModel(name: string, modelPath: string, model: Model) {
       }
     }
 
-    await ormModel.create(record)
+    if (useUuid)
+      record.uuid = Bun.randomUUIDv7()
+
+    await db.insertInto(tableName).values(record).executeTakeFirstOrThrow()
   }
+
+  log.info(`Successfully seeded ${italic(tableName)}`)
 }
 
 async function seedPivotRelation(relation: RelationConfig): Promise<any> {
   const record: any = {}
   const record2: any = {}
   const pivotRecord: any = {}
-  let modelInstance: Model
-
-  if (fs.existsSync(path.userModelsPath(`${relation?.model}.ts`)))
-    modelInstance = (await import(path.userModelsPath(`${relation?.model}.ts`))).default as Model
-  else
-    modelInstance = (await import(path.storagePath(`framework/defaults/models/${relation?.model}.ts`))).default as Model
+  const modelInstance = await getModelInstance(relation?.model)
 
   const relationModelInstance = (await import(path.userModelsPath(`${relation?.relationModel}.ts`))).default
 
@@ -96,28 +99,28 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
   for (const fieldName in relationModelInstance.attributes) {
     const formattedFieldName = snakeCase(fieldName)
     const field = relationModelInstance.attributes[fieldName]
-    // Use the factory function if available, otherwise leave the field undefined
+    // Pass faker to the factory function
     if (formattedFieldName === 'password')
       record[formattedFieldName] = field?.factory ? await makeHash('Test@123', { algorithm: 'bcrypt' }) : undefined
-    else record[formattedFieldName] = field?.factory ? field.factory() : undefined
+    else record[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
   }
 
   for (const fieldName in modelInstance.attributes) {
     const formattedFieldName = snakeCase(fieldName)
     const field = modelInstance.attributes[fieldName]
-    // Use the factory function if available, otherwise leave the field undefined
+    // Pass faker to the factory function
     if (formattedFieldName === 'password')
       record2[formattedFieldName] = field?.factory ? await makeHash('Test@123', { algorithm: 'bcrypt' }) : undefined
-    else record2[formattedFieldName] = field?.factory ? field.factory() : undefined
+    else record2[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
   }
 
   if (relationalModelUuid)
-    record.uuid = randomUUIDv7()
+    record.uuid = Bun.randomUUIDv7()
 
   const data = await db.insertInto(relationModelTable).values(record).executeTakeFirstOrThrow()
 
   if (useUuid)
-    record2.uuid = randomUUIDv7()
+    record2.uuid = Bun.randomUUIDv7()
 
   const data2 = await db.insertInto(relationTable).values(record2).executeTakeFirstOrThrow()
   const relationData = data.insertId || 1
@@ -126,8 +129,27 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
   pivotRecord[foreignKey] = relationData
   pivotRecord[modelKey] = modelData
 
+  if (useUuid)
+    pivotRecord.uuid = Bun.randomUUIDv7()
+
   if (pivotTable)
     await db.insertInto(pivotTable).values(pivotRecord).executeTakeFirstOrThrow()
+}
+
+async function getModelInstance(modelName: string): Promise<Model> {
+  let modelInstance: Model
+  let currentPath = path.userModelsPath(`${modelName}.ts`)
+
+  if (fs.existsSync(currentPath)) {
+    modelInstance = (await import(path.userModelsPath(`${modelName}.ts`))).default as Model
+  }
+  else {
+    currentPath = findCoreModel(`${modelName}.ts`)
+
+    modelInstance = (await import(currentPath)).default as Model
+  }
+
+  return modelInstance
 }
 
 async function seedModelRelation(modelName: string): Promise<bigint | number> {
@@ -138,11 +160,11 @@ async function seedModelRelation(modelName: string): Promise<bigint | number> {
     modelInstance = (await import(path.userModelsPath(`${modelName}.ts`))).default as Model
   }
   else {
-    currentPath = path.storagePath(`framework/defaults/models/${modelName}.ts`)
+    currentPath = findCoreModel(`${modelName}.ts`)
     modelInstance = (await import(currentPath)).default as Model
   }
 
-  if (!modelInstance)
+  if (modelInstance === null || modelInstance === undefined)
     return 1
 
   const record: any = {}
@@ -153,39 +175,21 @@ async function seedModelRelation(modelName: string): Promise<bigint | number> {
   for (const fieldName in modelInstance.attributes) {
     const formattedFieldName = snakeCase(fieldName)
     const field = modelInstance.attributes[fieldName]
-    // Use the factory function if available, otherwise leave the field undefined
-
+    // Pass faker to the factory function
     if (formattedFieldName === 'password')
-      record[formattedFieldName] = field?.factory ? await makeHash(field.factory(), { algorithm: 'bcrypt' }) : undefined
-    else record[formattedFieldName] = field?.factory ? field.factory() : undefined
+      record[formattedFieldName] = field?.factory ? await makeHash(field.factory(faker), { algorithm: 'bcrypt' }) : undefined
+    else record[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
   }
 
   if (useUuid)
-    record.uuid = randomUUIDv7()
+    record.uuid = Bun.randomUUIDv7()
 
   const data = await db.insertInto(tableName).values(record).executeTakeFirstOrThrow()
 
-  return data.insertId || 1
+  return (Number(data.insertId) || Number(data.numInsertedOrUpdatedRows)) || 1
 }
 
 export async function seed(): Promise<void> {
-  // TODO: need to check other databases too
-  // const dbPath = path.userDatabasePath('stacks.sqlite')
-
-  // if (!fs.existsSync(dbPath)) {
-  //   log.warn('No database found, configuring it...')
-  //   // first, ensure the database is reset
-  //   await resetDatabase()
-
-  //   // then, generate the migrations
-  //   await generateMigrations()
-
-  //   // finally, migrate the database
-  //   await runDatabaseMigration()
-  // } else {
-  //   log.debug('Database configured...')
-  // }
-
   // if a custom seeder exists, use it instead
   const customSeederPath = path.userDatabasePath('seeder.ts')
   if (fs.existsSync(customSeederPath)) {
@@ -193,12 +197,17 @@ export async function seed(): Promise<void> {
     await import(customSeederPath)
   }
 
-  // otherwise, seed all models
+  // Recursively find all .ts model files
   const modelsDir = path.userModelsPath()
   const coreModelsDir = path.storagePath('framework/defaults/models')
-  const modelFiles = fs.readdirSync(modelsDir).filter(file => file.endsWith('.ts'))
-  const coreModelFiles = fs.readdirSync(coreModelsDir).filter(file => file.endsWith('.ts'))
 
+  // Use glob to find all .ts files recursively in core models
+  const coreModelFiles = globSync(`${coreModelsDir}/**/*.ts`, { absolute: true })
+
+  // Original user models seeding
+  const modelFiles = fs.readdirSync(modelsDir).filter(file => file.endsWith('.ts'))
+
+  // Seed user models (keeping original implementation)
   for (const file of modelFiles) {
     const modelPath = path.join(modelsDir, file)
     const model = await import(modelPath)
@@ -206,10 +215,10 @@ export async function seed(): Promise<void> {
     await seedModel(file, modelPath, model.default)
   }
 
-  for (const coreModel of coreModelFiles) {
-    const coreModelPath = path.join(coreModelsDir, coreModel)
+  // Seed core models with recursive file finding
+  for (const coreModelPath of coreModelFiles) {
     const modelCore = await import(coreModelPath)
 
-    await seedModel(coreModel, coreModelPath, modelCore.default)
+    await seedModel(path.basename(coreModelPath), coreModelPath, modelCore.default)
   }
 }

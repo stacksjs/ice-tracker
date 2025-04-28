@@ -1,6 +1,7 @@
+import type { schema } from '@stacksjs/validation'
 import type { TeamRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
-import { customValidate, type schema, validateField } from '@stacksjs/validation'
+import { customValidate, validateField } from '@stacksjs/validation'
 
 interface ValidationField {
   rule: ReturnType<typeof schema.string>
@@ -20,8 +21,9 @@ interface RequestDataTeam {
   description: string
   path: string
   is_personal: boolean
-  created_at?: Date
-  updated_at?: Date
+  user_id: number
+  created_at?: string
+  updated_at?: string
 }
 export class TeamRequest extends Request<RequestDataTeam> implements TeamRequestType {
   public id = 1
@@ -33,8 +35,9 @@ export class TeamRequest extends Request<RequestDataTeam> implements TeamRequest
   public description = ''
   public path = ''
   public is_personal = false
-  public created_at = new Date()
-  public updated_at = new Date()
+  public user_id = 0
+  public created_at = ''
+  public updated_at = ''
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

@@ -39,7 +39,7 @@ export const dashboardConfig: ViteConfig = {
     VueRouter({
       extensions: ['.stx', '.vue', '.md'],
       dts: p.frameworkPath('types/dashboard-router.d.ts'),
-      routesFolder: [p.resourcesPath('views/dashboard')],
+      routesFolder: [p.resourcesPath('views/dashboard'), p.frameworkPath('defaults/views/dashboard')],
       logs: config.app.debug || false,
     }),
 
@@ -55,9 +55,6 @@ export const dashboardConfig: ViteConfig = {
     // pwa(),
     // devtools(),
     i18n(),
-
-    // https://github.com/feat-agency/vite-plugin-webfont-dl
-    // fonts(),
   ],
 
   // https://github.com/antfu/vite-ssg

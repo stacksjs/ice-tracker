@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/commerce",
   "type": "module",
-  "version": "0.68.2",
+  "version": "0.70.23",
   "description": "Stacks ecommerce utilities.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
@@ -32,6 +32,9 @@
     "build": "bun build.ts",
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "ts-spreadsheets": "^0.2.0"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

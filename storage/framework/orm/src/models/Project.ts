@@ -1,24 +1,32 @@
-import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import { cache } from '@stacksjs/cache'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/orm'
 import { sql } from '@stacksjs/database'
-import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { dispatch } from '@stacksjs/events'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { HttpError } from '@stacksjs/error-handling'
+import { DB } from '@stacksjs/orm'
+import { BaseOrm } from '../utils/base'
 
 export interface ProjectsTable {
-  id?: number
-  name?: string
-  description?: string
-  url?: string
-  status?: string
+  id: Generated<number>
+  name: string
+  description: string
+  url: string
+  status: string
 
-  created_at?: Date
+  created_at?: string
 
-  updated_at?: Date
+  updated_at?: string
 
 }
 
-interface ProjectResponse {
+// Type for reading model data (created_at is required)
+export type ProjectRead = ProjectsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type ProjectWrite = Omit<ProjectsTable, 'created_at'> & {
+  created_at?: string
+}
+
+export interface ProjectResponse {
   data: ProjectJsonResponse[]
   paging: {
     total_records: number
@@ -28,40 +36,36 @@ interface ProjectResponse {
   next_cursor: number | null
 }
 
-export interface ProjectJsonResponse extends Omit<ProjectsTable, 'password'> {
+export interface ProjectJsonResponse extends Omit<Selectable<ProjectRead>, 'password'> {
   [key: string]: any
 }
 
-export type ProjectType = Selectable<ProjectsTable>
-export type NewProject = Partial<Insertable<ProjectsTable>>
-export type ProjectUpdate = Updateable<ProjectsTable>
+export type NewProject = Insertable<ProjectWrite>
+export type ProjectUpdate = Updateable<ProjectWrite>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: ProjectType, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
-export class ProjectModel {
+export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJsonResponse> {
   private readonly hidden: Array<keyof ProjectJsonResponse> = []
   private readonly fillable: Array<keyof ProjectJsonResponse> = ['name', 'description', 'url', 'status', 'uuid']
   private readonly guarded: Array<keyof ProjectJsonResponse> = []
-  protected attributes: Partial<ProjectType> = {}
-  protected originalAttributes: Partial<ProjectType> = {}
+  protected attributes = {} as ProjectJsonResponse
+  protected originalAttributes = {} as ProjectJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(project: Partial<ProjectType> | null) {
+  /**
+   * This model inherits many query methods from BaseOrm:
+   * - pluck, chunk, whereExists, has, doesntHave, whereHas, whereDoesntHave
+   * - inRandomOrder, max, min, avg, paginate, get, and more
+   *
+   * See BaseOrm class for the full list of inherited methods.
+   */
+
+  constructor(project: ProjectJsonResponse | undefined) {
+    super('projects')
     if (project) {
       this.attributes = { ...project }
       this.originalAttributes = { ...project }
@@ -78,34 +82,119 @@ export class ProjectModel {
     this.updateFromQuery = DB.instance.updateTable('projects')
     this.deleteFromQuery = DB.instance.deleteFrom('projects')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
-  get id(): number | undefined {
+  protected async loadRelations(models: ProjectJsonResponse | ProjectJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('project_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: ProjectJsonResponse) => {
+          const records = relatedRecords.filter((record: { project_id: number }) => {
+            return record.project_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { project_id: number }) => {
+          return record.project_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
+  protected mapCustomGetters(models: ProjectJsonResponse | ProjectJsonResponse[]): void {
+    const data = models
+
+    if (Array.isArray(data)) {
+      data.map((model: ProjectJsonResponse) => {
+        const customGetter = {
+          default: () => {
+          },
+
+        }
+
+        for (const [key, fn] of Object.entries(customGetter)) {
+          (model as any)[key] = fn()
+        }
+
+        return model
+      })
+    }
+    else {
+      const model = data
+
+      const customGetter = {
+        default: () => {
+        },
+
+      }
+
+      for (const [key, fn] of Object.entries(customGetter)) {
+        (model as any)[key] = fn()
+      }
+    }
+  }
+
+  async mapCustomSetters(model: NewProject | ProjectUpdate): Promise<void> {
+    const customSetter = {
+      default: () => {
+      },
+
+    }
+
+    for (const [key, fn] of Object.entries(customSetter)) {
+      (model as any)[key] = await fn()
+    }
+  }
+
+  get id(): number {
     return this.attributes.id
   }
 
-  get name(): string | undefined {
+  get name(): string {
     return this.attributes.name
   }
 
-  get description(): string | undefined {
+  get description(): string {
     return this.attributes.description
   }
 
-  get url(): string | undefined {
+  get url(): string {
     return this.attributes.url
   }
 
-  get status(): string | undefined {
+  get status(): string {
     return this.attributes.status
   }
 
-  get created_at(): Date | undefined {
+  get created_at(): string | undefined {
     return this.attributes.created_at
   }
 
-  get updated_at(): Date | undefined {
+  get updated_at(): string | undefined {
     return this.attributes.updated_at
   }
 
@@ -125,590 +214,486 @@ export class ProjectModel {
     this.attributes.status = value
   }
 
-  set updated_at(value: Date) {
+  set updated_at(value: string) {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ProjectType): Partial<ProjectType> | any {
-    if (column) {
-      return this.originalAttributes[column]
-    }
+  static select(params: (keyof ProjectJsonResponse)[] | RawBuilder<string> | string): ProjectModel {
+    const instance = new ProjectModel(undefined)
 
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<ProjectJsonResponse> {
-    return this.fillable.reduce<Partial<ProjectJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof ProjectsTable]
-      const originalValue = this.originalAttributes[key as keyof ProjectsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
-  isDirty(column?: keyof ProjectType): boolean {
-    if (column) {
-      return this.attributes[column] !== this.originalAttributes[column]
-    }
-
-    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
-      const currentValue = (this.attributes as any)[key]
-
-      return currentValue !== originalValue
-    })
-  }
-
-  isClean(column?: keyof ProjectType): boolean {
-    return !this.isDirty(column)
-  }
-
-  wasChanged(column?: keyof ProjectType): boolean {
-    return this.hasSaved && this.isDirty(column)
-  }
-
-  select(params: (keyof ProjectType)[] | RawBuilder<string> | string): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
-  }
-
-  static select(params: (keyof ProjectType)[] | RawBuilder<string> | string): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    // Initialize a query with the table name and selected fields
-    instance.selectFromQuery = instance.selectFromQuery.select(params)
-
-    instance.hasSelect = true
-
-    return instance
-  }
-
-  async applyFind(id: number): Promise<ProjectModel | undefined> {
-    const model = await DB.instance.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new ProjectModel(result as ProjectType)
-
-    cache.getOrSet(`project:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<ProjectModel | undefined> {
-    return await this.applyFind(id)
+    return instance.applySelect(params)
   }
 
   // Method to find a Project by ID
   static async find(id: number): Promise<ProjectModel | undefined> {
-    const instance = new ProjectModel(null)
+    const query = DB.instance.selectFrom('projects').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
-  }
+    const model = await query.executeTakeFirst()
 
-  async first(): Promise<ProjectModel | undefined> {
-    return await ProjectModel.first()
+    if (!model)
+      return undefined
+
+    const instance = new ProjectModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<ProjectModel | undefined> {
-    const model = await DB.instance.selectFrom('projects')
+    const instance = new ProjectModel(undefined)
+
+    const model = await instance.applyFirst()
+
+    const data = new ProjectModel(model)
+
+    return data
+  }
+
+  static async last(): Promise<ProjectModel | undefined> {
+    const instance = new ProjectModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new ProjectModel(model)
+  }
+
+  static async firstOrFail(): Promise<ProjectModel | undefined> {
+    const instance = new ProjectModel(undefined)
+
+    return await instance.applyFirstOrFail()
+  }
+
+  static async all(): Promise<ProjectModel[]> {
+    const instance = new ProjectModel(undefined)
+
+    const models = await DB.instance.selectFrom('projects').selectAll().execute()
+
+    instance.mapCustomGetters(models)
+
+    const data = await Promise.all(models.map(async (model: ProjectJsonResponse) => {
+      return new ProjectModel(model)
+    }))
+
+    return data
+  }
+
+  static async findOrFail(id: number): Promise<ProjectModel | undefined> {
+    const instance = new ProjectModel(undefined)
+
+    return await instance.applyFindOrFail(id)
+  }
+
+  static async findMany(ids: number[]): Promise<ProjectModel[]> {
+    const instance = new ProjectModel(undefined)
+
+    const models = await instance.applyFindMany(ids)
+
+    return models.map((modelItem: ProjectJsonResponse) => instance.parseResult(new ProjectModel(modelItem)))
+  }
+
+  static async latest(column: keyof ProjectsTable = 'created_at'): Promise<ProjectModel | undefined> {
+    const instance = new ProjectModel(undefined)
+
+    const model = await instance.selectFromQuery
       .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
       .executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new ProjectModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ProjectModel(result as ProjectType)
-
-    return data
+    return new ProjectModel(model)
   }
 
-  async firstOrFail(): Promise<ProjectModel | undefined> {
-    return await ProjectModel.firstOrFail()
-  }
+  static async oldest(column: keyof ProjectsTable = 'created_at'): Promise<ProjectModel | undefined> {
+    const instance = new ProjectModel(undefined)
 
-  static async firstOrFail(): Promise<ProjectModel | undefined> {
-    const instance = new ProjectModel(null)
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
 
-    const model = await instance.selectFromQuery.executeTakeFirst()
+    if (!model)
+      return undefined
 
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ProjectModel results found for query')
-
-    const result = await instance.mapWith(model)
-
-    const data = new ProjectModel(result as ProjectType)
-
-    return data
-  }
-
-  async mapWith(model: ProjectType): Promise<ProjectType> {
-    return model
-  }
-
-  static async all(): Promise<ProjectModel[]> {
-    const models = await DB.instance.selectFrom('projects').selectAll().execute()
-
-    const data = await Promise.all(models.map(async (model: ProjectType) => {
-      const instance = new ProjectModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new ProjectModel(results)
-    }))
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<ProjectModel> {
-    return await ProjectModel.findOrFail(id)
-  }
-
-  static async findOrFail(id: number): Promise<ProjectModel> {
-    const model = await DB.instance.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
-
-    const instance = new ProjectModel(null)
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No ProjectModel results for ${id}`)
-
-    cache.getOrSet(`project:${id}`, JSON.stringify(model))
-
-    const result = await instance.mapWith(model)
-
-    const data = new ProjectModel(result as ProjectType)
-
-    return data
-  }
-
-  static async findMany(ids: number[]): Promise<ProjectModel[]> {
-    let query = DB.instance.selectFrom('projects').where('id', 'in', ids)
-
-    const instance = new ProjectModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.execute()
-
-    return model.map((modelItem: ProjectModel) => instance.parseResult(new ProjectModel(modelItem)))
-  }
-
-  skip(count: number): ProjectModel {
-    return ProjectModel.skip(count)
+    return new ProjectModel(model)
   }
 
   static skip(count: number): ProjectModel {
-    const instance = new ProjectModel(null)
+    const instance = new ProjectModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
-  }
-
-  async chunk(size: number, callback: (models: ProjectModel[]) => Promise<void>): Promise<void> {
-    await ProjectModel.chunk(size, callback)
-  }
-
-  static async chunk(size: number, callback: (models: ProjectModel[]) => Promise<void>): Promise<void> {
-    let page = 1
-    let hasMore = true
-
-    while (hasMore) {
-      const instance = new ProjectModel(null)
-
-      // Get one batch
-      const models = await instance.selectFromQuery
-        .limit(size)
-        .offset((page - 1) * size)
-        .execute()
-
-      // If we got fewer results than chunk size, this is the last batch
-      if (models.length < size) {
-        hasMore = false
-      }
-
-      // Process this batch
-      if (models.length > 0) {
-        await callback(models)
-      }
-
-      page++
-    }
-  }
-
-  take(count: number): ProjectModel {
-    return ProjectModel.take(count)
+    return instance.applySkip(count)
   }
 
   static take(count: number): ProjectModel {
-    const instance = new ProjectModel(null)
+    const instance = new ProjectModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
-  static async pluck<K extends keyof ProjectModel>(field: K): Promise<ProjectModel[K][]> {
-    const instance = new ProjectModel(null)
+  static where<V = string>(column: keyof ProjectsTable, ...args: [V] | [Operator, V]): ProjectModel {
+    const instance = new ProjectModel(undefined)
 
-    if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
-      return model.map((modelItem: ProjectModel) => modelItem[field])
-    }
-
-    const model = await instance.selectFromQuery.selectAll().execute()
-
-    return model.map((modelItem: ProjectModel) => modelItem[field])
+    return instance.applyWhere<V>(column, ...args)
   }
 
-  async pluck<K extends keyof ProjectModel>(field: K): Promise<ProjectModel[K][]> {
-    return ProjectModel.pluck(field)
+  static orWhere(...conditions: [string, any][]): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof ProjectsTable, values: V[]): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
+  static whereBetween<V = number>(column: keyof ProjectsTable, range: [V, V]): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof ProjectsTable, ...args: string[]): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: ProjectModel) => ProjectModel): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof ProjectsTable): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof ProjectsTable): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhereNotNull(column)
+  }
+
+  static whereLike(column: keyof ProjectsTable, value: string): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof ProjectsTable, order: 'asc' | 'desc'): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof ProjectsTable): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof ProjectsTable): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof ProjectsTable): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof ProjectsTable, operator: Operator, value: V): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
+  }
+
+  static inRandomOrder(): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof ProjectsTable, operator: Operator, second: keyof ProjectsTable): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
+  }
+
+  static async max(field: keyof ProjectsTable): Promise<number> {
+    const instance = new ProjectModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof ProjectsTable): Promise<number> {
+    const instance = new ProjectModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof ProjectsTable): Promise<number> {
+    const instance = new ProjectModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof ProjectsTable): Promise<number> {
+    const instance = new ProjectModel(undefined)
+
+    return await instance.applySum(field)
   }
 
   static async count(): Promise<number> {
-    const instance = new ProjectModel(null)
+    const instance = new ProjectModel(undefined)
 
-    const result = await instance.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
-
-    return result.count || 0
-  }
-
-  async count(): Promise<number> {
-    const result = await this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
-
-    return result.count || 0
-  }
-
-  async max(field: keyof ProjectModel): Promise<number> {
-    return await this.selectFromQuery
-      .select(sql`MAX(${sql.raw(field as string)}) `)
-      .executeTakeFirst()
-  }
-
-  async min(field: keyof ProjectModel): Promise<number> {
-    return await this.selectFromQuery
-      .select(sql`MIN(${sql.raw(field as string)}) `)
-      .executeTakeFirst()
-  }
-
-  async avg(field: keyof ProjectModel): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`AVG(${sql.raw(field as string)})`)
-      .executeTakeFirst()
-  }
-
-  async sum(field: keyof ProjectModel): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`SUM(${sql.raw(field as string)})`)
-      .executeTakeFirst()
-  }
-
-  async applyGet(): Promise<ProjectModel[]> {
-    let models
-
-    if (this.hasSelect) {
-      models = await this.selectFromQuery.execute()
-    }
-    else {
-      models = await this.selectFromQuery.selectAll().execute()
-    }
-
-    const data = await Promise.all(models.map(async (model: ProjectModel) => {
-      const instance = new ProjectModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new ProjectModel(results)
-    }))
-
-    return data
-  }
-
-  async get(): Promise<ProjectModel[]> {
-    return await this.applyGet()
+    return instance.applyCount()
   }
 
   static async get(): Promise<ProjectModel[]> {
-    const instance = new ProjectModel(null)
+    const instance = new ProjectModel(undefined)
 
-    return await instance.applyGet()
+    const results = await instance.applyGet()
+
+    return results.map((item: ProjectJsonResponse) => instance.createInstance(item))
   }
 
-  has(relation: string): ProjectModel {
-    return ProjectModel.has(relation)
+  static async pluck<K extends keyof ProjectModel>(field: K): Promise<ProjectModel[K][]> {
+    const instance = new ProjectModel(undefined)
+
+    return await instance.applyPluck(field)
   }
 
-  static has(relation: string): ProjectModel {
-    const instance = new ProjectModel(null)
+  static async chunk(size: number, callback: (models: ProjectModel[]) => Promise<void>): Promise<void> {
+    const instance = new ProjectModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.project_id`, '=', 'projects.id'),
-      ),
-    )
-
-    return instance
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: ProjectJsonResponse) => instance.createInstance(item))
+      await callback(modelInstances)
+    })
   }
 
-  static whereExists(callback: (qb: any) => any): ProjectModel {
-    const instance = new ProjectModel(null)
+  static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
+    data: ProjectModel[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }> {
+    const instance = new ProjectModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(callback({ exists, selectFrom })),
-    )
-
-    return instance
-  }
-
-  whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): ProjectModel {
-    return ProjectModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): ProjectModel {
-    const instance = new ProjectModel(null)
-    const subqueryBuilder = new SubqueryBuilder()
-
-    callback(subqueryBuilder)
-    const conditions = subqueryBuilder.getConditions()
-
-    instance.selectFromQuery = instance.selectFromQuery
-      .where(({ exists, selectFrom }: any) => {
-        let subquery = selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.project_id`, '=', 'projects.id')
-
-        conditions.forEach((condition) => {
-          switch (condition.method) {
-            case 'where':
-              if (condition.type === 'and') {
-                subquery = subquery.where(condition.column, condition.operator!, condition.value)
-              }
-              else {
-                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
-              }
-              break
-
-            case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
-              }
-              else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
-              }
-
-              break
-
-            case 'whereNull':
-              subquery = subquery.whereNull(condition.column)
-              break
-
-            case 'whereNotNull':
-              subquery = subquery.whereNotNull(condition.column)
-              break
-
-            case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
-              break
-
-            case 'whereExists': {
-              const nestedBuilder = new SubqueryBuilder()
-              condition.callback!(nestedBuilder)
-              break
-            }
-          }
-        })
-
-        return exists(subquery)
-      })
-
-    return instance
-  }
-
-  applyDoesntHave(relation: string): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
-      not(
-        exists(
-          selectFrom(relation)
-            .select('1')
-            .whereRef(`${relation}.project_id`, '=', 'projects.id'),
-        ),
-      ),
-    )
-
-    return this
-  }
-
-  doesntHave(relation: string): ProjectModel {
-    return this.applyDoesntHave(relation)
-  }
-
-  static doesntHave(relation: string): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    return instance.doesntHave(relation)
-  }
-
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ProjectModel {
-    const subqueryBuilder = new SubqueryBuilder()
-
-    callback(subqueryBuilder)
-    const conditions = subqueryBuilder.getConditions()
-
-    this.selectFromQuery = this.selectFromQuery
-      .where(({ exists, selectFrom, not }: any) => {
-        let subquery = selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.project_id`, '=', 'projects.id')
-
-        conditions.forEach((condition) => {
-          switch (condition.method) {
-            case 'where':
-              if (condition.type === 'and') {
-                subquery = subquery.where(condition.column, condition.operator!, condition.value)
-              }
-              else {
-                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
-              }
-              break
-
-            case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
-              }
-              else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
-              }
-
-              break
-
-            case 'whereNull':
-              subquery = subquery.whereNull(condition.column)
-              break
-
-            case 'whereNotNull':
-              subquery = subquery.whereNotNull(condition.column)
-              break
-
-            case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
-              break
-
-            case 'whereExists': {
-              const nestedBuilder = new SubqueryBuilder()
-              condition.callback!(nestedBuilder)
-              break
-            }
-          }
-        })
-
-        return not(exists(subquery))
-      })
-
-    return this
-  }
-
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ProjectModel {
-    return this.applyWhereDoesntHave(relation, callback)
-  }
-
-  static whereDoesntHave(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    return instance.applyWhereDoesntHave(relation, callback)
-  }
-
-  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProjectResponse> {
-    const totalRecordsResult = await DB.instance.selectFrom('projects')
-      .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    const projectsWithExtra = await DB.instance.selectFrom('projects')
-      .selectAll()
-      .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
-      .limit((options.limit ?? 10) + 1) // Fetch one extra record
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (projectsWithExtra.length > (options.limit ?? 10))
-      nextCursor = projectsWithExtra.pop()?.id ?? null
+    const result = await instance.applyPaginate(options)
 
     return {
-      data: projectsWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
+      data: result.data.map((item: ProjectJsonResponse) => instance.createInstance(item)),
+      paging: result.paging,
+      next_cursor: result.next_cursor,
     }
   }
 
-  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProjectResponse> {
-    return await this.applyPaginate(options)
+  // Instance method for creating model instances
+  createInstance(data: ProjectJsonResponse): ProjectModel {
+    return new ProjectModel(data)
   }
 
-  // Method to get all projects
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProjectResponse> {
-    const instance = new ProjectModel(null)
-
-    return await instance.applyPaginate(options)
-  }
-
-  static async create(newProject: NewProject): Promise<ProjectModel> {
-    const instance = new ProjectModel(null)
-
+  async applyCreate(newProject: NewProject): Promise<ProjectModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newProject).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewProject
+
+    await this.mapCustomSetters(filteredValues)
 
     const result = await DB.instance.insertInto('projects')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ProjectModel
+    const model = await DB.instance.selectFrom('projects')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    if (model)
-      dispatch('project:created', model)
+    if (!model) {
+      throw new HttpError(500, 'Failed to retrieve created Project')
+    }
 
-    return model
+    return this.createInstance(model)
+  }
+
+  async create(newProject: NewProject): Promise<ProjectModel> {
+    return await this.applyCreate(newProject)
+  }
+
+  static async create(newProject: NewProject): Promise<ProjectModel> {
+    const instance = new ProjectModel(undefined)
+    return await instance.applyCreate(newProject)
+  }
+
+  static async firstOrCreate(search: Partial<ProjectsTable>, values: NewProject = {} as NewProject): Promise<ProjectModel> {
+    // First try to find a record matching the search criteria
+    const instance = new ProjectModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return instance.createInstance(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewProject
+    return await ProjectModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<ProjectsTable>, values: NewProject = {} as NewProject): Promise<ProjectModel> {
+    // First try to find a record matching the search criteria
+    const instance = new ProjectModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = instance.createInstance(existingRecord)
+      const updatedModel = await model.update(values as ProjectUpdate)
+
+      // Return the updated model instance
+      if (updatedModel) {
+        return updatedModel
+      }
+
+      // If update didn't return a model, fetch it again to ensure we have latest data
+      const refreshedModel = await instance.applyFirst()
+      return instance.createInstance(refreshedModel!)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewProject
+    return await ProjectModel.create(createData)
+  }
+
+  async update(newProject: ProjectUpdate): Promise<ProjectModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newProject).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as ProjectUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    filteredValues.updated_at = new Date().toISOString()
+
+    await DB.instance.updateTable('projects')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      // Get the updated data
+      const model = await DB.instance.selectFrom('projects')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!model) {
+        throw new HttpError(500, 'Failed to retrieve updated Project')
+      }
+
+      return this.createInstance(model)
+    }
+
+    return undefined
+  }
+
+  async forceUpdate(newProject: ProjectUpdate): Promise<ProjectModel | undefined> {
+    await DB.instance.updateTable('projects')
+      .set(newProject)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      // Get the updated data
+      const model = await DB.instance.selectFrom('projects')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!model) {
+        throw new HttpError(500, 'Failed to retrieve updated Project')
+      }
+
+      return this.createInstance(model)
+    }
+
+    return undefined
+  }
+
+  async save(): Promise<ProjectModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('projects')
+        .set(this.attributes as ProjectUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      // Get the updated data
+      const model = await DB.instance.selectFrom('projects')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!model) {
+        throw new HttpError(500, 'Failed to retrieve updated Project')
+      }
+
+      return this.createInstance(model)
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('projects')
+        .values(this.attributes as NewProject)
+        .executeTakeFirst()
+
+      // Get the created data
+      const model = await DB.instance.selectFrom('projects')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!model) {
+        throw new HttpError(500, 'Failed to retrieve created Project')
+      }
+
+      return this.createInstance(model)
+    }
   }
 
   static async createMany(newProject: NewProject[]): Promise<void> {
-    const instance = new ProjectModel(null)
+    const instance = new ProjectModel(undefined)
 
     const valuesFiltered = newProject.map((newProject: NewProject) => {
       const filteredValues = Object.fromEntries(
@@ -730,174 +715,39 @@ export class ProjectModel {
       .values(newProject)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ProjectModel
+    const instance = new ProjectModel(undefined)
+    const model = await DB.instance.selectFrom('projects')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!model) {
+      throw new HttpError(500, 'Failed to retrieve created Project')
+    }
+
+    return instance.createInstance(model)
   }
 
   // Method to remove a Project
+  async delete(): Promise<number> {
+    if (this.id === undefined)
+      this.deleteFromQuery.execute()
+
+    const deleted = await DB.instance.deleteFrom('projects')
+      .where('id', '=', this.id)
+      .execute()
+
+    return deleted.numDeletedRows
+  }
+
   static async remove(id: number): Promise<any> {
     return await DB.instance.deleteFrom('projects')
       .where('id', '=', id)
       .execute()
   }
 
-  applyWhere(instance: ProjectModel, column: string, ...args: any[]): ProjectModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
-
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
-
-    return instance
-  }
-
-  where(column: string, ...args: any[]): ProjectModel {
-    return this.applyWhere(this, column, ...args)
-  }
-
-  static where(column: string, ...args: any[]): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    return instance.applyWhere(instance, column, ...args)
-  }
-
-  whereColumn(first: string, operator: string, second: string): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
-
-    return this
-  }
-
-  static whereColumn(first: string, operator: string, second: string): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
-
-    return instance
-  }
-
-  whereRef(column: string, ...args: string[]): ProjectModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
-
-    const instance = new ProjectModel(null)
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
-
-    return instance
-  }
-
-  whereRef(column: string, ...args: string[]): ProjectModel {
-    return this.whereRef(column, ...args)
-  }
-
-  static whereRef(column: string, ...args: string[]): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    return instance.whereRef(column, ...args)
-  }
-
-  whereRaw(sqlStatement: string): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
-
-    return this
-  }
-
-  static whereRaw(sqlStatement: string): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
-
-    return instance
-  }
-
-  orWhere(...conditions: [string, any][]): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    return this
-  }
-
-  static orWhere(...conditions: [string, any][]): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    return instance
-  }
-
-  when(
-    condition: boolean,
-    callback: (query: ProjectModel) => ProjectModel,
-  ): ProjectModel {
-    return ProjectModel.when(condition, callback)
-  }
-
-  static when(
-    condition: boolean,
-    callback: (query: ProjectModel) => ProjectModel,
-  ): ProjectModel {
-    let instance = new ProjectModel(null)
-
-    if (condition)
-      instance = callback(instance)
-
-    return instance
-  }
-
-  whereNull(column: string): ProjectModel {
-    return ProjectModel.whereNull(column)
-  }
-
-  static whereNull(column: string): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return instance
-  }
-
   static whereName(value: string): ProjectModel {
-    const instance = new ProjectModel(null)
+    const instance = new ProjectModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
@@ -905,7 +755,7 @@ export class ProjectModel {
   }
 
   static whereDescription(value: string): ProjectModel {
-    const instance = new ProjectModel(null)
+    const instance = new ProjectModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
 
@@ -913,7 +763,7 @@ export class ProjectModel {
   }
 
   static whereUrl(value: string): ProjectModel {
-    const instance = new ProjectModel(null)
+    const instance = new ProjectModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('url', '=', value)
 
@@ -921,443 +771,33 @@ export class ProjectModel {
   }
 
   static whereStatus(value: string): ProjectModel {
-    const instance = new ProjectModel(null)
+    const instance = new ProjectModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
     return instance
   }
 
-  whereIn(column: keyof ProjectType, values: any[]): ProjectModel {
-    return ProjectModel.whereIn(column, values)
+  static whereIn<V = number>(column: keyof ProjectsTable, values: V[]): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
   }
 
-  static whereIn(column: keyof ProjectType, values: any[]): ProjectModel {
-    const instance = new ProjectModel(null)
+  static distinct(column: keyof ProjectJsonResponse): ProjectModel {
+    const instance = new ProjectModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-
-    return instance
-  }
-
-  whereBetween(column: keyof ProjectType, range: [any, any]): ProjectModel {
-    return ProjectModel.whereBetween(column, range)
-  }
-
-  whereLike(column: keyof ProjectType, value: string): ProjectModel {
-    return ProjectModel.whereLike(column, value)
-  }
-
-  static whereLike(column: keyof ProjectType, value: string): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    return instance
-  }
-
-  static whereBetween(column: keyof ProjectType, range: [any, any]): ProjectModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const instance = new ProjectModel(null)
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    instance.selectFromQuery = instance.selectFromQuery.where(query)
-    instance.updateFromQuery = instance.updateFromQuery.where(query)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(query)
-
-    return instance
-  }
-
-  whereNotIn(column: keyof ProjectType, values: any[]): ProjectModel {
-    return ProjectModel.whereNotIn(column, values)
-  }
-
-  static whereNotIn(column: keyof ProjectType, values: any[]): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
-
-    return instance
-  }
-
-  async exists(): Promise<boolean> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    return model !== null || model !== undefined
-  }
-
-  static async latest(): Promise<ProjectType | undefined> {
-    const model = await DB.instance.selectFrom('projects')
-      .selectAll()
-      .orderBy('created_at', 'desc')
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new ProjectModel(null)
-    const result = await instance.mapWith(model)
-    const data = new ProjectModel(result as ProjectType)
-
-    return data
-  }
-
-  static async oldest(): Promise<ProjectType | undefined> {
-    const model = await DB.instance.selectFrom('projects')
-      .selectAll()
-      .orderBy('created_at', 'asc')
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new ProjectModel(null)
-    const result = await instance.mapWith(model)
-    const data = new ProjectModel(result as ProjectType)
-
-    return data
-  }
-
-  static async firstOrCreate(
-    condition: Partial<ProjectType>,
-    newProject: NewProject,
-  ): Promise<ProjectModel> {
-    // Get the key and value from the condition object
-    const key = Object.keys(condition)[0] as keyof ProjectType
-
-    if (!key) {
-      throw new HttpError(500, 'Condition must contain at least one key-value pair')
-    }
-
-    const value = condition[key]
-
-    // Attempt to find the first record matching the condition
-    const existingProject = await DB.instance.selectFrom('projects')
-      .selectAll()
-      .where(key, '=', value)
-      .executeTakeFirst()
-
-    if (existingProject) {
-      const instance = new ProjectModel(null)
-      const result = await instance.mapWith(existingProject)
-      return new ProjectModel(result as ProjectType)
-    }
-    else {
-      return await this.create(newProject)
-    }
-  }
-
-  static async updateOrCreate(
-    condition: Partial<ProjectType>,
-    newProject: NewProject,
-  ): Promise<ProjectModel> {
-    const instance = new ProjectModel(null)
-
-    const key = Object.keys(condition)[0] as keyof ProjectType
-
-    if (!key) {
-      throw new HttpError(500, 'Condition must contain at least one key-value pair')
-    }
-
-    const value = condition[key]
-
-    // Attempt to find the first record matching the condition
-    const existingProject = await DB.instance.selectFrom('projects')
-      .selectAll()
-      .where(key, '=', value)
-      .executeTakeFirst()
-
-    if (existingProject) {
-      // If found, update the existing record
-      await DB.instance.updateTable('projects')
-        .set(newProject)
-        .where(key, '=', value)
-        .executeTakeFirstOrThrow()
-
-      // Fetch and return the updated record
-      const updatedProject = await DB.instance.selectFrom('projects')
-        .selectAll()
-        .where(key, '=', value)
-        .executeTakeFirst()
-
-      if (!updatedProject) {
-        throw new HttpError(500, 'Failed to fetch updated record')
-      }
-
-      const result = await instance.mapWith(updatedProject)
-
-      instance.hasSaved = true
-
-      return new ProjectModel(result as ProjectType)
-    }
-    else {
-      // If not found, create a new record
-      return await this.create(newProject)
-    }
-  }
-
-  with(relations: string[]): ProjectModel {
-    return ProjectModel.with(relations)
-  }
-
-  static with(relations: string[]): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    instance.withRelations = relations
-
-    return instance
-  }
-
-  async last(): Promise<ProjectType | undefined> {
-    return await DB.instance.selectFrom('projects')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
-  }
-
-  static async last(): Promise<ProjectType | undefined> {
-    const model = await DB.instance.selectFrom('projects').selectAll().orderBy('id', 'desc').executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new ProjectModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ProjectModel(result as ProjectType)
-
-    return data
-  }
-
-  orderBy(column: keyof ProjectType, order: 'asc' | 'desc'): ProjectModel {
-    return ProjectModel.orderBy(column, order)
-  }
-
-  static orderBy(column: keyof ProjectType, order: 'asc' | 'desc'): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof ProjectType): ProjectModel {
-    return ProjectModel.groupBy(column)
-  }
-
-  static groupBy(column: keyof ProjectType): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having(column: keyof ProjectType, operator: string, value: any): ProjectModel {
-    return ProjectModel.having(column, operator, value)
-  }
-
-  static having(column: keyof ProjectType, operator: string, value: any): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
-  }
-
-  inRandomOrder(): ProjectModel {
-    return ProjectModel.inRandomOrder()
-  }
-
-  static inRandomOrder(): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return instance
-  }
-
-  orderByDesc(column: keyof ProjectType): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
-  }
-
-  static orderByDesc(column: keyof ProjectType): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
-
-    return instance
-  }
-
-  orderByAsc(column: keyof ProjectType): ProjectModel {
-    return ProjectModel.orderByAsc(column)
-  }
-
-  static orderByAsc(column: keyof ProjectType): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
-
-    return instance
-  }
-
-  async update(newProject: ProjectUpdate): Promise<ProjectModel | undefined> {
-    const filteredValues = Object.fromEntries(
-      Object.entries(newProject).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
-      ),
-    ) as NewProject
-
-    await DB.instance.updateTable('projects')
-      .set(filteredValues)
-      .where('id', '=', this.id)
-      .executeTakeFirst()
-
-    if (this.id) {
-      const model = await this.find(this.id)
-
-      return model
-    }
-
-    this.hasSaved = true
-
-    return undefined
-  }
-
-  async forceUpdate(project: ProjectUpdate): Promise<ProjectModel | undefined> {
-    if (this.id === undefined) {
-      this.updateFromQuery.set(project).execute()
-    }
-
-    await DB.instance.updateTable('projects')
-      .set(project)
-      .where('id', '=', this.id)
-      .executeTakeFirst()
-
-    if (this.id) {
-      const model = await this.find(this.id)
-
-      this.hasSaved = true
-
-      return model
-    }
-
-    return undefined
-  }
-
-  async save(): Promise<void> {
-    if (!this)
-      throw new HttpError(500, 'Project data is undefined')
-
-    const filteredValues = Object.fromEntries(
-      Object.entries(this).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
-      ),
-    ) as NewProject
-
-    if (this.id === undefined) {
-      await DB.instance.insertInto('projects')
-        .values(filteredValues)
-        .executeTakeFirstOrThrow()
-    }
-    else {
-      await this.update(this)
-    }
-
-    this.hasSaved = true
-  }
-
-  fill(data: Partial<ProjectType>): ProjectModel {
-    const filteredValues = Object.fromEntries(
-      Object.entries(data).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
-      ),
-    ) as NewProject
-
-    this.attributes = {
-      ...this.attributes,
-      ...filteredValues,
-    }
-
-    return this
-  }
-
-  forceFill(data: Partial<ProjectType>): ProjectModel {
-    this.attributes = {
-      ...this.attributes,
-      ...data,
-    }
-
-    return this
-  }
-
-  // Method to delete (soft delete) the project instance
-  async delete(): Promise<any> {
-    if (this.id === undefined)
-      this.deleteFromQuery.execute()
-
-    return await DB.instance.deleteFrom('projects')
-      .where('id', '=', this.id)
-      .execute()
-  }
-
-  distinct(column: keyof ProjectType): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
-
-    this.hasSelect = true
-
-    return this
-  }
-
-  static distinct(column: keyof ProjectType): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
-
-    instance.hasSelect = true
-
-    return instance
-  }
-
-  join(table: string, firstCol: string, secondCol: string): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
-
-    return this
+    return instance.applyDistinct(column)
   }
 
   static join(table: string, firstCol: string, secondCol: string): ProjectModel {
-    const instance = new ProjectModel(null)
+    const instance = new ProjectModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
-
-    return instance
+    return instance.applyJoin(table, firstCol, secondCol)
   }
 
-  static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(DB.instance)
-  }
-
-  toJSON(): Partial<ProjectJsonResponse> {
-    const output: Partial<ProjectJsonResponse> = {
+  toJSON(): ProjectJsonResponse {
+    const output = {
 
       id: this.id,
       name: this.name,
@@ -1382,9 +822,27 @@ export class ProjectModel {
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<ProjectModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<ProjectModel | undefined> {
+export async function find(id: number): Promise<ProjectModel | undefined> {
   const query = DB.instance.selectFrom('projects').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -1392,7 +850,8 @@ async function find(id: number): Promise<ProjectModel | undefined> {
   if (!model)
     return undefined
 
-  return new ProjectModel(model)
+  const instance = new ProjectModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -1402,11 +861,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newProject: NewProject): Promise<ProjectModel> {
-  const result = await DB.instance.insertInto('projects')
-    .values(newProject)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as ProjectModel
+  const instance = new ProjectModel(undefined)
+  return await instance.applyCreate(newProject)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
@@ -1421,30 +877,30 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereName(value: string): Promise<ProjectModel[]> {
   const query = DB.instance.selectFrom('projects').where('name', '=', value)
-  const results = await query.execute()
+  const results: ProjectJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
+  return results.map((modelItem: ProjectJsonResponse) => new ProjectModel(modelItem))
 }
 
 export async function whereDescription(value: string): Promise<ProjectModel[]> {
   const query = DB.instance.selectFrom('projects').where('description', '=', value)
-  const results = await query.execute()
+  const results: ProjectJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
+  return results.map((modelItem: ProjectJsonResponse) => new ProjectModel(modelItem))
 }
 
 export async function whereUrl(value: string): Promise<ProjectModel[]> {
   const query = DB.instance.selectFrom('projects').where('url', '=', value)
-  const results = await query.execute()
+  const results: ProjectJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
+  return results.map((modelItem: ProjectJsonResponse) => new ProjectModel(modelItem))
 }
 
 export async function whereStatus(value: string): Promise<ProjectModel[]> {
   const query = DB.instance.selectFrom('projects').where('status', '=', value)
-  const results = await query.execute()
+  const results: ProjectJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
+  return results.map((modelItem: ProjectJsonResponse) => new ProjectModel(modelItem))
 }
 
 export const Project = ProjectModel

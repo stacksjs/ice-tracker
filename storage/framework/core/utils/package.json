@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/utils",
   "type": "module",
-  "version": "0.68.2",
+  "version": "0.70.23",
   "description": "The Stacks helper functions.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
@@ -56,12 +56,12 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@types/js-yaml": "^4.0.9",
-    "@vueuse/core": "^12.5.0",
+    "@vueuse/core": "^13.1.0",
     "@vueuse/head": "^2.0.0",
-    "@vueuse/math": "^12.5.0",
-    "@vueuse/shared": "^12.5.0",
-    "ace-builds": "^1.37.5",
-    "bun-plugin-env": "^0.4.1",
+    "@vueuse/math": "^13.1.0",
+    "@vueuse/shared": "^13.1.0",
+    "ace-builds": "^1.40.1",
+    "bun-plugin-dotenvx": "^0.6.3",
     "bun-plugin-yml": "^0.3.1",
     "defu": "^6.1.4",
     "detect-indent": "^7.0.1",
@@ -71,13 +71,13 @@
     "js-yaml": "^4.1.0",
     "kolorist": "1.8.0",
     "macroable": "^7.0.2",
-    "magic-regexp": "^0.8.0",
+    "magic-regexp": "^0.10.0",
     "markdown-table": "^3.0.4",
     "perfect-debounce": "^1.0.0",
     "pretty-bytes": "^6.1.1",
     "resize-observer-polyfill": "^1.5.1",
     "vue-starport": "^0.4.0",
     "vue3-ace-editor": "^2.2.4",
-    "yaml": "^2.7.0"
+    "yaml": "^2.7.1"
   }
 }

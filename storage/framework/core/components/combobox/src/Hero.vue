@@ -17,26 +17,25 @@ interface Person {
 }
 
 const people = ref<Person[]>([
-  { id: 1, name: 'Wade Cooper' },
-  { id: 2, name: 'Arlene Mccoy' },
-  { id: 3, name: 'Devon Webb' },
-  { id: 4, name: 'Tom Cook' },
-  { id: 5, name: 'Tanya Fox' },
-  { id: 6, name: 'Hellen Schmidt' },
+  { id: 1, name: 'Chris Breuer' },
+  { id: 2, name: 'Avery Hill' },
+  { id: 3, name: 'Glenn Michael' },
+  { id: 4, name: 'Michael Vincent' },
+  { id: 5, name: 'Blake Ayer' }
 ])
 
 const selected = ref<Person | null>(null)
 const query = ref<string>('')
-const filteredPeople = computed(() =>
-  query.value === ''
-    ? people
+const filteredPeople = computed(() =>{
+  return  query.value === ''
+    ? people.value
     : people.value.filter((person: Person) =>
         person.name
           .toLowerCase()
           .replace(/\s+/g, '')
           .includes(query.value.toLowerCase().replace(/\s+/g, '')),
-      ),
-) as Ref<Person[]>
+      )
+}) as Ref<Person[]>
 </script>
 
 <template>
@@ -68,7 +67,7 @@ const filteredPeople = computed(() =>
               <ComboboxButton
                 class="absolute inset-y-0 right-0 flex items-center pr-2"
               >
-                <div class="i-heroicons-chevron-up-down-20-solid" />
+                <div class="i-hugeicons-chevron-up-down-20-solid" />
               </ComboboxButton>
             </div>
             <TransitionRoot
@@ -112,7 +111,7 @@ const filteredPeople = computed(() =>
                       class="absolute inset-y-0 left-0 flex items-center pl-3"
                       :class="{ 'text-white': active, 'text-teal-600': !active }"
                     >
-                      <div class="i-heroicons-check-20-solid" />
+                      <div class="i-hugeicons:checkmark-circle-01" />
                     </span>
                   </li>
                 </ComboboxOption>

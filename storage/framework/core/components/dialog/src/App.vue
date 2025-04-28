@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { defineCustomElement, ref } from 'vue'
+import { ref } from 'vue'
 import Dialog from './components/Dialog.vue'
 import DialogPanel from './components/DialogPanel.vue'
 import Hero from './Hero.vue'
@@ -20,21 +20,17 @@ function handleOpen() {
 function handleClose() {
   visible.value = false
 }
-
-defineCustomElement({
-  shadow: true,
-})
 </script>
 
 <template>
-  <div class="modal-wrapper bg-neutral-100/66 px-4 dark:bg-neutral-900">
-    <div class="relative mx-auto max-w-full container sm:max-w-2xl">
-      <header class="flex-center flex-col py-20">
+  <div class="px-4 modal-wrapper bg-neutral-100/66 dark:bg-neutral-900">
+    <div class="container relative max-w-full mx-auto sm:max-w-2xl">
+      <header class="flex-col py-20 flex-center">
         <Hero @open="handleOpen" />
       </header>
 
       <main
-        class="text-primary grid grid-cols-1 gap-8 pb-20 text-xs 2xl:text-sm"
+        class="grid grid-cols-1 gap-8 pb-20 text-xs text-primary 2xl:text-sm"
       >
         <Installation />
         <Usage />
@@ -42,7 +38,7 @@ defineCustomElement({
       </main>
 
       <Transition name="fade" appear>
-        <Dialog v-if="visible" @close="handleClose">
+        <Dialog v-model="visible" @close="handleClose">
           <DialogPanel>
             <h2>Greetings! This is a dialog.</h2>
           </DialogPanel>

@@ -1,6 +1,7 @@
+import type { schema } from '@stacksjs/validation'
 import type { UserRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
-import { customValidate, type schema, validateField } from '@stacksjs/validation'
+import { customValidate, validateField } from '@stacksjs/validation'
 
 interface ValidationField {
   rule: ReturnType<typeof schema.string>
@@ -16,8 +17,9 @@ interface RequestDataUser {
   email: string
   job_title: string
   password: string
-  created_at?: Date
-  updated_at?: Date
+  team_id: number
+  created_at?: string
+  updated_at?: string
 }
 export class UserRequest extends Request<RequestDataUser> implements UserRequestType {
   public id = 1
@@ -25,8 +27,9 @@ export class UserRequest extends Request<RequestDataUser> implements UserRequest
   public email = ''
   public job_title = ''
   public password = ''
-  public created_at = new Date()
-  public updated_at = new Date()
+  public team_id = 0
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

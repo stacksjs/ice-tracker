@@ -4,9 +4,47 @@ export interface ServicesOptions {
     apiKey: string
   }
 
+  aws?: {
+    accountId: string
+    appId: string
+    apiKey: string
+    region: string
+  }
+
   godaddy?: {
     apiKey: string
     apiSecret: string
+  }
+
+  hetzner: {
+    appId: string
+    apiKey: string
+  }
+
+  digitalOcean: {
+    appId: string
+    apiKey: string
+  }
+
+  // lemonSqueezy?: {
+  //   appId: string
+  //   apiKey: string
+  // }
+
+  mailgun?: {
+    apiKey?: string
+    domain?: string
+    endpoint?: string
+    maxRetries?: number
+    retryTimeout?: number
+  }
+
+  mailtrap?: {
+    token: string
+    host: string
+    inboxId?: string | number
+    maxRetries?: number
+    retryTimeout?: number
   }
 
   meilisearch?: {
@@ -14,9 +52,28 @@ export interface ServicesOptions {
     apiKey: string
   }
 
-  lemonSqueezy?: {
+  sendgrid?: {
+    apiKey?: string
+    maxRetries?: number
+    retryTimeout?: number
+  }
+
+  ses?: {
+    region: string
+    credentials: {
+      accessKeyId?: string
+      secretAccessKey?: string
+    }
+    maxRetries?: number
+    retryTimeout?: number
+  }
+
+  slack?: {
     appId: string
-    apiKey: string
+    clientId: string
+    secretKey: string
+    maxRetries?: number
+    retryTimeout?: number
   }
 
   stripe?: {
@@ -28,13 +85,6 @@ export interface ServicesOptions {
   //   appId: string
   //   apiKey: string
   // }
-
-  aws?: {
-    accountId: string
-    appId: string
-    apiKey: string
-    region: string
-  }
 }
 
 export type ServicesConfig = Partial<ServicesOptions>

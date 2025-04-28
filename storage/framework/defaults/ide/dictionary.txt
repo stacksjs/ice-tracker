@@ -45,6 +45,7 @@ certutil
 changelist
 changelogen
 changelogithub
+chartjs
 chatbots
 chrisbbreuer
 chrisbreuer
@@ -98,6 +99,7 @@ domainkey
 dont
 Dorell
 dotenv
+dotenvx
 Doyon
 dprint
 Drasner
@@ -176,7 +178,6 @@ kstenerud
 kysely
 laravel
 latexmk
-latlng
 leex
 lighthouserc
 lintstagedrc
@@ -278,6 +279,7 @@ resx
 retriable
 rimraf
 roadmap
+rolldown
 Runtimes
 rustfmt
 safelist
@@ -303,6 +305,7 @@ singlestore
 sisteransi
 sizecheck
 slidev
+softprops
 solana
 sonner
 Spatie
@@ -345,6 +348,7 @@ typesense
 unconfig
 undeployed
 undeploys
+Unfeature
 unhead
 unimport
 universalify
@@ -354,6 +358,7 @@ unplugin
 Unprefix
 Unprefixed
 unstorage
+untap
 Untimed
 Updateable
 upstash
@@ -380,6 +385,7 @@ vstyle
 vueform
 vueuse
 wafv
+Waitlist
 webfont
 weboutlook
 whois
@@ -389,3 +395,4 @@ xvda
 yourdomain
 zixuanchen
 Zoltan
+zoomable

@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/logging",
   "type": "module",
-  "version": "0.68.2",
+  "version": "0.70.23",
   "description": "The Stacks logging system.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
@@ -35,12 +35,13 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
+    "@stacksjs/clarity": "^0.3.9",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "typescript": "^5.7.3"
+    "typescript": "^5.8.3"
   }
 }

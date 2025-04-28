@@ -2,13 +2,11 @@ import type { ViteConfig } from '@stacksjs/types'
 import { alias } from '@stacksjs/alias'
 import { env } from '@stacksjs/env'
 import { path as p } from '@stacksjs/path'
-import { server } from '@stacksjs/server'
 import {
   autoImports,
   components,
   cssEngine,
   devtools,
-  fonts,
   i18n,
   layouts,
   markdown,
@@ -55,9 +53,10 @@ export const viewsConfig: ViteConfig = {
     exclude: ['vue'],
   },
 
-  server: server({
-    type: 'frontend',
-  }),
+  server: {
+    host: 'localhost',
+    port: 5173,
+  },
 
   resolve: {
     alias,
@@ -88,7 +87,6 @@ export const viewsConfig: ViteConfig = {
     pwa(),
     devtools(),
     i18n(),
-    fonts(),
     stacks(),
   ],
 

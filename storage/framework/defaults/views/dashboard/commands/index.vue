@@ -16,7 +16,7 @@ useHead({
           <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-heroicons-command-line h-6 w-6 text-white" />
+                <div class="i-hugeicons-command-line h-6 w-6 text-white" />
               </div>
 
               <p class="ml-16 truncate text-sm text-gray-500 font-medium">
@@ -42,7 +42,7 @@ useHead({
           <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-heroicons-clock h-6 w-6 text-white" />
+                <div class="i-hugeicons-clock-01 h-6 w-6 text-white" />
               </div>
 
               <p class="ml-16 truncate text-sm text-gray-500 font-medium">
@@ -68,7 +68,7 @@ useHead({
           <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-heroicons-check-circle h-6 w-6 text-white" />
+                <div class="i-hugeicons-checkmark-circle-02 h-6 w-6 text-white" />
               </div>
 
               <p class="ml-16 truncate text-sm text-gray-500 font-medium">
@@ -251,7 +251,7 @@ useHead({
                       <div class="flex items-center">
                         <div class="h-10 w-10 flex-shrink-0">
                           <img
-                            src="https://carefreeagency-eliinova.s3.amazonaws.com/images/avatar/default.svg"
+                            src="https://avatars.githubusercontent.com/u/6228425?v=4"
                             alt=""
                             class="h-10 w-10 rounded-full"
                           >

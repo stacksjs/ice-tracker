@@ -1,38 +1,49 @@
-import type { Model, Route, RouteParam, StatusCode } from '@stacksjs/types'
-import process from 'node:process'
+import type { Model, Options, Route, RouteParam, ServeOptions } from '@stacksjs/types'
+// import type { RateLimitResult } from 'ts-rate-limiter'
 
+import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { getModelName } from '@stacksjs/orm'
 import { extname, path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { isNumber } from '@stacksjs/validation'
-import { route } from '.'
+// import { RateLimiter } from 'ts-rate-limiter'
+import { route, staticRoute } from '.'
 
 import { middlewares } from './middleware'
 
 import { request as RequestParam } from './request'
 
-interface ServeOptions {
-  host?: string
-  port?: number
-  debug?: boolean
-  timezone?: string
-}
-
-interface Options {
-  statusCode?: StatusCode
-}
+// const limiter = new RateLimiter({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   maxRequests: 100,
+//   algorithm: 'sliding-window',
+//   handler: (req: Request, result: RateLimitResult) => {
+//     return new Response(JSON.stringify({
+//       error: 'Too many requests',
+//       retryAfter: Math.ceil(result.remaining / 1000),
+//     }), {
+//       status: 429,
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'Retry-After': Math.ceil(result.remaining / 1000).toString(),
+//       },
+//     })
+//   },
+// })
 
 export async function serve(options: ServeOptions = {}): Promise<void> {
   const hostname = options.host || 'localhost'
   const port = options.port || 3000
   const development = options.debug ? true : process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod'
+  const staticFiles = await staticRoute.getStaticConfig()
 
   if (options.timezone)
     process.env.TZ = options.timezone
 
   Bun.serve({
+    static: staticFiles,
     hostname,
     port,
     development,
@@ -42,13 +53,6 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
 
       return await serverResponse(req, reqBody)
     },
-    error(error: any) {
-      return new Response(`<pre>${error}\n${error.stack}</pre>`, {
-        headers: {
-          'Content-Type': 'text/html',
-        },
-      })
-    },
   })
 }
 
@@ -56,13 +60,17 @@ export async function serverResponse(req: Request, body: string): Promise<Respon
   log.debug(`Incoming Request: ${req.method} ${req.url}`)
   log.debug(`Headers: ${JSON.stringify(req.headers)}`)
   log.debug(`Body: ${JSON.stringify(req.body)}`)
-  // log.debug(`Query: ${JSON.stringify(req.query)}`)
-  // log.debug(`Params: ${JSON.stringify(req.params)}`)
-  // log.debug(`Cookies: ${JSON.stringify(req.cookies)}`)
 
-  // Trim trailing slash from the URL if it's not the root '/'
-  // This automatically allows for route definitions, like
-  // '/about' and '/about/' to be treated as the same
+  // const result = await limiter.check(req)
+
+  // if (!result.allowed) {
+  //   log.info(`Rate limit exceeded: ${result.current}/${result.limit}`)
+  //   log.info(`Reset in ${Math.ceil(result.remaining / 1000)} seconds`)
+
+  //   // Handle rate limiting in your own way
+  //   return new Response('Too many requests', { status: 429 })
+  // }
+
   const trimmedUrl = req.url.endsWith('/') && req.url.length > 1 ? req.url.slice(0, -1) : req.url
   const url: URL = new URL(trimmedUrl) as URL
   const routesList: Route[] = await route.getRoutes()
@@ -128,8 +136,9 @@ function extractDynamicSegments(routePattern: string, path: string): RouteParam 
   const match = path.match(regexPattern)
 
   if (!match) {
-    return null
+    return {}
   }
+
   const dynamicSegmentNames = [...routePattern.matchAll(/\{(\w+)\}/g)].map(m => m[1])
   const dynamicSegmentValues = match.slice(1) // First match is the whole string, so we slice it off
 
@@ -373,7 +382,8 @@ function noCache(response: Response): Response {
 }
 
 async function addRouteQuery(url: URL): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default
     const modelName = getModelName(model, modelFile)
@@ -390,7 +400,7 @@ async function addRouteQuery(url: URL): Promise<void> {
 }
 
 async function addBody(params: any): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default
@@ -408,7 +418,7 @@ async function addBody(params: any): Promise<void> {
 }
 
 async function addRouteParam(param: RouteParam): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
@@ -426,7 +436,7 @@ async function addRouteParam(param: RouteParam): Promise<void> {
 }
 
 async function addHeaders(headers: Headers): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
@@ -484,6 +494,7 @@ async function executeMiddleware(route: Route): Promise<any> {
     }
   }
 }
+
 function isString(val: unknown): val is string {
   return typeof val === 'string'
 }

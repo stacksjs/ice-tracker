@@ -1,6 +1,7 @@
+import type { schema } from '@stacksjs/validation'
 import type { ProductRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
-import { customValidate, type schema, validateField } from '@stacksjs/validation'
+import { customValidate, validateField } from '@stacksjs/validation'
 
 interface ValidationField {
   rule: ReturnType<typeof schema.string>
@@ -13,26 +14,34 @@ interface CustomAttributes {
 interface RequestDataProduct {
   id: number
   name: string
-  description: number
-  key: number
-  unit_price: number
-  status: string
-  image: string
-  provider_id: string
-  created_at?: Date
-  updated_at?: Date
+  description: string
+  price: number
+  image_url: string
+  is_available: boolean
+  inventory_count: number
+  preparation_time: number
+  allergens: string
+  nutritional_info: string
+  category_id: number
+  manufacturer_id: number
+  created_at?: string
+  updated_at?: string
 }
 export class ProductRequest extends Request<RequestDataProduct> implements ProductRequestType {
   public id = 1
   public name = ''
-  public description = 0
-  public key = 0
-  public unit_price = 0
-  public status = ''
-  public image = ''
-  public provider_id = ''
-  public created_at = new Date()
-  public updated_at = new Date()
+  public description = ''
+  public price = 0
+  public image_url = ''
+  public is_available = false
+  public inventory_count = 0
+  public preparation_time = 0
+  public allergens = ''
+  public nutritional_info = ''
+  public category_id = 0
+  public manufacturer_id = 0
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

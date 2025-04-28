@@ -1,10 +1,11 @@
 import type { MiddlewareOptions } from '@stacksjs/types'
+import type { Request } from './request'
 import { userMiddlewarePath } from '@stacksjs/path'
 
 export class Middleware implements MiddlewareOptions {
   name: string
   priority: number
-  handle: () => Promise<void>
+  handle: (request: Request) => Promise<void>
 
   constructor(data: MiddlewareOptions) {
     this.name = data.name

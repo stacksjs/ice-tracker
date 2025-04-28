@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/payment",
   "type": "module",
-  "version": "0.68.2",
+  "version": "0.70.23",
   "description": "An opinionated payment component for Stacks.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
@@ -35,11 +35,11 @@
     "highlight.js": "^11.11.1"
   },
   "devDependencies": {
-    "@iconify-json/hugeicons": "^1.2.3",
-    "@microsoft/api-extractor": "^7.49.2",
+    "@iconify-json/hugeicons": "^1.2.4",
+    "@microsoft/api-extractor": "^7.52.5",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@vue/tsconfig": "^0.7.0",
-    "unplugin-icons": "^22.0.0"
+    "unplugin-icons": "^22.1.0"
   }
 }

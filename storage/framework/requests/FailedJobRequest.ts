@@ -1,6 +1,7 @@
+import type { schema } from '@stacksjs/validation'
 import type { FailedJobRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
-import { customValidate, type schema, validateField } from '@stacksjs/validation'
+import { customValidate, validateField } from '@stacksjs/validation'
 
 interface ValidationField {
   rule: ReturnType<typeof schema.string>
@@ -17,8 +18,8 @@ interface RequestDataFailedJob {
   payload: string
   exception: string
   failed_at: date
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class FailedJobRequest extends Request<RequestDataFailedJob> implements FailedJobRequestType {
   public id = 1
@@ -27,8 +28,8 @@ export class FailedJobRequest extends Request<RequestDataFailedJob> implements F
   public payload = ''
   public exception = ''
   public failed_at = ''
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
@@ -40,4 +41,4 @@ export class FailedJobRequest extends Request<RequestDataFailedJob> implements F
   }
 }
 
-export const failedjobRequest = new FailedJobRequest()
+export const failedJobRequest = new FailedJobRequest()

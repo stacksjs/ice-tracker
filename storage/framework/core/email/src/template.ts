@@ -1,14 +1,16 @@
-import type { I18n } from 'vue-email'
+import type { RenderOptions } from '@vue-email/compiler'
 import process from 'node:process'
 import { resourcesPath } from '@stacksjs/path'
 import { config } from '@vue-email/compiler'
 
-export interface RenderOptions {
-  props?: Record<string, unknown>
-  i18n?: I18n
+interface HtmlResult {
+  html: string
+  text: string
 }
 
-export async function template(path: string, options?: RenderOptions): Promise<string> {
+export async function template(path: string, options?: RenderOptions): Promise<HtmlResult> {
+  const templatePath = path.endsWith('.vue') ? path : `${path}.vue`
+
   const email = config(resourcesPath('emails'), {
     verbose: !!process.env.DEBUG,
     // options: {
@@ -16,5 +18,5 @@ export async function template(path: string, options?: RenderOptions): Promise<s
     // },
   })
 
-  return await email.render(path, options)
+  return await email.render(templatePath, options)
 }

@@ -1,6 +1,7 @@
+import type { schema } from '@stacksjs/validation'
 import type { SubscriptionRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
-import { customValidate, type schema, validateField } from '@stacksjs/validation'
+import { customValidate, validateField } from '@stacksjs/validation'
 
 interface ValidationField {
   rule: ReturnType<typeof schema.string>
@@ -13,6 +14,7 @@ interface CustomAttributes {
 interface RequestDataSubscription {
   id: number
   type: string
+  plan: string
   provider_id: string
   provider_status: string
   unit_price: number
@@ -23,12 +25,13 @@ interface RequestDataSubscription {
   ends_at: string
   last_used_at: string
   user_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class SubscriptionRequest extends Request<RequestDataSubscription> implements SubscriptionRequestType {
   public id = 1
   public type = ''
+  public plan = ''
   public provider_id = ''
   public provider_status = ''
   public unit_price = 0
@@ -39,8 +42,8 @@ export class SubscriptionRequest extends Request<RequestDataSubscription> implem
   public ends_at = ''
   public last_used_at = ''
   public user_id = 0
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

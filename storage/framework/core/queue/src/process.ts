@@ -1,7 +1,10 @@
+import type { Ok } from '@stacksjs/error-handling'
+import type { JobsModel } from '@stacksjs/orm'
 import type { JitterConfig, JobOptions } from '@stacksjs/types'
-import type { JobModel } from '../../../orm/src/models/Job'
-import { ok, type Ok } from '@stacksjs/error-handling'
+import { ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
+import { Job } from '@stacksjs/orm'
+import { FailedJob } from '../../../orm/src/models/FailedJob'
 import { runJob } from './job'
 
 interface QueuePayload {
@@ -34,30 +37,24 @@ export async function executeFailedJobs(): Promise<void> {
       continue
 
     const body: QueuePayload = JSON.parse(job.payload)
-    const jobPayload = JSON.parse(job.payload) as QueuePayload
 
-    const classPayload = JSON.parse(jobPayload.classPayload) as JobOptions
+    const classPayload = JSON.parse(body.classPayload) as JobOptions
 
     const maxTries = Number(classPayload.tries || 3)
 
     log.info(`Retrying job: ${body.path}`)
 
-    try {
-      await runJob(body.name, {
-        queue: job.queue,
-        payload: body.params,
-        context: '',
-        maxTries,
-        timeout: 60,
-      })
+    await runJob(body.name, {
+      queue: job.queue,
+      payload: body.params,
+      context: '',
+      maxTries,
+      timeout: 60,
+    })
 
-      await job.delete()
+    await job.delete()
 
-      log.info(`Successfully ran job: ${body.path}`)
-    }
-    catch (error) {
-      console.log(error)
-    }
+    log.info(`Successfully ran job: ${body.path}`)
   }
 }
 
@@ -74,22 +71,17 @@ export async function retryFailedJob(id: number): Promise<void> {
 
     log.info(`Retrying job: ${body.path}`)
 
-    try {
-      await runJob(body.name, {
-        queue: failedJob.queue,
-        payload: body.params,
-        context: '',
-        maxTries,
-        timeout: 60,
-      })
+    await runJob(body.name, {
+      queue: failedJob.queue,
+      payload: body.params,
+      context: '',
+      maxTries,
+      timeout: 60,
+    })
 
-      await failedJob.delete()
+    await failedJob.delete()
 
-      log.info(`Successfully ran job: ${body.path}`)
-    }
-    catch (error) {
-      console.log(error)
-    }
+    log.info(`Successfully ran job: ${body.path}`)
   }
 }
 
@@ -106,9 +98,8 @@ async function executeJobs(queue: string | undefined): Promise<void> {
       continue
 
     const body: QueuePayload = JSON.parse(job.payload)
-    const jobPayload = JSON.parse(job.payload) as QueuePayload
 
-    const classPayload = JSON.parse(jobPayload.classPayload) as JobOptions
+    const classPayload = JSON.parse(body.classPayload) as JobOptions
 
     const maxTries = Number(classPayload.tries || 3)
 
@@ -132,7 +123,6 @@ async function executeJobs(queue: string | undefined): Promise<void> {
       log.info(`Successfully ran job: ${body.path}`)
     }
     catch (error) {
-      console.log(error)
       // Increment the attempt count
       currentAttempts++
 
@@ -274,7 +264,7 @@ function now(): string {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
-async function updateJobAttempts(job: JobModel, currentAttempts: number, delay: number | null): Promise<void> {
+async function updateJobAttempts(job: JobsModel, currentAttempts: number, delay: number | null): Promise<void> {
   try {
     const currentDelay = job.available_at
 

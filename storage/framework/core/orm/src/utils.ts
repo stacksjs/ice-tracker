@@ -1,9 +1,14 @@
 import type {
-  Attributes,
-  BaseRelation,
+  Attribute,
+  AttributesElements,
+  BaseBelongsToMany,
+  BaseHasOneThrough,
   FieldArrayElement,
   Model,
   ModelElement,
+  ModelNames,
+  MorphOne,
+  Relation,
   RelationConfig,
   TableNames,
 } from '@stacksjs/types'
@@ -11,10 +16,13 @@ import { generator, parser, traverse } from '@stacksjs/build'
 import { italic, log } from '@stacksjs/cli'
 import { handleError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
-import { fs, globSync } from '@stacksjs/storage'
-import { plural, singular, snakeCase } from '@stacksjs/strings'
+import { fs } from '@stacksjs/storage'
+import { camelCase, kebabCase, plural, singular, slugify, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
+
+import { globSync } from 'tinyglobby'
 import { generateModelString } from './generate'
+import { generateTraitRequestTypes, generateTraitTableInterfaces } from './generated/table-traits'
 
 type ModelPath = string
 
@@ -35,23 +43,17 @@ export function getModelName(model: Model, modelPath: string): string {
   return baseName.replace(/\.ts$/, '')
 }
 
-export function getTableName(model: Model, modelPath: string): string {
+export function getTableName(model: Model, modelPath: string): TableNames {
   if (model.table)
-    return model.table
+    return model.table as TableNames
 
-  return snakeCase(plural(getModelName(model, modelPath)))
+  return snakeCase(plural(getModelName(model, modelPath))) as TableNames
 }
 
 export function getPivotTableName(formattedModelName: string, modelRelationTable: string): string {
-  const models = [formattedModelName, modelRelationTable]
-
-  models.sort()
-
-  models[0] = singular(models[0] || '')
-
-  const pivotTableName = models.join('_')
-
-  return pivotTableName
+  const tables = [formattedModelName, modelRelationTable]
+  tables.sort()
+  return tables.join('_')
 }
 
 export function hasRelations(obj: any, key: string): boolean {
@@ -59,70 +61,279 @@ export function hasRelations(obj: any, key: string): boolean {
 }
 
 export async function getRelations(model: Model, modelName: string): Promise<RelationConfig[]> {
-  const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany', 'hasOneThrough']
   const relationships = []
 
-  for (const relation of relationsArray) {
-    if (hasRelations(model, relation)) {
-      for (const relationInstance of model[relation as keyof Model] as BaseRelation) {
-        let relationModel = relationInstance.model
-        let modelRelation: Model
-        if (isString(relationInstance)) {
-          relationModel = relationInstance
-        }
-
-        const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
-        const modelPath = path.userModelsPath(`${modelName}.ts`)
-        const coreModelRelationPath = path.storagePath(`framework/defaults/models/${relationModel}.ts`)
-
-        if (fs.existsSync(modelRelationPath))
-          modelRelation = (await import(modelRelationPath)).default as Model
-        else
-          modelRelation = (await import(coreModelRelationPath)).default as Model
-
-        const modelRelationTable = getTableName(modelRelation, modelRelationPath)
-        const table = getTableName(model, modelPath)
-        const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
-        const formattedModelName = snakeCase(modelName)
-
-        const relationshipData: RelationConfig = {
-          relationship: relation,
-          model: relationModel,
-          table: modelRelationTable as TableNames,
-          relationTable: table as TableNames,
-          foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
-          modelKey: `${modelRelationName}_id`,
-          relationName: relationInstance.relationName || '',
-          relationModel: modelName,
-          throughModel: relationInstance.through || '',
-          throughForeignKey: relationInstance.throughForeignKey || '',
-          pivotForeign: relationInstance.foreignKey || `${formattedModelName}_id`,
-          pivotKey: `${modelRelationName}_id`,
-          pivotTable:
-            relationInstance?.pivotTable
-            || getPivotTableName(plural(formattedModelName), plural(modelRelation.table || '')),
-        }
-
-        if (['belongsToMany', 'belongsTo'].includes(relation))
-          relationshipData.foreignKey = ''
-
-        if (['belongsToMany'].includes(relation)) {
-          relationshipData.pivotForeign = relationInstance.foreignKey || `${formattedModelName}_id`
-          relationshipData.pivotKey = `${modelRelationName}_id`
-        }
-
-        relationships.push(relationshipData)
-      }
+  if (model.hasOne) {
+    for (const relationInstance of model.hasOne) {
+      relationships.push(await processHasOneAndMany(relationInstance, model, modelName, 'hasOne'))
     }
   }
 
+  if (model.hasMany) {
+    for (const relationInstance of model.hasMany) {
+      relationships.push(await processHasOneAndMany(relationInstance, model, modelName, 'hasMany'))
+    }
+  }
+
+  if (model.belongsTo) {
+    for (const relationInstance of model.belongsTo) {
+      relationships.push(await processHasOneAndMany(relationInstance, model, modelName, 'belongsTo'))
+    }
+  }
+
+  if (model.hasOneThrough) {
+    for (const relationInstance of model.hasOneThrough) {
+      relationships.push(await processHasThrough(relationInstance, model, modelName, 'hasOneThrough'))
+    }
+  }
+
+  if (model.belongsToMany) {
+    for (const relationInstance of model.belongsToMany) {
+      relationships.push(await processBelongsToMany(relationInstance, model, modelName, 'belongsToMany'))
+    }
+  }
+
+  if (model.morphOne) {
+    relationships.push(await processMorphOne(model.morphOne, model, modelName, 'belongsToMany'))
+  }
+
   return relationships
+}
+
+async function processHasThrough(relationInstance: ModelNames | BaseHasOneThrough<ModelNames>, model: Model, modelName: string, relation: string) {
+  let relationModel = ''
+  let modelRelation: Model
+  let modelPath: string
+  let relationName = ''
+  let throughModel = ''
+  let throughForeignKey = ''
+
+  if (isString(relationInstance)) {
+    relationModel = relationInstance
+  }
+  else {
+    relationModel = relationInstance.model
+    relationName = relationInstance.relationName || ''
+    throughModel = relationInstance.through
+    throughForeignKey = relationInstance.throughForeignKey || ''
+  }
+
+  const modelRelationPath = findUserModel(`${relationModel}.ts`)
+  const userModelPath = findUserModel(`${modelName}.ts`)
+  const coreModelPath = findCoreModel(`${modelName}.ts`)
+  const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
+
+  if (fs.existsSync(modelRelationPath))
+    modelRelation = (await import(modelRelationPath)).default as Model
+  else
+    modelRelation = (await import(coreModelRelationPath)).default as Model
+
+  if (fs.existsSync(userModelPath))
+    modelPath = userModelPath
+  else
+    modelPath = coreModelPath
+
+  const modelRelationTable = getTableName(modelRelation, modelRelationPath)
+  const table = getTableName(model, modelPath)
+  const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
+  const formattedModelName = snakeCase(modelName)
+
+  const relationshipData: RelationConfig = {
+    relationship: relation,
+    model: relationModel,
+    table: modelRelationTable as TableNames,
+    relationTable: table as TableNames,
+    foreignKey: `${formattedModelName}_id`,
+    modelKey: `${modelRelationName}_id`,
+    relationName,
+    relationModel: modelName,
+    throughModel,
+    throughForeignKey,
+    pivotForeign: `${formattedModelName}_id`,
+    pivotKey: `${modelRelationName}_id`,
+    pivotTable: table as TableNames,
+  }
+
+  return relationshipData
+}
+
+async function processBelongsToMany(relationInstance: ModelNames | BaseBelongsToMany<ModelNames>, model: Model, modelName: string, relation: string) {
+  let relationModel = ''
+  let modelRelation: Model
+  let modelPath: string
+  let pivotTable = ''
+  let pivotForeign = ''
+
+  const formattedModelName = snakeCase(modelName)
+
+  if (isString(relationInstance)) {
+    relationModel = relationInstance
+  }
+  else {
+    relationModel = relationInstance.model
+    pivotTable = relationInstance.pivotTable || ''
+    pivotForeign = relationInstance.firstForeignKey || `${formattedModelName}_id`
+  }
+
+  const modelRelationPath = findUserModel(`${relationModel}.ts`)
+  const userModelPath = findUserModel(`${modelName}.ts`)
+  const coreModelPath = findCoreModel(`${modelName}.ts`)
+  const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
+
+  if (fs.existsSync(modelRelationPath))
+    modelRelation = (await import(modelRelationPath)).default as Model
+  else
+    modelRelation = (await import(coreModelRelationPath)).default as Model
+
+  if (fs.existsSync(userModelPath))
+    modelPath = userModelPath
+  else
+    modelPath = coreModelPath
+
+  const modelRelationTable = getTableName(modelRelation, modelRelationPath)
+  const table = getTableName(model, modelPath)
+  const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
+
+  const relationshipData: RelationConfig = {
+    relationship: relation,
+    model: relationModel,
+    table: modelRelationTable as TableNames,
+    relationTable: table as TableNames,
+    foreignKey: typeof relationInstance === 'string' ? `${formattedModelName}_id` : relationInstance.firstForeignKey || `${formattedModelName}_id`,
+    modelKey: typeof relationInstance === 'string' ? `${modelRelationName}_id` : relationInstance.secondForeignKey || `${modelRelationName}_id`,
+    relationName: '',
+    relationModel: modelName,
+    throughModel: '',
+    throughForeignKey: '',
+    pivotForeign,
+    pivotKey: `${modelRelationName}_id`,
+    pivotTable: pivotTable as TableNames,
+  }
+
+  return relationshipData
+}
+
+async function processMorphOne(relationInstance: ModelNames | MorphOne<ModelNames>, model: Model, modelName: string, relation: string): Promise<RelationConfig> {
+  let relationModel = ''
+  let morphName = ''
+  let typeColumn = ''
+  let idColumn = ''
+
+  // Determine if it's a simple string or a configuration object
+  if (isString(relationInstance)) {
+    relationModel = relationInstance
+    // Convert model name to "able" format (e.g. "Post" -> "postable")
+    morphName = `${snakeCase(modelName)}able`
+  }
+  else {
+    relationModel = relationInstance.model
+    // Use provided morphName or generate default "-able" suffix
+    morphName = relationInstance.morphName || `${snakeCase(modelName)}able`
+    typeColumn = relationInstance.type || `${morphName}_type`
+    idColumn = relationInstance.id || `${morphName}_id`
+  }
+
+  // Load the related model
+  const modelRelationPath = findUserModel(`${relationModel}.ts`)
+  const userModelPath = findUserModel(`${modelName}.ts`)
+  const coreModelPath = findCoreModel(`${modelName}.ts`)
+  const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
+
+  let modelRelation: Model
+  if (fs.existsSync(modelRelationPath)) {
+    modelRelation = (await import(modelRelationPath)).default as Model
+  }
+  else {
+    modelRelation = (await import(coreModelRelationPath)).default as Model
+  }
+
+  const modelPath = fs.existsSync(userModelPath) ? userModelPath : coreModelPath
+
+  // Get table names
+  const modelRelationTable = getTableName(modelRelation, modelRelationPath)
+  const table = getTableName(model, modelPath)
+
+  // Create relationship config
+  const relationshipData: RelationConfig = {
+    relationship: relation,
+    model: relationModel,
+    table: modelRelationTable as TableNames,
+    relationTable: table as TableNames,
+    foreignKey: idColumn || `${morphName}_id`,
+    modelKey: typeColumn || `${morphName}_type`,
+    relationName: morphName,
+    relationModel: modelName,
+    throughModel: '',
+    throughForeignKey: '',
+    pivotForeign: '',
+    pivotKey: '',
+    pivotTable: table as TableNames,
+  }
+
+  return relationshipData
+}
+
+async function processHasOneAndMany(relationInstance: ModelNames | Relation<ModelNames>, model: Model, modelName: string, relation: string) {
+  let relationModel = ''
+  let modelRelation: Model
+  let modelPath: string
+  let relationName = ''
+
+  if (isString(relationInstance)) {
+    relationModel = relationInstance
+  }
+  else {
+    relationModel = relationInstance.model
+    relationName = relationInstance.relationName || ''
+  }
+
+  const modelRelationPath = findUserModel(`${relationModel}.ts`)
+  const userModelPath = findUserModel(`${modelName}.ts`)
+  const coreModelPath = findCoreModel(`${modelName}.ts`)
+  const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
+
+  if (fs.existsSync(modelRelationPath))
+    modelRelation = (await import(modelRelationPath)).default as Model
+  else
+    modelRelation = (await import(coreModelRelationPath)).default as Model
+
+  if (fs.existsSync(userModelPath))
+    modelPath = userModelPath
+  else
+    modelPath = coreModelPath
+
+  const modelRelationTable = getTableName(modelRelation, modelRelationPath)
+  const table = getTableName(model, modelPath)
+  const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
+  const formattedModelName = snakeCase(modelName)
+
+  const relationshipData: RelationConfig = {
+    relationship: relation,
+    model: relationModel,
+    table: modelRelationTable as TableNames,
+    relationTable: table as TableNames,
+    foreignKey: typeof relationInstance === 'string' ? `${formattedModelName}_id` : relationInstance.foreignKey || `${formattedModelName}_id`,
+    modelKey: `${modelRelationName}_id`,
+    relationName,
+    relationModel: modelName,
+    throughModel: '',
+    throughForeignKey: '',
+    pivotForeign: `${formattedModelName}_id`,
+    pivotKey: `${modelRelationName}_id`,
+    pivotTable: table as TableNames,
+  }
+
+  if (relation === 'belongsTo')
+    relationshipData.foreignKey = ''
+
+  return relationshipData
 }
 
 export function getRelationType(relation: string): string {
   const belongToType = /belongs/
   const hasType = /has/
   const throughType = /Through/
+  const morphType = /morph/
 
   if (throughType.test(relation))
     return 'throughType'
@@ -132,6 +343,9 @@ export function getRelationType(relation: string): string {
 
   if (hasType.test(relation))
     return 'hasType'
+
+  if (morphType.test(relation))
+    return 'morphType'
 
   return ''
 }
@@ -158,12 +372,26 @@ export async function getPivotTables(
   if ('belongsToMany' in model) {
     const belongsToManyArr = model.belongsToMany || []
     for (const belongsToManyRelation of belongsToManyArr) {
-      const modelRelationPath = path.userModelsPath(`${belongsToManyRelation}.ts`)
-      const modelRelation = (await import(modelRelationPath)).default as Model
+      let modelRelation: Model
+      let relationModelName: string
+
+      if (typeof belongsToManyRelation === 'string') {
+        relationModelName = belongsToManyRelation
+      }
+      else {
+        relationModelName = belongsToManyRelation.model
+      }
+
+      const modelRelationPath = findUserModel(`${relationModelName}.ts`)
+      const coreModelRelationPath = findCoreModel(`${relationModelName}.ts`)
+
+      if (fs.existsSync(modelRelationPath))
+        modelRelation = (await import(modelRelationPath)).default as Model
+      else
+        modelRelation = (await import(coreModelRelationPath)).default as Model
+
       const modelRelationTableName = getTableName(modelRelation, modelRelationPath)
-      const modelName = getModelName(model, modelPath)
       const tableName = getTableName(model, modelPath)
-      const formattedModelName = modelName.toLowerCase()
 
       const firstForeignKey
         = typeof belongsToManyRelation === 'object' && 'firstForeignKey' in belongsToManyRelation
@@ -179,7 +407,7 @@ export async function getPivotTables(
         table:
           (typeof belongsToManyRelation === 'object' && 'pivotTable' in belongsToManyRelation
             ? belongsToManyRelation.pivotTable
-            : undefined) ?? getPivotTableName(plural(formattedModelName), plural(modelRelation.table || '')),
+            : undefined) ?? getPivotTableName(tableName, modelRelationTableName),
         firstForeignKey,
         secondForeignKey,
       })
@@ -192,15 +420,12 @@ export async function getPivotTables(
 }
 
 export async function fetchOtherModelRelations(modelName?: string): Promise<RelationConfig[]> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
-  const coreModelFiles = globSync([path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
-
-  const allModelFiles = [...modelFiles, ...coreModelFiles]
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 
   const modelRelations = []
 
-  for (let i = 0; i < allModelFiles.length; i++) {
-    const modelFileElement = allModelFiles[i] as string
+  for (let i = 0; i < modelFiles.length; i++) {
+    const modelFileElement = modelFiles[i] as string
 
     const modelFile = await import(modelFileElement)
 
@@ -222,7 +447,7 @@ export async function fetchOtherModelRelations(modelName?: string): Promise<Rela
   return modelRelations
 }
 
-export function getHiddenAttributes(attributes: Attributes | undefined): string[] {
+export function getHiddenAttributes(attributes: AttributesElements | undefined): string[] {
   if (attributes === undefined)
     return []
 
@@ -288,8 +513,7 @@ export function getFillableAttributes(model: Model, otherModelRelations: Relatio
 }
 
 export async function writeModelNames(): Promise<void> {
-  const models = globSync([path.userModelsPath('*.ts')], { absolute: true })
-  const coreModelFiles = globSync([path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
+  const models = globSync([path.userModelsPath('**/*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
   let fileString = `export type ModelNames = `
 
   for (let i = 0; i < models.length; i++) {
@@ -304,21 +528,6 @@ export async function writeModelNames(): Promise<void> {
     }
   }
 
-  fileString += ' | '
-
-  for (let j = 0; j < coreModelFiles.length; j++) {
-    const modelPath = coreModelFiles[j] as string
-
-    const model = (await import(modelPath)).default as Model
-    const modelName = getModelName(model, modelPath)
-
-    fileString += `'${modelName}'`
-
-    if (j < coreModelFiles.length - 1) {
-      fileString += ' | '
-    }
-  }
-
   // Ensure the directory exists
   const typesDir = path.dirname(path.typesPath(`src/model-names.ts`))
   await fs.promises.mkdir(typesDir, { recursive: true })
@@ -329,8 +538,7 @@ export async function writeModelNames(): Promise<void> {
 }
 
 export async function writeTableNames(): Promise<void> {
-  const models = globSync([path.userModelsPath('*.ts')], { absolute: true })
-  const coreModelFiles = globSync([path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
+  const models = globSync([path.userModelsPath('**/*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 
   let fileString = `export type TableNames = `
 
@@ -353,21 +561,6 @@ export async function writeTableNames(): Promise<void> {
     }
   }
 
-  fileString += ' | '
-
-  for (let j = 0; j < coreModelFiles.length; j++) {
-    const modelPath = coreModelFiles[j] as string
-
-    const model = (await import(modelPath)).default as Model
-    const tableName = getTableName(model, modelPath)
-
-    fileString += `'${tableName}'`
-
-    if (j < coreModelFiles.length - 1) {
-      fileString += ' | '
-    }
-  }
-
   // Ensure the directory exists
   const typesDir = path.dirname(path.typesPath(`src/table-names.ts`))
   await fs.promises.mkdir(typesDir, { recursive: true })
@@ -377,33 +570,96 @@ export async function writeTableNames(): Promise<void> {
   await fs.promises.writeFile(typeFilePath, fileString, 'utf8')
 }
 
-export async function writeModelRequest(): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
-  const coreModelFiles = globSync([path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
-  const allModelFiles = [...modelFiles, ...coreModelFiles]
+export async function writeModelAttributes(): Promise<void> {
+  const modelFiles = globSync([path.userModelsPath('**/*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+  let fieldString = `export interface Attributes { \n`
+  const attributesTypeFile = path.frameworkPath('types/attributes.ts')
 
-  const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
+  const processedFields = new Set<string>()
+
+  for (let i = 0; i < modelFiles.length; i++) {
+    const modelPath = modelFiles[i] as string
+    const model = (await import(modelPath)).default as Model
+    const modeFileElement = modelFiles[i] as string
+
+    const attributes = await extractFields(model, modeFileElement)
+
+    for (const attribute of attributes) {
+      const fieldName = snakeCase(attribute.field)
+
+      // Skip if field already exists
+      if (processedFields.has(fieldName)) {
+        continue
+      }
+
+      const entity = mapEntity(attribute)
+
+      fieldString += ` ${fieldName}: ${entity}\n     `
+
+      // Add to processed fields
+      processedFields.add(fieldName)
+    }
+  }
+
+  fieldString += '} \n'
+
+  await fs.writeFile(attributesTypeFile, fieldString)
+}
+
+export async function writeModelEvents(): Promise<void> {
+  const modelFiles = globSync([path.userModelsPath('**/*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+  let eventString = ``
+  let observerString = ``
+  let observerImports = ``
+  const attributesTypeFile = Bun.file(path.frameworkPath('types/events.ts'))
+
+  for (let i = 0; i < modelFiles.length; i++) {
+    const modelPath = modelFiles[i] as string
+    const model = (await import(modelPath)).default as Model
+
+    const modelName = getModelName(model, modelPath)
+
+    const formattedModelName = slugify(modelName)
+
+    const observer = model?.traits?.observe
+
+    if (typeof observer === 'boolean') {
+      if (observer) {
+        observerString += `'${kebabCase(formattedModelName)}:created': ${modelName}Model\n`
+        observerString += `'${kebabCase(formattedModelName)}:updated': ${modelName}Model\n`
+        observerString += `'${kebabCase(formattedModelName)}:deleted': ${modelName}Model\n`
+
+        observerImports += `import type { ${modelName}Model } from '../orm/src/models/${modelName}'\n`
+      }
+    }
+  }
+
+  eventString += `
+  ${observerImports} \n\n
+
+  export interface ModelEvents {\n 
+    ${observerString}
+  }`
+
+  const writer = attributesTypeFile.writer()
+
+  writer.write(eventString)
+}
+
+export async function writeModelRequest(): Promise<void> {
+  const modelFiles = globSync([path.userModelsPath('**/*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 
   let importTypes = ``
   let importTypesString = ``
-  let typeString = `import { Request } from '../core/router/src/request'\nimport type { VineType } from '@stacksjs/types'\n\n`
+  let typeString = `import { Request } from '../core/router/src/request'\nimport type { VineType, CustomAttributes } from '@stacksjs/types'\n\n`
 
-  typeString += `interface ValidationField {
-    rule: VineType
-    message: Record<string, string>
-  }\n\n`
-
-  typeString += `interface CustomAttributes {
-    [key: string]: ValidationField
-  }\n\n`
-
-  for (let i = 0; i < allModelFiles.length; i++) {
+  for (let i = 0; i < modelFiles.length; i++) {
     let fieldStringType = ``
     let fieldString = ``
     let fieldStringInt = ``
     let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField, customValidate, type schema } from '@stacksjs/validation'\n`
 
-    const modeFileElement = allModelFiles[i] as string
+    const modeFileElement = modelFiles[i] as string
 
     const model = (await import(modeFileElement)).default as Model
 
@@ -416,19 +672,19 @@ export async function writeModelRequest(): Promise<void> {
     fieldString += ` id: number\n`
     fieldStringInt += `public id = 1\n`
 
-    fieldStringType += ` get(key: 'id'): number\n`
-
     const entityGroups: Record<string, string[]> = {}
 
     // Group attributes by their entity type
     for (const attribute of attributes) {
-      const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
-      let defaultValue: any = `''`
+      const entity = attribute.fieldArray?.entity === 'enum' ? 'string[] | string' : attribute.fieldArray?.entity
+      let defaultValue: string | boolean | number | string[] = `''`
 
       if (attribute.fieldArray?.entity === 'boolean')
         defaultValue = false
       if (attribute.fieldArray?.entity === 'number')
         defaultValue = 0
+      if (attribute.fieldArray?.entity === 'enum')
+        defaultValue = '[]'
 
       // Convert the field name to snake_case
       const snakeField = snakeCase(attribute.field)
@@ -446,11 +702,7 @@ export async function writeModelRequest(): Promise<void> {
       }
     }
 
-    // Generate fieldStringType with grouped fields
-    for (const [entity, fields] of Object.entries(entityGroups)) {
-      const concatenatedFields = fields.join(' | ')
-      fieldStringType += ` get(key: ${concatenatedFields}): ${entity}\n`
-    }
+    fieldStringType += ` get: <T = string>(element: string, defaultValue?: T) => T`
 
     const otherModelRelations = await fetchOtherModelRelations(modelName)
 
@@ -459,13 +711,12 @@ export async function writeModelRequest(): Promise<void> {
         continue
 
       fieldString += ` ${otherModel.foreignKey}: number\n     `
-      fieldStringType += ` get(key: '${otherModel.foreignKey}'): string \n`
       fieldStringInt += `public ${otherModel.foreignKey} = 0\n`
     }
 
     if (useTimestamps) {
-      fieldStringInt += `public created_at = new Date
-        public updated_at = new Date
+      fieldStringInt += `public created_at = ''
+        public updated_at = ''
       `
     }
 
@@ -474,14 +725,14 @@ export async function writeModelRequest(): Promise<void> {
 
     if (useSoftDeletes) {
       fieldStringInt += `
-        public deleted_at = new Date()
+        public deleted_at = ''
       `
 
-      fieldString += `deleted_at?: Date\n`
+      fieldString += `deleted_at?: string\n`
     }
 
-    fieldString += `created_at?: Date
-      updated_at?: Date`
+    fieldString += `created_at?: string
+      updated_at?: string`
 
     const requestFile = Bun.file(path.frameworkPath(`requests/${modelName}Request.ts`))
 
@@ -501,7 +752,7 @@ export async function writeModelRequest(): Promise<void> {
     }\n`
 
     const types = `export interface ${modelName}RequestType extends Request {
-      validate(attributes?: CustomAttributes): void
+      validate(attributes?: CustomAttributes): Promise<void>
       ${fieldStringType}
       all(): RequestData${modelName}
       ${fieldString}
@@ -529,7 +780,7 @@ export async function writeModelRequest(): Promise<void> {
       }
     }
 
-    export const ${modelName.toLocaleLowerCase()}Request = new ${modelName}Request()
+    export const ${camelCase(modelName)}Request = new ${modelName}Request()
     `
 
     const writer = requestFile.writer()
@@ -539,76 +790,79 @@ export async function writeModelRequest(): Promise<void> {
 
   typeString += `export type ModelRequest = ${importTypesString}`
 
-  const requestWrite = requestD.writer()
+  const requestD = path.frameworkPath('types/requests.d.ts')
 
-  requestWrite.write(typeString)
+  await fs.writeFile(requestD, typeString)
 }
 
 export async function writeOrmActions(apiRoute: string, modelName: string, actionPath?: string): Promise<void> {
   const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
 
   let method = 'GET'
-  let actionString = `import { Action } from '@stacksjs/actions'\n`
-  actionString += `import { response } from '@stacksjs/router'\n`
+  let actionString = `import { Action } from '@stacksjs/actions'\n import { response } from '@stacksjs/router'\n\n`
   let handleString = ``
 
   if (apiRoute === 'index') {
     handleString += `async handle() {
-        const results = ${modelName}.all()
+        const results = await ${modelName}.all()
 
-        return json.response(response)
+        return response.json(results)
       },`
 
     method = 'GET'
   }
 
   if (apiRoute === 'show') {
-    actionString += `  import type { ${modelName}RequestType } from '@stacksjs/orm'\n\n`
+    actionString += `  import type { ${modelName}RequestType } from '@stacksjs/orm'\n import { ${modelName} } from '@stacksjs/orm'\n import { response } from '@stacksjs/router'\n\n`
     handleString += `async handle(request: ${modelName}RequestType) {
         const id = request.getParam('id')
 
-        return await ${modelName}.findOrFail(Number(id))
+        const model = await ${modelName}.findOrFail(id)
+
+        return response.json(model)
       },`
 
     method = 'GET'
   }
 
   if (apiRoute === 'destroy') {
-    actionString += `  import type { ${modelName}RequestType } from '@stacksjs/orm'\n\n`
+    actionString += `  import type { ${modelName}RequestType } from '@stacksjs/orm'\n import { ${modelName} } from '@stacksjs/orm'\n import { response } from '@stacksjs/router'\n\n`
     handleString += `async handle(request: ${modelName}RequestType) {
         const id = request.getParam('id')
 
-        const model = await ${modelName}.findOrFail(Number(id))
+        const model = await ${modelName}.findOrFail(id)
 
-        model.delete()
+        model?.delete()
 
-        return 'Model deleted!'
+        return response.json({ message: 'Model deleted!' })
       },`
 
     method = 'DELETE'
   }
 
   if (apiRoute === 'store') {
-    actionString += `  import type { ${modelName}RequestType } from '@stacksjs/orm'\n\n`
+    actionString += `  import type { ${modelName}RequestType } from '@stacksjs/orm'\n import { ${modelName} } from '@stacksjs/orm'\n import { response } from '@stacksjs/router'\n\n`
     handleString += `async handle(request: ${modelName}RequestType) {
         await request.validate()
         const model = await ${modelName}.create(request.all())
 
-        return model
+        return response.json(model)
       },`
 
     method = 'POST'
   }
 
   if (apiRoute === 'update') {
-    actionString += `  import type { ${modelName}RequestType } from '@stacksjs/orm'\n\n`
+    actionString += `  import type { ${modelName}RequestType } from '@stacksjs/orm'\n  import { ${modelName} } from '@stacksjs/orm'\n import { response } from '@stacksjs/router'\n\n`
     handleString += `async handle(request: ${modelName}RequestType) {
         await request.validate()
 
         const id = request.getParam('id')
-        const model = await ${modelName}.findOrFail(Number(id))
+        const model = await ${modelName}.findOrFail(id)
 
-        return model.update(request.all())
+        const result = model?.update(request.all())
+
+        return response.json(result)
       },`
 
     method = 'PATCH'
@@ -656,23 +910,26 @@ export async function extractFields(model: Model, modelFile: string): Promise<Mo
     match = regex.exec(code)
   }
 
-  const input: ModelElement[] = fieldKeys.map((field, index) => {
-    const fieldExist = fields[field]
+  const input = fieldKeys.map((field, index) => {
+    const fieldExist: Attribute = fields[field]
     let defaultValue = null
     let uniqueValue = false
+    let requiredValue = false
 
     if (fieldExist) {
       defaultValue = fieldExist || null
       uniqueValue = fieldExist.unique || false
+      requiredValue = fieldExist.required || false
     }
 
     return {
       field,
       default: defaultValue,
       unique: uniqueValue,
+      required: requiredValue,
       fieldArray: parseRule(rules[index] ?? ''),
     }
-  })
+  }) as ModelElement[]
 
   return input
 }
@@ -822,8 +1079,8 @@ export async function generateApiRoutes(modelFiles: string[]): Promise<void> {
 
 export async function deleteExistingModels(modelStringFile?: string): Promise<void> {
   const typePath = path.frameworkPath(`orm/src/types.ts`)
-  if (fs.existsSync(typePath))
-    await fs.promises.unlink(typePath)
+
+  await fs.writeFile(typePath, '')
 
   if (modelStringFile) {
     const modelPath = path.frameworkPath(`orm/src/models/${modelStringFile}.ts`)
@@ -834,6 +1091,7 @@ export async function deleteExistingModels(modelStringFile?: string): Promise<vo
   }
 
   const modelPaths = globSync([path.frameworkPath(`orm/src/models/*.ts`)], { absolute: true })
+
   await Promise.all(
     modelPaths.map(async (modelPath) => {
       if (fs.existsSync(modelPath)) {
@@ -864,14 +1122,30 @@ export async function deleteExistingOrmActions(modelStringFile?: string): Promis
 
 export async function deleteExistingModelNameTypes(): Promise<void> {
   const typeFile = path.corePath('types/src/model-names.ts')
-  if (fs.existsSync(typeFile))
-    await fs.promises.unlink(typeFile)
+  await fs.writeFile(typeFile, '')
+}
+
+export async function deleteAttributeTypes(): Promise<void> {
+  const typeFile = path.frameworkPath('types/attributes.ts')
+
+  await fs.writeFile(typeFile, '')
+}
+
+export async function deleteModelEvents(): Promise<void> {
+  const eventFile = path.frameworkPath('types/events.ts')
+
+  await fs.writeFile(eventFile, '')
+}
+
+export async function deleteOrmImports(): Promise<void> {
+  const ormImportFile = path.frameworkPath(`orm/src/index.ts`)
+
+  await fs.writeFile(ormImportFile, '')
 }
 
 export async function deleteExistingModelRequest(modelStringFile?: string): Promise<void> {
   const requestD = path.frameworkPath('types/requests.d.ts')
-  if (fs.existsSync(requestD))
-    await fs.promises.unlink(requestD)
+  await fs.writeFile(requestD, '')
 
   if (modelStringFile) {
     const requestFile = path.frameworkPath(`requests/${modelStringFile}.ts`)
@@ -890,27 +1164,15 @@ export async function deleteExistingModelRequest(modelStringFile?: string): Prom
 
 export async function deleteExistingOrmRoute(): Promise<void> {
   const ormRoute = path.frameworkPath('orm/routes.ts')
-  if (fs.existsSync(ormRoute))
-    await fs.promises.unlink(ormRoute)
+  await fs.writeFile(ormRoute, '')
 }
 
 export async function generateKyselyTypes(): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
-  const coreModelFiles = globSync([path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('**/*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 
   let text = ``
 
   for (const modelFile of modelFiles) {
-    const model = (await import(modelFile)).default as Model
-    const tableName = getTableName(model, modelFile)
-    const modelName = getModelName(model, modelFile)
-    const words = tableName.split('_')
-    const pivotFormatted = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}`
-
-    text += `import type { ${pivotFormatted}Table } from '../src/models/${modelName}'\n`
-  }
-
-  for (const modelFile of coreModelFiles) {
     const model = (await import(modelFile)).default as Model
     const tableName = getTableName(model, modelFile)
     const modelName = getModelName(model, modelFile)
@@ -930,7 +1192,6 @@ export async function generateKyselyTypes(): Promise<void> {
 
     for (const pivotTable of pivotTables) {
       const words = pivotTable.table.split('_')
-
       pivotFormatted = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
 
       text += `export interface ${pivotFormatted} {
@@ -941,23 +1202,7 @@ export async function generateKyselyTypes(): Promise<void> {
     }
   }
 
-  text += '\nexport interface MigrationsTable {\n'
-  text += 'name: string\n timestamp: string \n }'
-
-  text += '\nexport interface PasskeysTable {\n'
-  text += '  id?: number\n'
-  text += '  cred_public_key: string\n'
-  text += '  user_id: number;\n'
-  text += '  webauthn_user_id: string\n'
-  text += '  counter: number\n'
-  text += '  credential_type: string\n'
-  text += '  device_type: string\n'
-  text += '  backup_eligible: boolean\n'
-  text += '  backup_status: boolean\n'
-  text += '  transports?: string\n'
-  text += '  created_at?: Date\n'
-  text += '  last_used_at: string \n'
-  text += '}\n\n'
+  text += generateTraitTableInterfaces()
 
   text += '\nexport interface Database {\n'
 
@@ -980,25 +1225,26 @@ export async function generateKyselyTypes(): Promise<void> {
     const words = tableName.split('_')
     const formattedTableName = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
 
-    text += `  ${tableName}: ${formattedTableName}\n`
+    if (!pushedTables.includes(tableName)) {
+      text += `  ${tableName}: ${formattedTableName}\n`
+      pushedTables.push(tableName)
+    }
   }
 
-  for (const coreModelFile of coreModelFiles) {
-    const model = (await import(coreModelFile)).default as Model
-    const tableName = getTableName(model, coreModelFile)
-
-    const words = tableName.split('_')
-    const formattedTableName = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
-
-    text += `  ${tableName}: ${formattedTableName}\n`
-  }
-
-  text += 'passkeys: PasskeysTable\n'
-  text += 'migrations: MigrationsTable\n'
-
-  text += '}'
+  // Add trait-based tables
+  text += '  migrations: MigrationsTable\n'
+  text += '  passkeys: PasskeysTable\n'
+  text += '  commentables: commentablesTable\n'
+  text += '  taggable: TaggableTable\n'
+  text += '  comment_upvotes: CommenteableUpvotesTable\n'
+  text += '  categorizable: CategorizableTable\n'
+  text += '  categorizable_models: CategorizableModelsTable\n'
+  text += '  taggable_models: TaggableModelsTable\n'
+  text += '  password_resets: PasswordResetsTable\n'
+  text += '}\n'
 
   const file = Bun.file(path.frameworkPath('orm/src/types.ts'))
+
   const writer = file.writer()
 
   writer.write(text)
@@ -1007,7 +1253,7 @@ export async function generateKyselyTypes(): Promise<void> {
 }
 
 export function mapEntity(attribute: ModelElement): string | undefined {
-  const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
+  const entity = attribute.fieldArray?.entity === 'enum' ? 'string | string[]' : attribute.fieldArray?.entity
 
   const mapEntity = entity === 'date' ? 'Date | string' : entity
 
@@ -1023,6 +1269,18 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     log.info('Deleting old Model Name types...')
     await deleteExistingModelNameTypes()
     log.success('Deleted Model Name types')
+
+    log.info('Deleting old attribute types...')
+    await deleteAttributeTypes()
+    log.success('Deleted old attribute types')
+
+    log.info('Deleting old model events...')
+    await deleteModelEvents()
+    log.success('Deleted old model events')
+
+    log.info('Deleting old orm imports...')
+    await deleteOrmImports()
+    log.success('Deleted old orm imports')
 
     log.info('Deleting old Model Requests...')
     await deleteExistingModelRequest(modelStringFile)
@@ -1060,14 +1318,31 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
       handleError('Error while writing Model Requests', error)
     }
 
+    try {
+      log.info('Writing Model Attributes...')
+      await writeModelAttributes()
+      await generateTraitRequestTypes()
+      log.success('Wrote Model Attributes')
+    }
+    catch (error) {
+      handleError('Error while writing Model Attributes', error)
+    }
+
+    try {
+      log.info('Writing Model Events...')
+      await writeModelEvents()
+      log.success('Wrote Model Events')
+    }
+    catch (error) {
+      handleError('Error while writing Model Events', error)
+    }
+
     log.info('Generating API Routes...')
-    const modelFiles = globSync([path.userModelsPath('**/*.ts')], { absolute: true })
-    const coreModelFiles = globSync([path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
+    const modelFiles = globSync([path.userModelsPath('**/*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
     await generateApiRoutes(modelFiles)
-    await generateApiRoutes(coreModelFiles)
     log.success('Generated API Routes')
 
-    await writeModelOrmImports([...modelFiles, ...coreModelFiles])
+    await writeModelOrmImports(modelFiles)
 
     for (const modelFile of modelFiles) {
       if (modelStringFile && modelStringFile !== modelFile)
@@ -1088,25 +1363,6 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
       await writer.end()
     }
 
-    for (const coreModelFile of coreModelFiles) {
-      if (modelStringFile && modelStringFile !== coreModelFile)
-        continue
-      log.info(`Processing Model: ${italic(coreModelFile)}`)
-
-      const model = (await import(coreModelFile)).default as Model
-      const tableName = getTableName(model, coreModelFile)
-      const modelName = getModelName(model, coreModelFile)
-      const file = Bun.file(path.frameworkPath(`orm/src/models/${modelName}.ts`))
-      const fields = await extractFields(model, coreModelFile)
-      const classString = await generateModelString(tableName, modelName, model, fields)
-
-      const writer = file.writer()
-      log.info(`Writing API Endpoints for: ${italic(modelName)}`)
-      writer.write(classString)
-      log.success(`Wrote API endpoints for: ${italic(modelName)}`)
-      await writer.end()
-    }
-
     log.info('Generating Query Builder types...')
     await generateKyselyTypes()
     log.success('Generated Query Builder types')
@@ -1117,7 +1373,6 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     await ensureCodeStyle()
   }
   catch (error) {
-    // throw error
     handleError('Error while generating model files', error)
   }
 }
@@ -1129,10 +1384,10 @@ async function writeModelOrmImports(modelFiles: string[]): Promise<void> {
 
     const modelName = getModelName(model, modelFile)
 
-    ormImportString += `export { default as ${modelName} } from './${modelName}'\n\n`
+    ormImportString += `export { default as ${modelName}, type ${modelName}JsonResponse, type New${modelName}, type ${modelName}Update } from './models/${modelName}'\n\n`
   }
 
-  const file = Bun.file(path.frameworkPath(`orm/src/models/index.ts`))
+  const file = Bun.file(path.frameworkPath(`orm/src/index.ts`))
   const writer = file.writer()
 
   writer.write(ormImportString)
@@ -1140,7 +1395,7 @@ async function writeModelOrmImports(modelFiles: string[]): Promise<void> {
   await writer.end()
 }
 
-export async function extractAttributesFromModel(filePath: string): Promise<Attributes> {
+export async function extractAttributesFromModel(filePath: string): Promise<AttributesElements> {
   // Read the TypeScript file
   const content = fs.readFileSync(filePath, 'utf8')
 
@@ -1150,7 +1405,7 @@ export async function extractAttributesFromModel(filePath: string): Promise<Attr
     plugins: ['typescript', 'classProperties', 'decorators-legacy'],
   })
 
-  let fields: Attributes | undefined
+  let fields: AttributesElements | undefined
   traverse(ast, {
     ObjectExpression(path) {
       // Look for the `attributes` key in the object
@@ -1164,17 +1419,18 @@ export async function extractAttributesFromModel(filePath: string): Promise<Attr
       if (fieldsProperty && fieldsProperty.type === 'ObjectProperty' && fieldsProperty.value) {
         // Convert the AST back to code (stringify)
         const generated = generator(fieldsProperty.value, {}, content)
-        fields = generated.code as unknown as Attributes
+        fields = generated.code as unknown as AttributesElements
         path.stop() // Stop traversing further once we found the fields
       }
     },
   })
 
-  return fields as Attributes
+  return fields as AttributesElements
 }
 
 async function ensureCodeStyle(): Promise<void> {
   log.info('Linting code style...')
+
   const proc = Bun.spawn(['bunx', '--bun', 'eslint', '.', '--fix'], {
     stdio: ['ignore', 'pipe', 'pipe'],
     cwd: path.projectPath(),
@@ -1204,4 +1460,42 @@ async function ensureCodeStyle(): Promise<void> {
   else {
     log.debug('Code style fixed successfully.')
   }
+}
+
+export function findCoreModel(modelName: string): string {
+  const rootPath = path.join(path.storagePath('framework/defaults/models'), '/')
+
+  const matches = globSync(`${rootPath}**/${modelName}`, {
+    absolute: true,
+  })
+
+  return matches[0] ?? ''
+}
+
+export function findUserModel(modelName: string): string {
+  const rootPath = path.join(path.userModelsPath('/'), '/')
+
+  const matches = globSync(`${rootPath}**/${modelName}`, {
+    absolute: true,
+  })
+
+  return matches[0] ?? ''
+}
+
+/**
+ * Format a date to ISO string and remove milliseconds
+ * @param date The date to format
+ * @returns Formatted date string in format: YYYY-MM-DD HH:mm:ss
+ */
+export function formatDate(date: Date): string {
+  return date.toISOString().replace('T', ' ').split('.')[0]
+}
+
+/**
+ * Format a date to ISO string and remove milliseconds
+ * @param date The date to format
+ * @returns Formatted date string in format: YYYY-MM-DD HH:mm:ss
+ */
+export function toTimestamp(date: Date): number {
+  return date.getTime()
 }

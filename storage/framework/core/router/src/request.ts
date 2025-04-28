@@ -1,27 +1,53 @@
-import type { RequestInstance, RouteParam, VineType } from '@stacksjs/types'
+import type { AuthToken, CustomAttributes, NumericField, RequestData, RequestInstance, RouteParam, RouteParams } from '@stacksjs/types'
 
 import { customValidate, validateField } from '@stacksjs/validation'
 
-interface RequestData {
-  [key: string]: any
-}
-
-interface ValidationField {
-  rule: VineType
-  message: Record<string, string>
-}
-
-type AuthToken = `${number}:${number}:${string}`
-
-interface CustomAttributes {
-  [key: string]: ValidationField
-}
-
-type RouteParams = { [key: string]: string | number } | null
+const numericFields = new Set<NumericField>([
+  'id',
+  'age',
+  'count',
+  'quantity',
+  'amount',
+  'price',
+  'total',
+  'score',
+  'rating',
+  'duration',
+  'size',
+  'weight',
+  'height',
+  'width',
+  'length',
+  'distance',
+  'speed',
+  'temperature',
+  'volume',
+  'capacity',
+  'density',
+  'pressure',
+  'force',
+  'energy',
+  'power',
+  'frequency',
+  'voltage',
+  'current',
+  'resistance',
+  'time',
+  'date',
+  'year',
+  'month',
+  'day',
+  'hour',
+  'minute',
+  'second',
+  'millisecond',
+  'microsecond',
+  'nanosecond',
+])
 
 export class Request<T extends RequestData = RequestData> implements RequestInstance {
   public query: T = {} as T
-  public params: RouteParams = null
+  public params: RouteParams = {} as RouteParams
   public headers: any = {}
 
   public addQuery(url: URL): void {
@@ -40,8 +66,8 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
     this.headers = headerParams
   }
 
-  public get(element: string): any {
-    return this.query[element]
+  public get<T = string>(element: string, defaultValue?: T): T {
+    return this.query[typeof element] || defaultValue
   }
 
   public all(): T {
@@ -85,8 +111,15 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
     return this.headers.get(headerParam)
   }
 
-  public getParam(key: string): number | string | null {
-    return this.params ? this.params[key] || null : null
+  public getParam<K extends string>(key: K): K extends NumericField ? number : string {
+    const value = this.params[key]
+
+    if (numericFields.has(key as NumericField)) {
+      const numValue = Number(value)
+      return (Number.isNaN(numValue) ? 0 : numValue) as K extends NumericField ? number : string
+    }
+
+    return value as K extends NumericField ? number : string
   }
 
   public route(key: string): number | string | null {
@@ -110,6 +143,45 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   public getParamAsInt(key: string): number | null {
     const value = this.getParam(key)
     return value ? Number.parseInt(value.toString()) : null
+  }
+
+  public browser(): string | null {
+    return this.headers.get('user-agent')
+  }
+
+  public ip(): string | null {
+    return this.ipForRateLimit()
+  }
+
+  public ipForRateLimit(): string | null {
+    // Order of headers to check (from most to least reliable)
+    const ipHeaders = [
+      'cf-connecting-ip', // Cloudflare
+      'x-real-ip', // Nginx
+      'x-client-ip', // Apache
+      'x-forwarded-for', // Standard proxy header
+      'x-forwarded', // Alternative proxy header
+      'forwarded-for', // Standard proxy header
+      'forwarded', // Standard proxy header
+      'x-appengine-user-ip', // Google App Engine
+      'x-cluster-client-ip', // Rackspace LB
+      'x-azure-clientip', // Azure
+      'x-aws-via', // AWS
+      'true-client-ip', // Akamai
+      'fastly-client-ip', // Fastly
+      'x-vercel-forwarded-for', // Vercel
+      'x-netlify-ip', // Netlify
+    ]
+
+    for (const header of ipHeaders) {
+      const ip = this.headers.get(header)
+      if (ip) {
+        // Return the first IP from the header
+        return ip.split(',')[0].trim()
+      }
+    }
+
+    return null
   }
 }
 

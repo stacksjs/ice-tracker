@@ -1,10 +1,31 @@
 import type { Action } from '@stacksjs/actions'
+import type { Request } from '@stacksjs/router'
+import type { VineType } from '@stacksjs/types'
 
 type ActionPath = string
 // need to refactor before, after, view to be a part of some other type
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'before' | 'after' | 'view'
 
 export type RouteCallback = (params?: Record<string, any>) => any | string | object
+
+export interface RequestData {
+  [key: string]: any
+}
+
+export interface ValidationField {
+  rule: VineType
+  message: Record<string, string>
+}
+
+export type AuthToken = `${number}:${number}:${string}`
+
+export interface CustomAttributes {
+  [key: string]: ValidationField
+}
+
+export interface RouteParams { [key: string]: string | number }
+
+export type NumericField = 'id' | 'age' | 'count' | 'quantity' | 'amount' | 'price' | 'total' | 'score' | 'rating' | 'duration' | 'size' | 'weight' | 'height' | 'width' | 'length' | 'distance' | 'speed' | 'temperature' | 'volume' | 'capacity' | 'density' | 'pressure' | 'force' | 'energy' | 'power' | 'frequency' | 'voltage' | 'current' | 'resistance' | 'time' | 'date' | 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' | 'millisecond' | 'microsecond' | 'nanosecond'
 
 export interface Route {
   name: string
@@ -20,20 +41,30 @@ export interface Route {
   statusCode?: StatusCode
 }
 
+export interface ServeOptions {
+  host?: string
+  port?: number
+  debug?: boolean
+  timezone?: string
+}
+
+export interface Options {
+  statusCode?: StatusCode
+}
+
 export interface MiddlewareOptions {
   name: string
   description?: string
   priority: number
-  // eslint-disable-next-line ts/no-unsafe-function-type
-  handle: Function
+  handle: (request: Request) => Promise<void>
 }
 
 export type StatusCode = 200 | 201 | 202 | 204 | 301 | 302 | 304 | 400 | 401 | 403 | 404 | 500
 export type RedirectCode = Extract<StatusCode, 301 | 302>
 
-export type RouteParam = { [key: string]: string | number } | null
+export interface RouteParam { [key: string]: string | number }
 
-export type MiddlewareFn = () => void
+export type MiddlewareFn = (request: Request) => Promise<void>
 
 export interface Middlewares {
   logger: MiddlewareFn
@@ -64,4 +95,31 @@ export interface RouterInterface {
   name: (name: string) => this
   middleware: (middleware: Route['middleware']) => this
   getRoutes: () => Promise<Route[]>
+}
+
+export interface RouterInstance {
+  query: any
+  params: RouteParams
+  headers: any
+  addQuery: (url: URL) => void
+  addBodies: (params: any) => void
+  addParam: (param: RouteParam) => void
+  addHeaders: (headerParams: Headers) => void
+  get: <K extends string>(element: K, defaultValue?: K extends NumericField ? number : string) => K extends NumericField ? number : string
+  all: () => any
+  validate: (attributes?: CustomAttributes) => Promise<void>
+  has: (element: string) => boolean
+  isEmpty: () => boolean
+  extractParamsFromRoute: (routePattern: string, pathname: string) => void
+  header: (headerParam: string) => string | number | boolean | null
+  getHeaders: () => any
+  Header: (headerParam: string) => string | number | boolean | null
+  getParam: <T>(key: string) => T
+  route: (key: string) => number | string | null
+  bearerToken: () => string | null | AuthToken
+  getParams: () => RouteParams
+  getParamAsInt: (key: string) => number | null
+  browser: () => string | null
+  ip: () => string | null
+  ipForRateLimit: () => string | null
 }

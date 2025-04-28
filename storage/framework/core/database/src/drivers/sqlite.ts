@@ -1,8 +1,9 @@
-import type { Attribute, Attributes, Model } from '@stacksjs/types'
+import type { Ok } from '@stacksjs/error-handling'
+import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
-import { type Ok, ok } from '@stacksjs/error-handling'
+import { ok } from '@stacksjs/error-handling'
 import { fetchOtherModelRelations, getModelName, getPivotTables, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
@@ -15,11 +16,11 @@ import {
   fetchTables,
   findDifferingKeys,
   getLastMigrationFields,
-  hasMigrationBeenCreated,
   isArrayEqual,
   mapFieldTypeToColumnType,
   pluckChanges,
 } from '.'
+import { dropCommonTables } from './defaults/traits'
 
 export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
   await deleteFrameworkModels()
@@ -30,14 +31,11 @@ export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
 }
 
 export async function dropSqliteTables(): Promise<void> {
-  const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const userModelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
   const tables = await fetchTables()
 
   for (const table of tables) await db.schema.dropTable(table).ifExists().execute()
-  await db.schema.dropTable('migrations').ifExists().execute()
-  await db.schema.dropTable('migration_locks').ifExists().execute()
-  await db.schema.dropTable('passkeys').ifExists().execute()
-  await db.schema.dropTable('activities').ifExists().execute()
+  await dropCommonTables()
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
@@ -145,6 +143,7 @@ export async function copyModelFiles(modelPath: string): Promise<void> {
   // store the fields of the model to a file
   await Bun.$`cp ${modelPath} ${copiedModelPath}`
 }
+
 async function createTableMigration(modelPath: string) {
   log.debug('createTableMigration modelPath:', modelPath)
 
@@ -152,7 +151,8 @@ async function createTableMigration(modelPath: string) {
   const tableName = getTableName(model, modelPath)
   const modelName = getModelName(model, modelPath)
 
-  const twoFactorEnabled = model.traits?.useAuth && typeof model.traits.useAuth !== 'boolean' ? model.traits.useAuth.useTwoFactor : false
+  const twoFactorEnabled
+    = model.traits?.useAuth && typeof model.traits.useAuth !== 'boolean' ? model.traits.useAuth.useTwoFactor : false
 
   await createPivotTableMigration(model, modelPath)
   const otherModelRelations = await fetchOtherModelRelations(modelName)
@@ -163,12 +163,6 @@ async function createTableMigration(modelPath: string) {
   const usePasskey = (typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey) ?? false
   const useBillable = model.traits?.billable || false
   const useUuid = model.traits?.useUuid || false
-
-  if (usePasskey && tableName === 'users')
-    await createPasskeyMigration()
-
-  if (model.traits?.likeable === true || typeof model.traits?.likeable === 'object')
-    await createUpvoteMigration(model, modelName, tableName)
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
@@ -187,12 +181,20 @@ async function createTableMigration(modelPath: string) {
     migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
     // Check if there are configurations that require the lambda function
-    if (fieldOptions.unique || fieldOptions?.required) {
+    if (fieldOptions.unique || fieldOptions?.required || fieldOptions.default !== undefined) {
       migrationContent += `, col => col`
       if (fieldOptions.unique)
         migrationContent += `.unique()`
       if (fieldOptions?.required)
         migrationContent += `.notNull()`
+      if (fieldOptions.default !== undefined) {
+        if (typeof fieldOptions.default === 'string')
+          migrationContent += `.defaultTo('${fieldOptions.default}')`
+        else if (fieldOptions.default === null)
+          migrationContent += `.defaultTo(null)`
+        else
+          migrationContent += `.defaultTo(${fieldOptions.default})`
+      }
       migrationContent += ``
     }
 
@@ -204,6 +206,9 @@ async function createTableMigration(modelPath: string) {
 
   if (useBillable)
     migrationContent += `    .addColumn('stripe_id', 'varchar(255)')\n`
+
+  if (useSoftDeletes)
+    migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
 
   if (otherModelRelations?.length) {
     for (const modelRelation of otherModelRelations) {
@@ -226,10 +231,28 @@ async function createTableMigration(modelPath: string) {
     migrationContent += '    .addColumn(\'updated_at\', \'timestamp\')\n'
   }
 
-  if (useSoftDeletes)
-    migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
+  // Add execute() after all columns are defined
+  migrationContent += `    .execute()\n\n`
 
-  migrationContent += `    .execute()\n`
+  if (otherModelRelations?.length) {
+    for (const modelRelation of otherModelRelations) {
+      if (!modelRelation.foreignKey)
+        continue
+
+      migrationContent += generateForeignKeyIndexSQL(tableName, modelRelation.foreignKey)
+    }
+  }
+
+  // Add composite indexes if defined
+  if (model.indexes?.length) {
+    migrationContent += '\n'
+    for (const index of model.indexes) {
+      migrationContent += generateIndexCreationSQL(tableName, index.name, index.columns)
+    }
+  }
+
+  migrationContent += generatePrimaryKeyIndexSQL(tableName)
+
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
@@ -254,12 +277,14 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
       return
 
     let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+    migrationContent += `import { sql } from '@stacksjs/database'\n\n`
     migrationContent += `export async function up(db: Database<any>) {\n`
     migrationContent += `  await db.schema\n`
     migrationContent += `    .createTable('${pivotTable.table}')\n`
     migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
     migrationContent += `    .addColumn('${pivotTable.firstForeignKey}', 'integer')\n`
     migrationContent += `    .addColumn('${pivotTable.secondForeignKey}', 'integer')\n`
+    migrationContent += `    .addColumn('created_at', 'timestamp', col => col.defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
     migrationContent += `    .execute()\n`
     migrationContent += `    }\n`
 
@@ -274,106 +299,24 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
   }
 }
 
-async function createPasskeyMigration() {
-  const hasBeenMigrated = await hasMigrationBeenCreated('users')
-
-  if (hasBeenMigrated)
-    return
-
-  let migrationContent = `import type { Database } from '@stacksjs/database'\n import { sql } from '@stacksjs/database'\n\n`
-  migrationContent += `export async function up(db: Database<any>) {\n`
-  migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('passkeys')\n`
-  migrationContent += `    .addColumn('id', 'text')\n`
-  migrationContent += `    .addColumn('cred_public_key', 'text')\n`
-  migrationContent += `    .addColumn('user_id', 'integer')\n`
-  migrationContent += `    .addColumn('webauthn_user_id', 'varchar(255)')\n`
-  migrationContent += `    .addColumn('counter', 'integer')\n`
-  migrationContent += `    .addColumn('device_type', 'varchar(255)')\n`
-  migrationContent += `    .addColumn('credential_type', 'varchar(255)')\n`
-  migrationContent += `    .addColumn('backup_eligible', 'boolean')\n`
-  migrationContent += `    .addColumn('backup_status', 'boolean')\n`
-  migrationContent += `    .addColumn('transports', 'varchar(255)')\n`
-  migrationContent += `    .addColumn('last_used_at', 'text')\n`
-  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
-  migrationContent += `    .execute()\n`
-  migrationContent += `    }\n`
-
-  const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-passkeys-table.ts`
-
-  Bun.write(path.userMigrationsPath(migrationFileName), migrationContent)
-
-  log.success(`Created migrations: ${italic(migrationFileName)}`)
-}
-
-async function createUpvoteMigration(model: Model, modelName: string, tableName: string) {
-  const migrationTable = getUpvoteTableName(model, tableName)
-
-  const hasBeenMigrated = await hasMigrationBeenCreated(migrationTable)
-
-  const foreignKey = getUpvoteForeignKey(model, modelName)
-
-  if (hasBeenMigrated)
-    return
-
-  let migrationContent = `import type { Database } from '@stacksjs/database'\n import { sql } from '@stacksjs/database'\n\n`
-  migrationContent += `export async function up(db: Database<any>) {\n`
-  migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('${migrationTable}')\n`
-  migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
-  migrationContent += `    .addColumn('user_id', 'integer', col => col.notNull())\n`
-  migrationContent += `    .addColumn('${foreignKey}', 'integer', col => col.notNull())\n`
-  migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
-  migrationContent += `    .execute()\n`
-  migrationContent += `    }\n`
-
-  const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-passkeys-table.ts`
-
-  const migrationFilePath = path.userMigrationsPath(migrationFileName)
-
-  Bun.write(migrationFilePath, migrationContent)
-
-  log.success(`Created migration: ${italic(migrationFileName)}`)
-}
-
-function getUpvoteTableName(model: Model, tableName: string): string {
-  const defaultTable = `${tableName}_likes`
-  const traits = model.traits
-
-  return typeof traits?.likeable === 'object'
-    ? traits.likeable.table || defaultTable
-    : defaultTable
-}
-
-function getUpvoteForeignKey(model: Model, modelName: string): string {
-  const defaultForeignKey = `${snakeCase(modelName)}_id`
-  const traits = model.traits
-
-  return typeof traits?.likeable === 'object'
-    ? traits.likeable.foreignKey || defaultForeignKey
-    : defaultForeignKey
-}
-
 async function createAlterTableMigration(modelPath: string) {
   const model = (await import(modelPath)).default as Model
   const modelName = getModelName(model, modelPath)
   const tableName = getTableName(model, modelPath)
   let hasChanged = false
 
+  // Get the previous model to compare indexes
+  const oldModelPath = path.frameworkPath(`models/${modelName}.ts`)
+  const oldModel = (await import(oldModelPath)).default as Model
+
   // Assuming you have a function to get the fields from the last migration
-  // For simplicity, this is not implemented here
   const lastMigrationFields = await getLastMigrationFields(modelName)
   const lastFields = lastMigrationFields ?? {}
-  const currentFields = model.attributes as Attributes
+  const currentFields = model.attributes as AttributesElements
 
   // Determine fields to add and remove
-
   const changes = pluckChanges(Object.keys(lastFields), Object.keys(currentFields))
-
   const fieldsToAdd = changes?.added || []
-
   const fieldsToRemove = changes?.removed || []
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
@@ -405,12 +348,20 @@ async function createAlterTableMigration(modelPath: string) {
     migrationContent += `    .addColumn('${formattedFieldName}', ${columnType}`
 
     // Check if there are configurations that require the lambda function
-    if (options.unique || options?.required) {
+    if (options.unique || options?.required || options.default !== undefined) {
       migrationContent += `, col => col`
       if (options.unique)
         migrationContent += `.unique()`
       if (options?.required)
         migrationContent += `.notNull()`
+      if (options.default !== undefined) {
+        if (typeof options.default === 'string')
+          migrationContent += `.defaultTo('${options.default}')`
+        else if (options.default === null)
+          migrationContent += `.defaultTo(null)`
+        else
+          migrationContent += `.defaultTo(${options.default})`
+      }
       migrationContent += ``
     }
 
@@ -431,6 +382,26 @@ async function createAlterTableMigration(modelPath: string) {
     migrationContent += reArrangeColumns(model.attributes, tableName)
   }
 
+  // Handle index changes
+  const oldIndexes = oldModel.indexes || []
+  const newIndexes = model.indexes || []
+
+  // Drop removed indexes
+  for (const oldIndex of oldIndexes) {
+    if (!newIndexes.find(newIndex => newIndex.name === oldIndex.name)) {
+      hasChanged = true
+      migrationContent += `  await db.schema.dropIndex('${oldIndex.name}').execute()\n`
+    }
+  }
+
+  // Add new indexes
+  for (const newIndex of newIndexes) {
+    if (!oldIndexes.find(oldIndex => oldIndex.name === newIndex.name)) {
+      hasChanged = true
+      migrationContent += generateIndexCreationSQL(tableName, newIndex.name, newIndex.columns)
+    }
+  }
+
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
@@ -439,12 +410,11 @@ async function createAlterTableMigration(modelPath: string) {
 
   if (hasChanged) {
     Bun.write(migrationFilePath, migrationContent)
-
     log.success(`Created migration: ${italic(migrationFileName)}`)
   }
 }
 
-function reArrangeColumns(attributes: Attributes | undefined, tableName: string): string {
+function reArrangeColumns(attributes: AttributesElements | undefined, tableName: string): string {
   const fields = arrangeColumns(attributes)
   let migrationContent = ''
 
@@ -463,4 +433,16 @@ function reArrangeColumns(attributes: Attributes | undefined, tableName: string)
   }
 
   return migrationContent
+}
+
+function generateIndexCreationSQL(tableName: string, indexName: string, columns: string[]): string {
+  const columnsStr = columns.map(col => `'${snakeCase(col)}'`).join(', ')
+  return `  await db.schema.createIndex('${indexName}').on('${tableName}').columns([${columnsStr}]).execute()\n`
+}
+function generatePrimaryKeyIndexSQL(tableName: string): string {
+  return `  await db.schema.createIndex('${tableName}_id_index').on('${tableName}').column('id').execute()\n`
+}
+
+function generateForeignKeyIndexSQL(tableName: string, foreignKey: string): string {
+  return `  await db.schema.createIndex('${tableName}_${foreignKey}_index').on('${tableName}').column('${foreignKey}').execute()\n\n`
 }

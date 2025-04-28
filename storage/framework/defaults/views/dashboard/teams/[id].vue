@@ -16,7 +16,7 @@
       </div>
       <div class="py-2">
         <div class="flex flex-row rounded-lg bg-gray-50 p-4 text-sm text-gray-600 dark:bg-blue-gray-700 dark:text-gray-400">
-          <div class="i-heroicons-information-circle h-6 w-6 flex-shrink-0 text-gray-400" />
+          <div class="i-hugeicons-information-circle h-6 w-6 flex-shrink-0 text-gray-400" />
           <div class="ml-4 mt-0.5 flex flex-grow">
             <p class="">
               You can add teammates here.
@@ -102,7 +102,7 @@
                     <a
                       href="#"
                       class="text-gray-400 hover:text-blue-gray-500"
-                    ><div class="i-heroicons-ellipsis-vertical h-6 w-6" /></a>
+                    ><div class="i-hugeicons-ellipsis-vertical h-6 w-6" /></a>
                   </td>
                 </tr>
                 <tr>
@@ -118,8 +118,8 @@
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                     <a
                       href="#"
-                      class="text-gray-400 hover:text-blue-gray-500"
-                    ><div class="i-heroicons-ellipsis-vertical h-6 w-6" /></a>
+                      class="text-gray-400 hover:text-blue-gray-500 transition-colors duration-150"
+                    ><div class="i-hugeicons-ellipsis-vertical h-6 w-6" /></a>
                   </td>
                 </tr>
               </tbody>

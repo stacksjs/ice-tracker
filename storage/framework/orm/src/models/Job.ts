@@ -1,25 +1,33 @@
-import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import { cache } from '@stacksjs/cache'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/orm'
 import { sql } from '@stacksjs/database'
-import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { dispatch } from '@stacksjs/events'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { HttpError } from '@stacksjs/error-handling'
+import { DB } from '@stacksjs/orm'
+import { BaseOrm } from '../utils/base'
 
 export interface JobsTable {
-  id?: number
-  queue?: string
-  payload?: string
+  id: Generated<number>
+  queue: string
+  payload: string
   attempts?: number
   available_at?: number
   reserved_at?: Date | string
 
-  created_at?: Date
+  created_at?: string
 
-  updated_at?: Date
+  updated_at?: string
 
 }
 
-interface JobResponse {
+// Type for reading model data (created_at is required)
+export type JobRead = JobsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type JobWrite = Omit<JobsTable, 'created_at'> & {
+  created_at?: string
+}
+
+export interface JobResponse {
   data: JobJsonResponse[]
   paging: {
     total_records: number
@@ -29,40 +37,36 @@ interface JobResponse {
   next_cursor: number | null
 }
 
-export interface JobJsonResponse extends Omit<JobsTable, 'password'> {
+export interface JobJsonResponse extends Omit<Selectable<JobRead>, 'password'> {
   [key: string]: any
 }
 
-export type JobType = Selectable<JobsTable>
-export type NewJob = Partial<Insertable<JobsTable>>
-export type JobUpdate = Updateable<JobsTable>
+export type NewJob = Insertable<JobWrite>
+export type JobUpdate = Updateable<JobWrite>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: JobType, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
-export class JobModel {
+export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
   private readonly hidden: Array<keyof JobJsonResponse> = []
   private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
   private readonly guarded: Array<keyof JobJsonResponse> = []
-  protected attributes: Partial<JobType> = {}
-  protected originalAttributes: Partial<JobType> = {}
+  protected attributes = {} as JobJsonResponse
+  protected originalAttributes = {} as JobJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(job: Partial<JobType> | null) {
+  /**
+   * This model inherits many query methods from BaseOrm:
+   * - pluck, chunk, whereExists, has, doesntHave, whereHas, whereDoesntHave
+   * - inRandomOrder, max, min, avg, paginate, get, and more
+   *
+   * See BaseOrm class for the full list of inherited methods.
+   */
+
+  constructor(job: JobJsonResponse | undefined) {
+    super('jobs')
     if (job) {
       this.attributes = { ...job }
       this.originalAttributes = { ...job }
@@ -79,18 +83,103 @@ export class JobModel {
     this.updateFromQuery = DB.instance.updateTable('jobs')
     this.deleteFromQuery = DB.instance.deleteFrom('jobs')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
-  get id(): number | undefined {
+  protected async loadRelations(models: JobJsonResponse | JobJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('job_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: JobJsonResponse) => {
+          const records = relatedRecords.filter((record: { job_id: number }) => {
+            return record.job_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { job_id: number }) => {
+          return record.job_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
+  protected mapCustomGetters(models: JobJsonResponse | JobJsonResponse[]): void {
+    const data = models
+
+    if (Array.isArray(data)) {
+      data.map((model: JobJsonResponse) => {
+        const customGetter = {
+          default: () => {
+          },
+
+        }
+
+        for (const [key, fn] of Object.entries(customGetter)) {
+          (model as any)[key] = fn()
+        }
+
+        return model
+      })
+    }
+    else {
+      const model = data
+
+      const customGetter = {
+        default: () => {
+        },
+
+      }
+
+      for (const [key, fn] of Object.entries(customGetter)) {
+        (model as any)[key] = fn()
+      }
+    }
+  }
+
+  async mapCustomSetters(model: NewJob | JobUpdate): Promise<void> {
+    const customSetter = {
+      default: () => {
+      },
+
+    }
+
+    for (const [key, fn] of Object.entries(customSetter)) {
+      (model as any)[key] = await fn()
+    }
+  }
+
+  get id(): number {
     return this.attributes.id
   }
 
-  get queue(): string | undefined {
+  get queue(): string {
     return this.attributes.queue
   }
 
-  get payload(): string | undefined {
+  get payload(): string {
     return this.attributes.payload
   }
 
@@ -106,11 +195,11 @@ export class JobModel {
     return this.attributes.reserved_at
   }
 
-  get created_at(): Date | undefined {
+  get created_at(): string | undefined {
     return this.attributes.created_at
   }
 
-  get updated_at(): Date | undefined {
+  get updated_at(): string | undefined {
     return this.attributes.updated_at
   }
 
@@ -134,590 +223,486 @@ export class JobModel {
     this.attributes.reserved_at = value
   }
 
-  set updated_at(value: Date) {
+  set updated_at(value: string) {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof JobType): Partial<JobType> | any {
-    if (column) {
-      return this.originalAttributes[column]
-    }
+  static select(params: (keyof JobJsonResponse)[] | RawBuilder<string> | string): JobModel {
+    const instance = new JobModel(undefined)
 
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<JobJsonResponse> {
-    return this.fillable.reduce<Partial<JobJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof JobsTable]
-      const originalValue = this.originalAttributes[key as keyof JobsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
-  isDirty(column?: keyof JobType): boolean {
-    if (column) {
-      return this.attributes[column] !== this.originalAttributes[column]
-    }
-
-    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
-      const currentValue = (this.attributes as any)[key]
-
-      return currentValue !== originalValue
-    })
-  }
-
-  isClean(column?: keyof JobType): boolean {
-    return !this.isDirty(column)
-  }
-
-  wasChanged(column?: keyof JobType): boolean {
-    return this.hasSaved && this.isDirty(column)
-  }
-
-  select(params: (keyof JobType)[] | RawBuilder<string> | string): JobModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
-  }
-
-  static select(params: (keyof JobType)[] | RawBuilder<string> | string): JobModel {
-    const instance = new JobModel(null)
-
-    // Initialize a query with the table name and selected fields
-    instance.selectFromQuery = instance.selectFromQuery.select(params)
-
-    instance.hasSelect = true
-
-    return instance
-  }
-
-  async applyFind(id: number): Promise<JobModel | undefined> {
-    const model = await DB.instance.selectFrom('jobs').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new JobModel(result as JobType)
-
-    cache.getOrSet(`job:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<JobModel | undefined> {
-    return await this.applyFind(id)
+    return instance.applySelect(params)
   }
 
   // Method to find a Job by ID
   static async find(id: number): Promise<JobModel | undefined> {
-    const instance = new JobModel(null)
+    const query = DB.instance.selectFrom('jobs').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
-  }
+    const model = await query.executeTakeFirst()
 
-  async first(): Promise<JobModel | undefined> {
-    return await JobModel.first()
+    if (!model)
+      return undefined
+
+    const instance = new JobModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<JobModel | undefined> {
-    const model = await DB.instance.selectFrom('jobs')
+    const instance = new JobModel(undefined)
+
+    const model = await instance.applyFirst()
+
+    const data = new JobModel(model)
+
+    return data
+  }
+
+  static async last(): Promise<JobModel | undefined> {
+    const instance = new JobModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new JobModel(model)
+  }
+
+  static async firstOrFail(): Promise<JobModel | undefined> {
+    const instance = new JobModel(undefined)
+
+    return await instance.applyFirstOrFail()
+  }
+
+  static async all(): Promise<JobModel[]> {
+    const instance = new JobModel(undefined)
+
+    const models = await DB.instance.selectFrom('jobs').selectAll().execute()
+
+    instance.mapCustomGetters(models)
+
+    const data = await Promise.all(models.map(async (model: JobJsonResponse) => {
+      return new JobModel(model)
+    }))
+
+    return data
+  }
+
+  static async findOrFail(id: number): Promise<JobModel | undefined> {
+    const instance = new JobModel(undefined)
+
+    return await instance.applyFindOrFail(id)
+  }
+
+  static async findMany(ids: number[]): Promise<JobModel[]> {
+    const instance = new JobModel(undefined)
+
+    const models = await instance.applyFindMany(ids)
+
+    return models.map((modelItem: JobJsonResponse) => instance.parseResult(new JobModel(modelItem)))
+  }
+
+  static async latest(column: keyof JobsTable = 'created_at'): Promise<JobModel | undefined> {
+    const instance = new JobModel(undefined)
+
+    const model = await instance.selectFromQuery
       .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
       .executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new JobModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new JobModel(result as JobType)
-
-    return data
+    return new JobModel(model)
   }
 
-  async firstOrFail(): Promise<JobModel | undefined> {
-    return await JobModel.firstOrFail()
-  }
+  static async oldest(column: keyof JobsTable = 'created_at'): Promise<JobModel | undefined> {
+    const instance = new JobModel(undefined)
 
-  static async firstOrFail(): Promise<JobModel | undefined> {
-    const instance = new JobModel(null)
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
 
-    const model = await instance.selectFromQuery.executeTakeFirst()
+    if (!model)
+      return undefined
 
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No JobModel results found for query')
-
-    const result = await instance.mapWith(model)
-
-    const data = new JobModel(result as JobType)
-
-    return data
-  }
-
-  async mapWith(model: JobType): Promise<JobType> {
-    return model
-  }
-
-  static async all(): Promise<JobModel[]> {
-    const models = await DB.instance.selectFrom('jobs').selectAll().execute()
-
-    const data = await Promise.all(models.map(async (model: JobType) => {
-      const instance = new JobModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new JobModel(results)
-    }))
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<JobModel> {
-    return await JobModel.findOrFail(id)
-  }
-
-  static async findOrFail(id: number): Promise<JobModel> {
-    const model = await DB.instance.selectFrom('jobs').where('id', '=', id).selectAll().executeTakeFirst()
-
-    const instance = new JobModel(null)
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No JobModel results for ${id}`)
-
-    cache.getOrSet(`job:${id}`, JSON.stringify(model))
-
-    const result = await instance.mapWith(model)
-
-    const data = new JobModel(result as JobType)
-
-    return data
-  }
-
-  static async findMany(ids: number[]): Promise<JobModel[]> {
-    let query = DB.instance.selectFrom('jobs').where('id', 'in', ids)
-
-    const instance = new JobModel(null)
-
-    query = query.selectAll()
-
-    const model = await query.execute()
-
-    return model.map((modelItem: JobModel) => instance.parseResult(new JobModel(modelItem)))
-  }
-
-  skip(count: number): JobModel {
-    return JobModel.skip(count)
+    return new JobModel(model)
   }
 
   static skip(count: number): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
-  }
-
-  async chunk(size: number, callback: (models: JobModel[]) => Promise<void>): Promise<void> {
-    await JobModel.chunk(size, callback)
-  }
-
-  static async chunk(size: number, callback: (models: JobModel[]) => Promise<void>): Promise<void> {
-    let page = 1
-    let hasMore = true
-
-    while (hasMore) {
-      const instance = new JobModel(null)
-
-      // Get one batch
-      const models = await instance.selectFromQuery
-        .limit(size)
-        .offset((page - 1) * size)
-        .execute()
-
-      // If we got fewer results than chunk size, this is the last batch
-      if (models.length < size) {
-        hasMore = false
-      }
-
-      // Process this batch
-      if (models.length > 0) {
-        await callback(models)
-      }
-
-      page++
-    }
-  }
-
-  take(count: number): JobModel {
-    return JobModel.take(count)
+    return instance.applySkip(count)
   }
 
   static take(count: number): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
-  static async pluck<K extends keyof JobModel>(field: K): Promise<JobModel[K][]> {
-    const instance = new JobModel(null)
+  static where<V = string>(column: keyof JobsTable, ...args: [V] | [Operator, V]): JobModel {
+    const instance = new JobModel(undefined)
 
-    if (instance.hasSelect) {
-      const model = await instance.selectFromQuery.execute()
-      return model.map((modelItem: JobModel) => modelItem[field])
-    }
-
-    const model = await instance.selectFromQuery.selectAll().execute()
-
-    return model.map((modelItem: JobModel) => modelItem[field])
+    return instance.applyWhere<V>(column, ...args)
   }
 
-  async pluck<K extends keyof JobModel>(field: K): Promise<JobModel[K][]> {
-    return JobModel.pluck(field)
+  static orWhere(...conditions: [string, any][]): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof JobsTable, values: V[]): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
+  static whereBetween<V = number>(column: keyof JobsTable, range: [V, V]): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof JobsTable, ...args: string[]): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: JobModel) => JobModel): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof JobsTable): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof JobsTable): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhereNotNull(column)
+  }
+
+  static whereLike(column: keyof JobsTable, value: string): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof JobsTable, order: 'asc' | 'desc'): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof JobsTable): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof JobsTable): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof JobsTable): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof JobsTable, operator: Operator, value: V): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
+  }
+
+  static inRandomOrder(): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof JobsTable, operator: Operator, second: keyof JobsTable): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
+  }
+
+  static async max(field: keyof JobsTable): Promise<number> {
+    const instance = new JobModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof JobsTable): Promise<number> {
+    const instance = new JobModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof JobsTable): Promise<number> {
+    const instance = new JobModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof JobsTable): Promise<number> {
+    const instance = new JobModel(undefined)
+
+    return await instance.applySum(field)
   }
 
   static async count(): Promise<number> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
-    const result = await instance.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
-
-    return result.count || 0
-  }
-
-  async count(): Promise<number> {
-    const result = await this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
-
-    return result.count || 0
-  }
-
-  async max(field: keyof JobModel): Promise<number> {
-    return await this.selectFromQuery
-      .select(sql`MAX(${sql.raw(field as string)}) `)
-      .executeTakeFirst()
-  }
-
-  async min(field: keyof JobModel): Promise<number> {
-    return await this.selectFromQuery
-      .select(sql`MIN(${sql.raw(field as string)}) `)
-      .executeTakeFirst()
-  }
-
-  async avg(field: keyof JobModel): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`AVG(${sql.raw(field as string)})`)
-      .executeTakeFirst()
-  }
-
-  async sum(field: keyof JobModel): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`SUM(${sql.raw(field as string)})`)
-      .executeTakeFirst()
-  }
-
-  async applyGet(): Promise<JobModel[]> {
-    let models
-
-    if (this.hasSelect) {
-      models = await this.selectFromQuery.execute()
-    }
-    else {
-      models = await this.selectFromQuery.selectAll().execute()
-    }
-
-    const data = await Promise.all(models.map(async (model: JobModel) => {
-      const instance = new JobModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new JobModel(results)
-    }))
-
-    return data
-  }
-
-  async get(): Promise<JobModel[]> {
-    return await this.applyGet()
+    return instance.applyCount()
   }
 
   static async get(): Promise<JobModel[]> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
-    return await instance.applyGet()
+    const results = await instance.applyGet()
+
+    return results.map((item: JobJsonResponse) => instance.createInstance(item))
   }
 
-  has(relation: string): JobModel {
-    return JobModel.has(relation)
+  static async pluck<K extends keyof JobModel>(field: K): Promise<JobModel[K][]> {
+    const instance = new JobModel(undefined)
+
+    return await instance.applyPluck(field)
   }
 
-  static has(relation: string): JobModel {
-    const instance = new JobModel(null)
+  static async chunk(size: number, callback: (models: JobModel[]) => Promise<void>): Promise<void> {
+    const instance = new JobModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.job_id`, '=', 'jobs.id'),
-      ),
-    )
-
-    return instance
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: JobJsonResponse) => instance.createInstance(item))
+      await callback(modelInstances)
+    })
   }
 
-  static whereExists(callback: (qb: any) => any): JobModel {
-    const instance = new JobModel(null)
+  static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
+    data: JobModel[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }> {
+    const instance = new JobModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(callback({ exists, selectFrom })),
-    )
-
-    return instance
-  }
-
-  whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): JobModel {
-    return JobModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): JobModel {
-    const instance = new JobModel(null)
-    const subqueryBuilder = new SubqueryBuilder()
-
-    callback(subqueryBuilder)
-    const conditions = subqueryBuilder.getConditions()
-
-    instance.selectFromQuery = instance.selectFromQuery
-      .where(({ exists, selectFrom }: any) => {
-        let subquery = selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.job_id`, '=', 'jobs.id')
-
-        conditions.forEach((condition) => {
-          switch (condition.method) {
-            case 'where':
-              if (condition.type === 'and') {
-                subquery = subquery.where(condition.column, condition.operator!, condition.value)
-              }
-              else {
-                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
-              }
-              break
-
-            case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
-              }
-              else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
-              }
-
-              break
-
-            case 'whereNull':
-              subquery = subquery.whereNull(condition.column)
-              break
-
-            case 'whereNotNull':
-              subquery = subquery.whereNotNull(condition.column)
-              break
-
-            case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
-              break
-
-            case 'whereExists': {
-              const nestedBuilder = new SubqueryBuilder()
-              condition.callback!(nestedBuilder)
-              break
-            }
-          }
-        })
-
-        return exists(subquery)
-      })
-
-    return instance
-  }
-
-  applyDoesntHave(relation: string): JobModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
-      not(
-        exists(
-          selectFrom(relation)
-            .select('1')
-            .whereRef(`${relation}.job_id`, '=', 'jobs.id'),
-        ),
-      ),
-    )
-
-    return this
-  }
-
-  doesntHave(relation: string): JobModel {
-    return this.applyDoesntHave(relation)
-  }
-
-  static doesntHave(relation: string): JobModel {
-    const instance = new JobModel(null)
-
-    return instance.doesntHave(relation)
-  }
-
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): JobModel {
-    const subqueryBuilder = new SubqueryBuilder()
-
-    callback(subqueryBuilder)
-    const conditions = subqueryBuilder.getConditions()
-
-    this.selectFromQuery = this.selectFromQuery
-      .where(({ exists, selectFrom, not }: any) => {
-        let subquery = selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.job_id`, '=', 'jobs.id')
-
-        conditions.forEach((condition) => {
-          switch (condition.method) {
-            case 'where':
-              if (condition.type === 'and') {
-                subquery = subquery.where(condition.column, condition.operator!, condition.value)
-              }
-              else {
-                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
-              }
-              break
-
-            case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
-              }
-              else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
-              }
-
-              break
-
-            case 'whereNull':
-              subquery = subquery.whereNull(condition.column)
-              break
-
-            case 'whereNotNull':
-              subquery = subquery.whereNotNull(condition.column)
-              break
-
-            case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
-              break
-
-            case 'whereExists': {
-              const nestedBuilder = new SubqueryBuilder()
-              condition.callback!(nestedBuilder)
-              break
-            }
-          }
-        })
-
-        return not(exists(subquery))
-      })
-
-    return this
-  }
-
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): JobModel {
-    return this.applyWhereDoesntHave(relation, callback)
-  }
-
-  static whereDoesntHave(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): JobModel {
-    const instance = new JobModel(null)
-
-    return instance.applyWhereDoesntHave(relation, callback)
-  }
-
-  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<JobResponse> {
-    const totalRecordsResult = await DB.instance.selectFrom('jobs')
-      .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    const jobsWithExtra = await DB.instance.selectFrom('jobs')
-      .selectAll()
-      .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
-      .limit((options.limit ?? 10) + 1) // Fetch one extra record
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (jobsWithExtra.length > (options.limit ?? 10))
-      nextCursor = jobsWithExtra.pop()?.id ?? null
+    const result = await instance.applyPaginate(options)
 
     return {
-      data: jobsWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
+      data: result.data.map((item: JobJsonResponse) => instance.createInstance(item)),
+      paging: result.paging,
+      next_cursor: result.next_cursor,
     }
   }
 
-  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<JobResponse> {
-    return await this.applyPaginate(options)
+  // Instance method for creating model instances
+  createInstance(data: JobJsonResponse): JobModel {
+    return new JobModel(data)
   }
 
-  // Method to get all jobs
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<JobResponse> {
-    const instance = new JobModel(null)
-
-    return await instance.applyPaginate(options)
-  }
-
-  static async create(newJob: NewJob): Promise<JobModel> {
-    const instance = new JobModel(null)
-
+  async applyCreate(newJob: NewJob): Promise<JobModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newJob).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewJob
+
+    await this.mapCustomSetters(filteredValues)
 
     const result = await DB.instance.insertInto('jobs')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as JobModel
+    const model = await DB.instance.selectFrom('jobs')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    if (model)
-      dispatch('job:created', model)
+    if (!model) {
+      throw new HttpError(500, 'Failed to retrieve created Job')
+    }
 
-    return model
+    return this.createInstance(model)
+  }
+
+  async create(newJob: NewJob): Promise<JobModel> {
+    return await this.applyCreate(newJob)
+  }
+
+  static async create(newJob: NewJob): Promise<JobModel> {
+    const instance = new JobModel(undefined)
+    return await instance.applyCreate(newJob)
+  }
+
+  static async firstOrCreate(search: Partial<JobsTable>, values: NewJob = {} as NewJob): Promise<JobModel> {
+    // First try to find a record matching the search criteria
+    const instance = new JobModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return instance.createInstance(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewJob
+    return await JobModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<JobsTable>, values: NewJob = {} as NewJob): Promise<JobModel> {
+    // First try to find a record matching the search criteria
+    const instance = new JobModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = instance.createInstance(existingRecord)
+      const updatedModel = await model.update(values as JobUpdate)
+
+      // Return the updated model instance
+      if (updatedModel) {
+        return updatedModel
+      }
+
+      // If update didn't return a model, fetch it again to ensure we have latest data
+      const refreshedModel = await instance.applyFirst()
+      return instance.createInstance(refreshedModel!)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewJob
+    return await JobModel.create(createData)
+  }
+
+  async update(newJob: JobUpdate): Promise<JobModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newJob).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as JobUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    filteredValues.updated_at = new Date().toISOString()
+
+    await DB.instance.updateTable('jobs')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      // Get the updated data
+      const model = await DB.instance.selectFrom('jobs')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!model) {
+        throw new HttpError(500, 'Failed to retrieve updated Job')
+      }
+
+      return this.createInstance(model)
+    }
+
+    return undefined
+  }
+
+  async forceUpdate(newJob: JobUpdate): Promise<JobModel | undefined> {
+    await DB.instance.updateTable('jobs')
+      .set(newJob)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      // Get the updated data
+      const model = await DB.instance.selectFrom('jobs')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!model) {
+        throw new HttpError(500, 'Failed to retrieve updated Job')
+      }
+
+      return this.createInstance(model)
+    }
+
+    return undefined
+  }
+
+  async save(): Promise<JobModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('jobs')
+        .set(this.attributes as JobUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      // Get the updated data
+      const model = await DB.instance.selectFrom('jobs')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!model) {
+        throw new HttpError(500, 'Failed to retrieve updated Job')
+      }
+
+      return this.createInstance(model)
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('jobs')
+        .values(this.attributes as NewJob)
+        .executeTakeFirst()
+
+      // Get the created data
+      const model = await DB.instance.selectFrom('jobs')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!model) {
+        throw new HttpError(500, 'Failed to retrieve created Job')
+      }
+
+      return this.createInstance(model)
+    }
   }
 
   static async createMany(newJob: NewJob[]): Promise<void> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     const valuesFiltered = newJob.map((newJob: NewJob) => {
       const filteredValues = Object.fromEntries(
@@ -739,174 +724,39 @@ export class JobModel {
       .values(newJob)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as JobModel
+    const instance = new JobModel(undefined)
+    const model = await DB.instance.selectFrom('jobs')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!model) {
+      throw new HttpError(500, 'Failed to retrieve created Job')
+    }
+
+    return instance.createInstance(model)
   }
 
   // Method to remove a Job
+  async delete(): Promise<number> {
+    if (this.id === undefined)
+      this.deleteFromQuery.execute()
+
+    const deleted = await DB.instance.deleteFrom('jobs')
+      .where('id', '=', this.id)
+      .execute()
+
+    return deleted.numDeletedRows
+  }
+
   static async remove(id: number): Promise<any> {
     return await DB.instance.deleteFrom('jobs')
       .where('id', '=', id)
       .execute()
   }
 
-  applyWhere(instance: JobModel, column: string, ...args: any[]): JobModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
-
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
-
-    return instance
-  }
-
-  where(column: string, ...args: any[]): JobModel {
-    return this.applyWhere(this, column, ...args)
-  }
-
-  static where(column: string, ...args: any[]): JobModel {
-    const instance = new JobModel(null)
-
-    return instance.applyWhere(instance, column, ...args)
-  }
-
-  whereColumn(first: string, operator: string, second: string): JobModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
-
-    return this
-  }
-
-  static whereColumn(first: string, operator: string, second: string): JobModel {
-    const instance = new JobModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
-
-    return instance
-  }
-
-  whereRef(column: string, ...args: string[]): JobModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
-
-    const instance = new JobModel(null)
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
-
-    return instance
-  }
-
-  whereRef(column: string, ...args: string[]): JobModel {
-    return this.whereRef(column, ...args)
-  }
-
-  static whereRef(column: string, ...args: string[]): JobModel {
-    const instance = new JobModel(null)
-
-    return instance.whereRef(column, ...args)
-  }
-
-  whereRaw(sqlStatement: string): JobModel {
-    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
-
-    return this
-  }
-
-  static whereRaw(sqlStatement: string): JobModel {
-    const instance = new JobModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
-
-    return instance
-  }
-
-  orWhere(...conditions: [string, any][]): JobModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    return this
-  }
-
-  static orWhere(...conditions: [string, any][]): JobModel {
-    const instance = new JobModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    return instance
-  }
-
-  when(
-    condition: boolean,
-    callback: (query: JobModel) => JobModel,
-  ): JobModel {
-    return JobModel.when(condition, callback)
-  }
-
-  static when(
-    condition: boolean,
-    callback: (query: JobModel) => JobModel,
-  ): JobModel {
-    let instance = new JobModel(null)
-
-    if (condition)
-      instance = callback(instance)
-
-    return instance
-  }
-
-  whereNull(column: string): JobModel {
-    return JobModel.whereNull(column)
-  }
-
-  static whereNull(column: string): JobModel {
-    const instance = new JobModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return instance
-  }
-
   static whereQueue(value: string): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('queue', '=', value)
 
@@ -914,7 +764,7 @@ export class JobModel {
   }
 
   static wherePayload(value: string): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('payload', '=', value)
 
@@ -922,7 +772,7 @@ export class JobModel {
   }
 
   static whereAttempts(value: string): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('attempts', '=', value)
 
@@ -930,7 +780,7 @@ export class JobModel {
   }
 
   static whereAvailableAt(value: string): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('available_at', '=', value)
 
@@ -938,443 +788,33 @@ export class JobModel {
   }
 
   static whereReservedAt(value: string): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('reserved_at', '=', value)
 
     return instance
   }
 
-  whereIn(column: keyof JobType, values: any[]): JobModel {
-    return JobModel.whereIn(column, values)
+  static whereIn<V = number>(column: keyof JobsTable, values: V[]): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
   }
 
-  static whereIn(column: keyof JobType, values: any[]): JobModel {
-    const instance = new JobModel(null)
+  static distinct(column: keyof JobJsonResponse): JobModel {
+    const instance = new JobModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-
-    return instance
-  }
-
-  whereBetween(column: keyof JobType, range: [any, any]): JobModel {
-    return JobModel.whereBetween(column, range)
-  }
-
-  whereLike(column: keyof JobType, value: string): JobModel {
-    return JobModel.whereLike(column, value)
-  }
-
-  static whereLike(column: keyof JobType, value: string): JobModel {
-    const instance = new JobModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    return instance
-  }
-
-  static whereBetween(column: keyof JobType, range: [any, any]): JobModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const instance = new JobModel(null)
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    instance.selectFromQuery = instance.selectFromQuery.where(query)
-    instance.updateFromQuery = instance.updateFromQuery.where(query)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(query)
-
-    return instance
-  }
-
-  whereNotIn(column: keyof JobType, values: any[]): JobModel {
-    return JobModel.whereNotIn(column, values)
-  }
-
-  static whereNotIn(column: keyof JobType, values: any[]): JobModel {
-    const instance = new JobModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
-
-    return instance
-  }
-
-  async exists(): Promise<boolean> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    return model !== null || model !== undefined
-  }
-
-  static async latest(): Promise<JobType | undefined> {
-    const model = await DB.instance.selectFrom('jobs')
-      .selectAll()
-      .orderBy('created_at', 'desc')
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new JobModel(null)
-    const result = await instance.mapWith(model)
-    const data = new JobModel(result as JobType)
-
-    return data
-  }
-
-  static async oldest(): Promise<JobType | undefined> {
-    const model = await DB.instance.selectFrom('jobs')
-      .selectAll()
-      .orderBy('created_at', 'asc')
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new JobModel(null)
-    const result = await instance.mapWith(model)
-    const data = new JobModel(result as JobType)
-
-    return data
-  }
-
-  static async firstOrCreate(
-    condition: Partial<JobType>,
-    newJob: NewJob,
-  ): Promise<JobModel> {
-    // Get the key and value from the condition object
-    const key = Object.keys(condition)[0] as keyof JobType
-
-    if (!key) {
-      throw new HttpError(500, 'Condition must contain at least one key-value pair')
-    }
-
-    const value = condition[key]
-
-    // Attempt to find the first record matching the condition
-    const existingJob = await DB.instance.selectFrom('jobs')
-      .selectAll()
-      .where(key, '=', value)
-      .executeTakeFirst()
-
-    if (existingJob) {
-      const instance = new JobModel(null)
-      const result = await instance.mapWith(existingJob)
-      return new JobModel(result as JobType)
-    }
-    else {
-      return await this.create(newJob)
-    }
-  }
-
-  static async updateOrCreate(
-    condition: Partial<JobType>,
-    newJob: NewJob,
-  ): Promise<JobModel> {
-    const instance = new JobModel(null)
-
-    const key = Object.keys(condition)[0] as keyof JobType
-
-    if (!key) {
-      throw new HttpError(500, 'Condition must contain at least one key-value pair')
-    }
-
-    const value = condition[key]
-
-    // Attempt to find the first record matching the condition
-    const existingJob = await DB.instance.selectFrom('jobs')
-      .selectAll()
-      .where(key, '=', value)
-      .executeTakeFirst()
-
-    if (existingJob) {
-      // If found, update the existing record
-      await DB.instance.updateTable('jobs')
-        .set(newJob)
-        .where(key, '=', value)
-        .executeTakeFirstOrThrow()
-
-      // Fetch and return the updated record
-      const updatedJob = await DB.instance.selectFrom('jobs')
-        .selectAll()
-        .where(key, '=', value)
-        .executeTakeFirst()
-
-      if (!updatedJob) {
-        throw new HttpError(500, 'Failed to fetch updated record')
-      }
-
-      const result = await instance.mapWith(updatedJob)
-
-      instance.hasSaved = true
-
-      return new JobModel(result as JobType)
-    }
-    else {
-      // If not found, create a new record
-      return await this.create(newJob)
-    }
-  }
-
-  with(relations: string[]): JobModel {
-    return JobModel.with(relations)
-  }
-
-  static with(relations: string[]): JobModel {
-    const instance = new JobModel(null)
-
-    instance.withRelations = relations
-
-    return instance
-  }
-
-  async last(): Promise<JobType | undefined> {
-    return await DB.instance.selectFrom('jobs')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
-  }
-
-  static async last(): Promise<JobType | undefined> {
-    const model = await DB.instance.selectFrom('jobs').selectAll().orderBy('id', 'desc').executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new JobModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new JobModel(result as JobType)
-
-    return data
-  }
-
-  orderBy(column: keyof JobType, order: 'asc' | 'desc'): JobModel {
-    return JobModel.orderBy(column, order)
-  }
-
-  static orderBy(column: keyof JobType, order: 'asc' | 'desc'): JobModel {
-    const instance = new JobModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof JobType): JobModel {
-    return JobModel.groupBy(column)
-  }
-
-  static groupBy(column: keyof JobType): JobModel {
-    const instance = new JobModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having(column: keyof JobType, operator: string, value: any): JobModel {
-    return JobModel.having(column, operator, value)
-  }
-
-  static having(column: keyof JobType, operator: string, value: any): JobModel {
-    const instance = new JobModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
-  }
-
-  inRandomOrder(): JobModel {
-    return JobModel.inRandomOrder()
-  }
-
-  static inRandomOrder(): JobModel {
-    const instance = new JobModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return instance
-  }
-
-  orderByDesc(column: keyof JobType): JobModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
-  }
-
-  static orderByDesc(column: keyof JobType): JobModel {
-    const instance = new JobModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
-
-    return instance
-  }
-
-  orderByAsc(column: keyof JobType): JobModel {
-    return JobModel.orderByAsc(column)
-  }
-
-  static orderByAsc(column: keyof JobType): JobModel {
-    const instance = new JobModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
-
-    return instance
-  }
-
-  async update(newJob: JobUpdate): Promise<JobModel | undefined> {
-    const filteredValues = Object.fromEntries(
-      Object.entries(newJob).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
-      ),
-    ) as NewJob
-
-    await DB.instance.updateTable('jobs')
-      .set(filteredValues)
-      .where('id', '=', this.id)
-      .executeTakeFirst()
-
-    if (this.id) {
-      const model = await this.find(this.id)
-
-      return model
-    }
-
-    this.hasSaved = true
-
-    return undefined
-  }
-
-  async forceUpdate(job: JobUpdate): Promise<JobModel | undefined> {
-    if (this.id === undefined) {
-      this.updateFromQuery.set(job).execute()
-    }
-
-    await DB.instance.updateTable('jobs')
-      .set(job)
-      .where('id', '=', this.id)
-      .executeTakeFirst()
-
-    if (this.id) {
-      const model = await this.find(this.id)
-
-      this.hasSaved = true
-
-      return model
-    }
-
-    return undefined
-  }
-
-  async save(): Promise<void> {
-    if (!this)
-      throw new HttpError(500, 'Job data is undefined')
-
-    const filteredValues = Object.fromEntries(
-      Object.entries(this).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
-      ),
-    ) as NewJob
-
-    if (this.id === undefined) {
-      await DB.instance.insertInto('jobs')
-        .values(filteredValues)
-        .executeTakeFirstOrThrow()
-    }
-    else {
-      await this.update(this)
-    }
-
-    this.hasSaved = true
-  }
-
-  fill(data: Partial<JobType>): JobModel {
-    const filteredValues = Object.fromEntries(
-      Object.entries(data).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
-      ),
-    ) as NewJob
-
-    this.attributes = {
-      ...this.attributes,
-      ...filteredValues,
-    }
-
-    return this
-  }
-
-  forceFill(data: Partial<JobType>): JobModel {
-    this.attributes = {
-      ...this.attributes,
-      ...data,
-    }
-
-    return this
-  }
-
-  // Method to delete (soft delete) the job instance
-  async delete(): Promise<any> {
-    if (this.id === undefined)
-      this.deleteFromQuery.execute()
-
-    return await DB.instance.deleteFrom('jobs')
-      .where('id', '=', this.id)
-      .execute()
-  }
-
-  distinct(column: keyof JobType): JobModel {
-    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
-
-    this.hasSelect = true
-
-    return this
-  }
-
-  static distinct(column: keyof JobType): JobModel {
-    const instance = new JobModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
-
-    instance.hasSelect = true
-
-    return instance
-  }
-
-  join(table: string, firstCol: string, secondCol: string): JobModel {
-    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
-
-    return this
+    return instance.applyDistinct(column)
   }
 
   static join(table: string, firstCol: string, secondCol: string): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
-
-    return instance
+    return instance.applyJoin(table, firstCol, secondCol)
   }
 
-  static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(DB.instance)
-  }
-
-  toJSON(): Partial<JobJsonResponse> {
-    const output: Partial<JobJsonResponse> = {
+  toJSON(): JobJsonResponse {
+    const output = {
 
       id: this.id,
       queue: this.queue,
@@ -1400,9 +840,27 @@ export class JobModel {
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<JobModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<JobModel | undefined> {
+export async function find(id: number): Promise<JobModel | undefined> {
   const query = DB.instance.selectFrom('jobs').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -1410,7 +868,8 @@ async function find(id: number): Promise<JobModel | undefined> {
   if (!model)
     return undefined
 
-  return new JobModel(model)
+  const instance = new JobModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -1420,11 +879,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newJob: NewJob): Promise<JobModel> {
-  const result = await DB.instance.insertInto('jobs')
-    .values(newJob)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as JobModel
+  const instance = new JobModel(undefined)
+  return await instance.applyCreate(newJob)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
@@ -1439,37 +895,37 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereQueue(value: string): Promise<JobModel[]> {
   const query = DB.instance.selectFrom('jobs').where('queue', '=', value)
-  const results = await query.execute()
+  const results: JobJsonResponse = await query.execute()
 
-  return results.map((modelItem: JobModel) => new JobModel(modelItem))
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
 }
 
 export async function wherePayload(value: string): Promise<JobModel[]> {
   const query = DB.instance.selectFrom('jobs').where('payload', '=', value)
-  const results = await query.execute()
+  const results: JobJsonResponse = await query.execute()
 
-  return results.map((modelItem: JobModel) => new JobModel(modelItem))
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
 }
 
 export async function whereAttempts(value: number): Promise<JobModel[]> {
   const query = DB.instance.selectFrom('jobs').where('attempts', '=', value)
-  const results = await query.execute()
+  const results: JobJsonResponse = await query.execute()
 
-  return results.map((modelItem: JobModel) => new JobModel(modelItem))
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
 }
 
 export async function whereAvailableAt(value: number): Promise<JobModel[]> {
   const query = DB.instance.selectFrom('jobs').where('available_at', '=', value)
-  const results = await query.execute()
+  const results: JobJsonResponse = await query.execute()
 
-  return results.map((modelItem: JobModel) => new JobModel(modelItem))
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
 }
 
 export async function whereReservedAt(value: Date | string): Promise<JobModel[]> {
   const query = DB.instance.selectFrom('jobs').where('reserved_at', '=', value)
-  const results = await query.execute()
+  const results: JobJsonResponse = await query.execute()
 
-  return results.map((modelItem: JobModel) => new JobModel(modelItem))
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
 }
 
 export const Job = JobModel

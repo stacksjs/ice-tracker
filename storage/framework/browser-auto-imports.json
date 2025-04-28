@@ -444,6 +444,12 @@
     "wordBoundary": true,
     "wordChar": true,
     "dateFormat": true,
-    "now": true
+    "format": true,
+    "now": true,
+    "parse": true,
+    "RetryOptions": true,
+    "Fetch": true,
+    "Slot": true,
+    "Slots": true
   }
 }

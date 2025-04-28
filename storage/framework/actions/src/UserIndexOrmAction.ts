@@ -6,8 +6,8 @@ export default new Action({
   description: 'User Index ORM Action',
   method: 'GET',
   async handle() {
-    const results = User.all()
+    const results = await User.all()
 
-    return json.response(response)
+    return response.json(results)
   },
 })
