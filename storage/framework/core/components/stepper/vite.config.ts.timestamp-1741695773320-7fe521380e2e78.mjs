@@ -56,7 +56,6 @@ var vite_config_default = defineConfig(({ mode }) => {
           {
             format: "es",
             entryFileNames: "index.js",
-            preserveModules: false,
             globals: {
               vue: "Vue",
               "@heroicons/vue": "HeroIcons",
