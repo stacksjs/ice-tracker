@@ -55,6 +55,7 @@
     "stx": "./buddy"
   },
   "dependencies": {
+    "leaflet": "^1.9.4",
     "stacks": "workspace:*"
   },
   "config": {

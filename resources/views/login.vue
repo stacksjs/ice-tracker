@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Login from '../../storage/framework/core/components/auth/src/components/Login.vue'
+
 defineOptions({
   name: 'LoginPage',
 })
@@ -25,8 +25,8 @@ useHead({
 </script>
 
 <template>
-  <main>
-    <Login />
+  <main class="h-screen bg-white">
+    <AuthLogin />
   </main>
 
   <Footer />

@@ -1,12 +1,21 @@
 <script setup lang="ts">
+import { Dialog, DialogPanel } from '@stacksjs/dialog'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useGeolocation } from '@vueuse/core'
 import type { Map as LeafletMap, LatLng, Marker } from 'leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import type { Activity } from '@/types/ice'
 
 // -- Component emits
 const emit = defineEmits(['report'])
+
+const props = defineProps<{
+  activities: Activity[]
+  onReport?: (report: Partial<Activity>) => void
+}>()
+
+console.log(props.activities)
 
 // -- Template refs
 const mapContainer = ref<HTMLElement | null>(null)
@@ -375,7 +384,7 @@ function upvoteActivity() {
       v-if="showActivityDialog && !isSelectingLocation"
       :modelValue="showActivityDialog"
       @close="showActivityDialog = false"
-      class="relative z-[500]"
+      class="relative"
     >
       <!-- Overlay -->
       <div class="fixed inset-0 bg-black bg-opacity-50" aria-hidden="true"></div>
@@ -550,8 +559,7 @@ function upvoteActivity() {
       <!-- Dialog Panel Wrapper -->
       <div class="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel class="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
-          <!-- <Login /> component -->
-          <Login />
+          <AuthLogin />
         </DialogPanel>
       </div>
     </Dialog>

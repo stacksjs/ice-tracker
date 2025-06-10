@@ -5,6 +5,7 @@ meta:
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import type { Activity } from '@/types/ice'
 
 defineOptions({
   name: 'MapPage',
@@ -28,15 +29,7 @@ useHead({
   ],
 })
 
-interface Activity {
-  id: number
-  title: string
-  description: string
-  location: [number, number]
-  date: string
-  severity: 'minor' | 'moderate' | 'severe'
-  images?: File[]
-}
+
 
 const activities = ref<Activity[]>([
   {
@@ -63,12 +56,14 @@ function handleReport(report: Partial<Activity>) {
     title: report.title || '',
     description: report.description || '',
     location: report.location || [0, 0],
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split('T')[0] || '',
     severity: report.severity || 'minor',
     images: report.images
   }
+  
 
   activities.value.unshift(newAccident)
+  
 
   // Here you would typically make an API call to save the report
   // For now, we're just storing it in memory
@@ -79,7 +74,7 @@ function handleReport(report: Partial<Activity>) {
   <Transition name="fade" mode="out-in">
     <MapView
       class="absolute inset-0"
-      :accidents="activities"
+      :activities="activities"
       @report="handleReport"
     />
   </Transition>

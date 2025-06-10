@@ -30,9 +30,9 @@ interface Activity {
   id: number
   title: string
   description: string
-  location: [number, number]
+  location: string
   date: string
-  severity: 'minor' | 'moderate' | 'severe'
+  severity: string
   images?: File[]
 }
 
@@ -42,7 +42,7 @@ const activities = ref<Activity[]>([
     id: 1,
     title: 'Car collision',
     description: 'Two cars collided at intersection',
-    location: [51.505, -0.09],
+    location: '51.505, -0.09',
     date: '2024-03-20',
     severity: 'moderate'
   },
@@ -50,7 +50,7 @@ const activities = ref<Activity[]>([
     id: 2,
     title: 'Bicycle accident',
     description: 'Cyclist hit by opening car door',
-    location: [51.51, -0.1],
+    location: '51.51, -0.1',
     date: '2024-03-19',
     severity: 'minor'
   },
@@ -61,7 +61,7 @@ function handleReport(report: Partial<Activity>) {
     id: activities.value.length + 1,
     title: report.title || '',
     description: report.description || '',
-    location: report.location || [0, 0],
+    location: report.location || '',
     date: new Date().toISOString().split('T')[0] || now().value.toISOString(),
     severity: report.severity || 'minor',
     images: report.images
@@ -84,8 +84,6 @@ function handleReport(report: Partial<Activity>) {
         />
       </Transition>
     </main>
-
-    <BottomNavigation />
   </div>
 </template>
 
