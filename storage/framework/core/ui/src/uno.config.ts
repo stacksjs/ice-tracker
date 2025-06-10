@@ -15,7 +15,6 @@ import {
   transformerVariantGroup,
 
 } from 'unocss'
-import { presetHeadlessUi } from 'unocss-preset-primitives'
 
 const config: UnoConfig = {
   shortcuts: ui.shortcuts,
@@ -31,7 +30,7 @@ const config: UnoConfig = {
   presets: [
     presetUno(), // allows for Tailwind utility classes
     presetAttributify(),
-    presetHeadlessUi(),
+    // presetHeadlessUi(),
     presetForms(), // allows for form Tailwind's form styling
     presetTypography(),
     presetIcons({
@@ -47,11 +46,34 @@ const config: UnoConfig = {
     }),
 
     presetWebFonts({
-      provider: 'bunny', // privacy-friendly Google Web Fonts proxy
+      provider: 'google', // privacy-friendly Google Web Fonts proxy
       fonts: {
-        sans: 'Inter',
-        serif: 'Inter',
-        mono: 'Fira Code',
+        'sans': 'Inter',
+        'serif': 'Inter',
+        'lobster': 'Lobster',
+        'libre': [
+          {
+            name: 'Libre Baskerville',
+            weights: ['400', '500', '700', '800'],
+            italic: true,
+          },
+          {
+            name: 'sans-serif',
+            provider: 'none',
+          },
+        ],
+        'pt-serif': [
+          {
+            name: 'PT Serif',
+            weights: ['400', '500', '700', '800'],
+            italic: true,
+          },
+          {
+            name: 'serif',
+            provider: 'none',
+          },
+        ],
+        'mono': 'Fira Code',
       },
 
       processors: createLocalFontProcessor({
@@ -61,7 +83,7 @@ const config: UnoConfig = {
         // Directory to save the fonts assets
         fontAssetsDir: path.resourcesPath('assets/fonts'),
 
-      // Base URL to serve the fonts from the client
+        // Base URL to serve the fonts from the client
         fontServeBaseUrl: path.resourcesPath('assets/fonts'),
       }),
     }),
@@ -79,6 +101,17 @@ const config: UnoConfig = {
   safelist: ui.safelist?.split(' ') || [],
 
   theme: {
+    colors: {
+      offBrown: '#f8f5e8',
+      offWhite: '#F9F7F1',
+      offGray: '#FFFDF9',
+      offWhiteDarker: '#EAE3CE',
+      warmGray: '#E5DED0',
+      softBrown: '#D4C5A8',
+      deepBrown: '#8B7355',
+      mutedBrown: '#B8A99A',
+      richBrown: '#6B4F4F',
+    },
     extend: {
       colors: {
         primary: '#1F1FE9',
