@@ -1,5 +1,5 @@
 import type { schema } from '@stacksjs/validation'
-import type { ProjectRequestType } from '../types/requests'
+import type { JudgeRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
 import { customValidate, validateField } from '@stacksjs/validation'
 
@@ -11,27 +11,25 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-interface RequestDataProject {
+interface RequestDataJudge {
   id: number
   name: string
-  description: string
-  url: string
-  status: string
+  image_url: string
+  court_house_id: number
   created_at?: string
   updated_at?: string
 }
-export class ProjectRequest extends Request<RequestDataProject> implements ProjectRequestType {
+export class JudgeRequest extends Request<RequestDataJudge> implements JudgeRequestType {
   public id = 1
   public name = ''
-  public description = ''
-  public url = ''
-  public status = ''
+  public image_url = ''
+  public court_house_id = 0
   public created_at = ''
   public updated_at = ''
-
+  public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
-      await validateField('Project', this.all())
+      await validateField('Judge', this.all())
     }
     else {
       await customValidate(attributes, this.all())
@@ -39,4 +37,4 @@ export class ProjectRequest extends Request<RequestDataProject> implements Proje
   }
 }
 
-export const projectRequest = new ProjectRequest()
+export const judgeRequest = new JudgeRequest()

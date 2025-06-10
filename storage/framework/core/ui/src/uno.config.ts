@@ -2,17 +2,19 @@ import type { UserConfig as UnoConfig } from 'unocss'
 import { presetForms } from '@julr/unocss-preset-forms'
 import { ui } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
+import presetWebFonts from '@unocss/preset-web-fonts'
 import { createLocalFontProcessor } from '@unocss/preset-web-fonts/local'
 import {
   presetAttributify,
   presetIcons,
   presetTypography,
   presetUno,
-  presetWebFonts,
+  // presetWebFonts,
+  transformerCompileClass,
   transformerDirectives,
   transformerVariantGroup,
-} from 'unocss'
 
+} from 'unocss'
 
 const config: UnoConfig = {
   shortcuts: ui.shortcuts,
@@ -29,7 +31,7 @@ const config: UnoConfig = {
     presetUno(), // allows for Tailwind utility classes
     presetAttributify(),
     // presetHeadlessUi(),
-    presetForms, // allows for form Tailwind's form styling
+    presetForms(), // allows for form Tailwind's form styling
     presetTypography(),
     presetIcons({
       prefix: 'i-',
@@ -88,6 +90,10 @@ const config: UnoConfig = {
   ],
 
   transformers: [
+    transformerCompileClass({
+      classPrefix: ui.classPrefix,
+      trigger: ui.trigger,
+    }),
     transformerDirectives(),
     transformerVariantGroup(),
   ],

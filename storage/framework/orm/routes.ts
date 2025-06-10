@@ -1,5 +1,23 @@
 import { route } from '@stacksjs/router'
 
+route.get('court-houses', 'CourtHouseIndexOrmAction')
+
+route.post('court-houses', 'CourtHouseStoreOrmAction')
+
+route.get('court-houses/{id}', 'CourtHouseShowOrmAction')
+
+route.get('judges', 'JudgeIndexOrmAction')
+
+route.post('judges', 'JudgeStoreOrmAction')
+
+route.get('judges/{id}', 'JudgeShowOrmAction')
+
+route.get('judge-reviews', 'JudgeReviewIndexOrmAction')
+
+route.post('judge-reviews', 'JudgeReviewStoreOrmAction')
+
+route.get('judge-reviews/{id}', 'JudgeReviewShowOrmAction')
+
 route.get('users', 'UserIndexOrmAction')
 
 route.post('users', 'UserStoreOrmAction')

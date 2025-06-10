@@ -16,6 +16,7 @@ declare global {
   const asyncComputed: typeof import('../core/browser/src/utils/vendors')['asyncComputed']
   const autoResetRef: typeof import('../core/browser/src/utils/vendors')['autoResetRef']
   const batchInvoke: typeof import('../core/browser/src/utils/function')['batchInvoke']
+  const blogPosts: typeof import('../../../resources/functions/sample')['blogPosts']
   const breakpointsAntDesign: typeof import('../core/browser/src/utils/vendors')['breakpointsAntDesign']
   const breakpointsBootstrapV5: typeof import('../core/browser/src/utils/vendors')['breakpointsBootstrapV5']
   const breakpointsMasterCss: typeof import('../core/browser/src/utils/vendors')['breakpointsMasterCss']
@@ -26,6 +27,7 @@ declare global {
   const calculateDelay: typeof import('../core/browser/src/utils/retry')['calculateDelay']
   const carriageReturn: typeof import('../core/browser/src/utils/regex')['carriageReturn']
   const caseInsensitive: typeof import('../core/browser/src/utils/regex')['caseInsensitive']
+  const categories: typeof import('../../../resources/functions/sample')['categories']
   const char: typeof import('../core/browser/src/utils/regex')['char']
   const charIn: typeof import('../core/browser/src/utils/regex')['charIn']
   const charNotIn: typeof import('../core/browser/src/utils/regex')['charNotIn']
@@ -42,6 +44,7 @@ declare global {
   const controlledComputed: typeof import('../core/browser/src/utils/vendors')['controlledComputed']
   const controlledRef: typeof import('../core/browser/src/utils/vendors')['controlledRef']
   const count: typeof import('../../../resources/functions/counter')['count']
+  const courtHouses: typeof import('../../../resources/functions/sample')['courtHouses']
   const createApp: typeof import('vue')['createApp']
   const createControlledPromise: typeof import('../core/browser/src/utils/promise')['createControlledPromise']
   const createEventHook: typeof import('../core/browser/src/utils/vendors')['createEventHook']
@@ -105,6 +108,7 @@ declare global {
   const isReadonly: typeof import('vue')['isReadonly']
   const isRef: typeof import('vue')['isRef']
   const isTruthy: typeof import('../core/browser/src/utils/guards')['isTruthy']
+  const judges: typeof import('../../../resources/functions/sample')['judges']
   const lazy: typeof import('../core/browser/src/utils/lazy')['lazy']
   const letter: typeof import('../core/browser/src/utils/regex')['letter']
   const linefeed: typeof import('../core/browser/src/utils/regex')['linefeed']
@@ -171,6 +175,7 @@ declare global {
   const reactivePick: typeof import('../core/browser/src/utils/vendors')['reactivePick']
   const readableSize: typeof import('../core/browser/src/utils/vendors')['readableSize']
   const readonly: typeof import('vue')['readonly']
+  const recentActivity: typeof import('../../../resources/functions/sample')['recentActivity']
   const ref: typeof import('vue')['ref']
   const refAutoReset: typeof import('../core/browser/src/utils/vendors')['refAutoReset']
   const refDebounced: typeof import('../core/browser/src/utils/vendors')['refDebounced']
@@ -182,6 +187,7 @@ declare global {
   const resolveRef: typeof import('../core/browser/src/utils/vendors')['resolveRef']
   const resolveUnref: typeof import('../core/browser/src/utils/vendors')['resolveUnref']
   const retry: typeof import('../core/browser/src/utils/retry')['retry']
+  const reviews: typeof import('../../../resources/functions/sample')['reviews']
   const saas: typeof import('../core/browser/src/utils/plans')['saas']
   const setActivePinia: typeof import('pinia')['setActivePinia']
   const setMapStoreSuffix: typeof import('pinia')['setMapStoreSuffix']
@@ -207,6 +213,7 @@ declare global {
   const toString: typeof import('../core/browser/src/utils/base')['toString']
   const toValue: typeof import('vue')['toValue']
   const toggleDark: typeof import('../../../resources/functions/dark')['toggleDark']
+  const trendingJudges: typeof import('../../../resources/functions/sample')['trendingJudges']
   const triggerRef: typeof import('vue')['triggerRef']
   const tryOnBeforeMount: typeof import('../core/browser/src/utils/vendors')['tryOnBeforeMount']
   const tryOnBeforeUnmount: typeof import('../core/browser/src/utils/vendors')['tryOnBeforeUnmount']
@@ -233,6 +240,7 @@ declare global {
   const useAsyncQueue: typeof import('../core/browser/src/utils/vendors')['useAsyncQueue']
   const useAsyncState: typeof import('../core/browser/src/utils/vendors')['useAsyncState']
   const useAttrs: typeof import('vue')['useAttrs']
+  const useAuth: typeof import('../../../resources/functions/auth')['useAuth']
   const useAverage: typeof import('../core/browser/src/utils/math')['useAverage']
   const useBase64: typeof import('../core/browser/src/utils/vendors')['useBase64']
   const useBattery: typeof import('../core/browser/src/utils/vendors')['useBattery']
@@ -467,6 +475,7 @@ declare module 'vue' {
     readonly anyOf: UnwrapRef<typeof import('../core/browser/src/utils/regex')['anyOf']>
     readonly asyncComputed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['autoResetRef']>
+    readonly blogPosts: UnwrapRef<typeof import('../../../resources/functions/sample')['blogPosts']>
     readonly breakpointsAntDesign: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsAntDesign']>
     readonly breakpointsBootstrapV5: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsBootstrapV5']>
     readonly breakpointsMasterCss: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsMasterCss']>
@@ -477,6 +486,7 @@ declare module 'vue' {
     readonly calculateDelay: UnwrapRef<typeof import('../core/browser/src/utils/retry')['calculateDelay']>
     readonly carriageReturn: UnwrapRef<typeof import('../core/browser/src/utils/regex')['carriageReturn']>
     readonly caseInsensitive: UnwrapRef<typeof import('../core/browser/src/utils/regex')['caseInsensitive']>
+    readonly categories: UnwrapRef<typeof import('../../../resources/functions/sample')['categories']>
     readonly char: UnwrapRef<typeof import('../core/browser/src/utils/regex')['char']>
     readonly charIn: UnwrapRef<typeof import('../core/browser/src/utils/regex')['charIn']>
     readonly charNotIn: UnwrapRef<typeof import('../core/browser/src/utils/regex')['charNotIn']>
@@ -492,6 +502,7 @@ declare module 'vue' {
     readonly confirmPayment: UnwrapRef<typeof import('../core/browser/src/utils/billable')['confirmPayment']>
     readonly controlledComputed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['controlledComputed']>
     readonly controlledRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['controlledRef']>
+    readonly courtHouses: UnwrapRef<typeof import('../../../resources/functions/sample')['courtHouses']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createControlledPromise: UnwrapRef<typeof import('../core/browser/src/utils/promise')['createControlledPromise']>
     readonly createEventHook: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createEventHook']>
@@ -553,6 +564,7 @@ declare module 'vue' {
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly isTruthy: UnwrapRef<typeof import('../core/browser/src/utils/guards')['isTruthy']>
+    readonly judges: UnwrapRef<typeof import('../../../resources/functions/sample')['judges']>
     readonly lazy: UnwrapRef<typeof import('../core/browser/src/utils/lazy')['lazy']>
     readonly letter: UnwrapRef<typeof import('../core/browser/src/utils/regex')['letter']>
     readonly linefeed: UnwrapRef<typeof import('../core/browser/src/utils/regex')['linefeed']>
@@ -619,6 +631,7 @@ declare module 'vue' {
     readonly reactivePick: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['reactivePick']>
     readonly readableSize: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['readableSize']>
     readonly readonly: UnwrapRef<typeof import('vue')['readonly']>
+    readonly recentActivity: UnwrapRef<typeof import('../../../resources/functions/sample')['recentActivity']>
     readonly ref: UnwrapRef<typeof import('vue')['ref']>
     readonly refAutoReset: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['refAutoReset']>
     readonly refDebounced: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['refDebounced']>
@@ -630,6 +643,7 @@ declare module 'vue' {
     readonly resolveRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['resolveRef']>
     readonly resolveUnref: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['resolveUnref']>
     readonly retry: UnwrapRef<typeof import('../core/browser/src/utils/retry')['retry']>
+    readonly reviews: UnwrapRef<typeof import('../../../resources/functions/sample')['reviews']>
     readonly saas: UnwrapRef<typeof import('../core/browser/src/utils/plans')['saas']>
     readonly setActivePinia: UnwrapRef<typeof import('pinia')['setActivePinia']>
     readonly setMapStoreSuffix: UnwrapRef<typeof import('pinia')['setMapStoreSuffix']>
@@ -654,6 +668,7 @@ declare module 'vue' {
     readonly toString: UnwrapRef<typeof import('../core/browser/src/utils/base')['toString']>
     readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
     readonly toggleDark: UnwrapRef<typeof import('../../../resources/functions/dark')['toggleDark']>
+    readonly trendingJudges: UnwrapRef<typeof import('../../../resources/functions/sample')['trendingJudges']>
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
     readonly tryOnBeforeMount: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['tryOnBeforeMount']>
     readonly tryOnBeforeUnmount: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['tryOnBeforeUnmount']>
@@ -680,6 +695,7 @@ declare module 'vue' {
     readonly useAsyncQueue: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useAsyncQueue']>
     readonly useAsyncState: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useAsyncState']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
+    readonly useAuth: UnwrapRef<typeof import('../../../resources/functions/auth')['useAuth']>
     readonly useAverage: UnwrapRef<typeof import('../core/browser/src/utils/math')['useAverage']>
     readonly useBase64: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useBase64']>
     readonly useBattery: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useBattery']>

@@ -1,5 +1,5 @@
 import type { schema } from '@stacksjs/validation'
-import type { DeploymentRequestType } from '../types/requests'
+import type { CourtHouseRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
 import { customValidate, validateField } from '@stacksjs/validation'
 
@@ -11,33 +11,31 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-interface RequestDataDeployment {
+interface RequestDataCourtHouse {
   id: number
-  commit_sha: string
-  commit_message: string
-  branch: string
-  status: string
-  execution_time: number
-  deploy_script: string
-  terminal_output: string
+  name: string
+  image: string
+  address: string
+  city: string
+  state: string
+  zip_code: string
   created_at?: string
   updated_at?: string
 }
-export class DeploymentRequest extends Request<RequestDataDeployment> implements DeploymentRequestType {
+export class CourtHouseRequest extends Request<RequestDataCourtHouse> implements CourtHouseRequestType {
   public id = 1
-  public commit_sha = ''
-  public commit_message = ''
-  public branch = ''
-  public status = ''
-  public execution_time = 0
-  public deploy_script = ''
-  public terminal_output = ''
+  public name = ''
+  public image = ''
+  public address = ''
+  public city = ''
+  public state = ''
+  public zip_code = ''
   public created_at = ''
   public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
-      await validateField('Deployment', this.all())
+      await validateField('CourtHouse', this.all())
     }
     else {
       await customValidate(attributes, this.all())
@@ -45,4 +43,4 @@ export class DeploymentRequest extends Request<RequestDataDeployment> implements
   }
 }
 
-export const deploymentRequest = new DeploymentRequest()
+export const courtHouseRequest = new CourtHouseRequest()

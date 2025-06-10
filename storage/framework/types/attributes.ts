@@ -1,9 +1,18 @@
 export interface Attributes {
   name: string
-  description: string
-  url: string
+  image: string
+  address: string
+  city: string
+  state: string
+  zip_code: string
+  image_url: string
+  title: string
+  content: string
+  rating: number
+  likes: number
+  comments: number
+  type: string
   status: string
-  email: string
   token: string
   scopes: string
   revoked: boolean
@@ -13,18 +22,7 @@ export interface Attributes {
   redirect: string
   personal_access_client: boolean
   password_client: boolean
-  company_name: string
-  billing_email: string
-  path: string
-  is_personal: boolean
-  subscribed: boolean
-  commit_sha: string
-  commit_message: string
-  branch: string
-  execution_time: number
-  deploy_script: string
-  terminal_output: string
-  version: string
+  email: string
   password: string
   plain_text_token: string
   abilities: string
@@ -38,7 +36,7 @@ export interface Attributes {
   terminal: string
   last_ping: number
   print_count: number
-  image_url: string
+  description: string
   is_active: boolean
   parent_category_id: string
   display_order: number
@@ -48,6 +46,7 @@ export interface Attributes {
   reference_number: string
   card_last_four: string
   card_brand: string
+  billing_email: string
   transaction_id: string
   payment_provider: string
   refund_amount: number
@@ -89,7 +88,6 @@ export interface Attributes {
   duration: number
   metadata: string
   variant: string
-  type: string
   options: string
   key: string
   template: string | string[]
@@ -102,9 +100,6 @@ export interface Attributes {
   queue_position: number
   seated_at: Date | string
   no_show_at: Date | string
-  rating: number
-  title: string
-  content: string
   is_verified_purchase: boolean
   is_approved: boolean
   is_featured: boolean
@@ -182,7 +177,6 @@ export interface Attributes {
   product_name: string
   product_sku: string
   product_image: string
-  image: string
   provider_id: string
   connection: string
   queue: string
@@ -201,6 +195,7 @@ export interface Attributes {
   socket: string
   details: string
   time: number
+  path: string
   status_code: number
   duration_ms: number
   memory_usage: number

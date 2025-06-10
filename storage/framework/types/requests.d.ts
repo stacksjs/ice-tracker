@@ -215,42 +215,76 @@ export interface CategorizableModelsRequestType extends Request {
 
 }
 
-interface RequestDataProject {
+interface RequestDataCourtHouse {
   id: number
   name: string
-  description: string
-  url: string
-  status: string
+  image: string
+  address: string
+  city: string
+  state: string
+  zip_code: string
   created_at?: string
   updated_at?: string
 }
-export interface ProjectRequestType extends Request {
+export interface CourtHouseRequestType extends Request {
   validate: (attributes?: CustomAttributes) => Promise<void>
   get: <T = string>(element: string, defaultValue?: T) => T
-  all: () => RequestDataProject
+  all: () => RequestDataCourtHouse
   id: number
   name: string
-  description: string
-  url: string
-  status: string
+  image: string
+  address: string
+  city: string
+  state: string
+  zip_code: string
   created_at?: string
   updated_at?: string
 }
 
-interface RequestDataSubscriberEmail {
+interface RequestDataJudge {
   id: number
-  email: string
-  deleted_at?: string
+  name: string
+  image_url: string
+  court_house_id: number
   created_at?: string
   updated_at?: string
 }
-export interface SubscriberEmailRequestType extends Request {
+export interface JudgeRequestType extends Request {
   validate: (attributes?: CustomAttributes) => Promise<void>
   get: <T = string>(element: string, defaultValue?: T) => T
-  all: () => RequestDataSubscriberEmail
+  all: () => RequestDataJudge
   id: number
-  email: string
-  deleted_at?: string
+  name: string
+  image_url: string
+  court_house_id: number
+  created_at?: string
+  updated_at?: string
+}
+
+interface RequestDataJudgeReview {
+  id: number
+  title: string
+  content: string
+  rating: number
+  likes: number
+  comments: number
+  type: string
+  status: string
+  created_at?: string
+  updated_at?: string
+}
+export interface JudgeReviewRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => Promise<void>
+  get: <T = string>(element: string, defaultValue?: T) => T
+  all: () => RequestDataJudgeReview
+  id: number
+  title: string
+  content: string
+  rating: number
+  likes: number
+  comments: number
+  type: string
+  status: string
   created_at?: string
   updated_at?: string
 }
@@ -311,98 +345,20 @@ export interface OauthClientRequestType extends Request {
   updated_at?: string
 }
 
-interface RequestDataTeam {
+interface RequestDataEmailSubscription {
   id: number
-  name: string
-  company_name: string
   email: string
-  billing_email: string
-  status: string
-  description: string
-  path: string
-  is_personal: boolean
-  user_id: number
+  deleted_at?: string
   created_at?: string
   updated_at?: string
 }
-export interface TeamRequestType extends Request {
+export interface EmailSubscriptionRequestType extends Request {
   validate: (attributes?: CustomAttributes) => Promise<void>
   get: <T = string>(element: string, defaultValue?: T) => T
-  all: () => RequestDataTeam
+  all: () => RequestDataEmailSubscription
   id: number
-  name: string
-  company_name: string
   email: string
-  billing_email: string
-  status: string
-  description: string
-  path: string
-  is_personal: boolean
-  user_id: number
-  created_at?: string
-  updated_at?: string
-}
-
-interface RequestDataSubscriber {
-  id: number
-  subscribed: boolean
-  user_id: number
-  created_at?: string
-  updated_at?: string
-}
-export interface SubscriberRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => Promise<void>
-  get: <T = string>(element: string, defaultValue?: T) => T
-  all: () => RequestDataSubscriber
-  id: number
-  subscribed: boolean
-  user_id: number
-  created_at?: string
-  updated_at?: string
-}
-
-interface RequestDataDeployment {
-  id: number
-  commit_sha: string
-  commit_message: string
-  branch: string
-  status: string
-  execution_time: number
-  deploy_script: string
-  terminal_output: string
-  created_at?: string
-  updated_at?: string
-}
-export interface DeploymentRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => Promise<void>
-  get: <T = string>(element: string, defaultValue?: T) => T
-  all: () => RequestDataDeployment
-  id: number
-  commit_sha: string
-  commit_message: string
-  branch: string
-  status: string
-  execution_time: number
-  deploy_script: string
-  terminal_output: string
-  created_at?: string
-  updated_at?: string
-}
-
-interface RequestDataRelease {
-  id: number
-  name: string
-  version: string
-  created_at?: string
-  updated_at?: string
-}
-export interface ReleaseRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => Promise<void>
-  get: <T = string>(element: string, defaultValue?: T) => T
-  all: () => RequestDataRelease
-  id: number
-  name: string
-  version: string
+  deleted_at?: string
   created_at?: string
   updated_at?: string
 }
@@ -412,7 +368,6 @@ interface RequestDataUser {
   name: string
   email: string
   password: string
-  team_id: number
   created_at?: string
   updated_at?: string
 }
@@ -424,7 +379,6 @@ export interface UserRequestType extends Request {
   name: string
   email: string
   password: string
-  team_id: number
   created_at?: string
   updated_at?: string
 }
@@ -441,7 +395,6 @@ interface RequestDataPersonalAccessToken {
   ip_address: string
   device_name: string
   is_single_use: boolean
-  team_id: number
   user_id: number
   created_at?: string
   updated_at?: string
@@ -461,7 +414,6 @@ export interface PersonalAccessTokenRequestType extends Request {
   ip_address: string
   device_name: string
   is_single_use: boolean
-  team_id: number
   user_id: number
   created_at?: string
   updated_at?: string
@@ -1759,4 +1711,4 @@ export interface ErrorRequestType extends Request {
   updated_at?: string
 }
 
-export type ModelRequest = MigrationsRequestType | PasswordResetsRequestType | PasskeysRequestType | CommentablesRequestType | CommentableUpvotesRequestType | CategorizableRequestType | TaggableRequestType | TaggableModelsRequestType | CategorizableModelsRequestTypeProjectRequestType | SubscriberEmailRequestType | OauthAccessTokenRequestType | OauthClientRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PersonalAccessTokenRequestType | PrintDeviceRequestType | CategoryRequestType | PaymentRequestType | DriverRequestType | WaitlistProductRequestType | DigitalDeliveryRequestType | ManufacturerRequestType | OrderItemRequestType | ShippingZoneRequestType | CustomerRequestType | ProductRequestType | ReceiptRequestType | ProductVariantRequestType | LicenseKeyRequestType | WaitlistRestaurantRequestType | ReviewRequestType | ProductUnitRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TaxRateRequestType | TransactionRequestType | LoyaltyPointRequestType | ProductItemRequestType | LoyaltyRewardRequestType | ShippingMethodRequestType | ShippingRateRequestType | CartRequestType | DeliveryRouteRequestType | CartItemRequestType | PaymentProductRequestType | FailedJobRequestType | PaymentMethodRequestType | PageRequestType | AuthorRequestType | PostRequestType | PaymentTransactionRequestType | WebsocketRequestType | RequestRequestType | JobRequestType | LogRequestType | SubscriptionRequestType | ErrorRequestType
+export type ModelRequest = MigrationsRequestType | PasswordResetsRequestType | PasskeysRequestType | CommentablesRequestType | CommentableUpvotesRequestType | CategorizableRequestType | TaggableRequestType | TaggableModelsRequestType | CategorizableModelsRequestTypeCourtHouseRequestType | JudgeRequestType | JudgeReviewRequestType | OauthAccessTokenRequestType | OauthClientRequestType | EmailSubscriptionRequestType | UserRequestType | PersonalAccessTokenRequestType | PrintDeviceRequestType | CategoryRequestType | PaymentRequestType | DriverRequestType | WaitlistProductRequestType | DigitalDeliveryRequestType | ManufacturerRequestType | OrderItemRequestType | ShippingZoneRequestType | CustomerRequestType | ProductRequestType | ReceiptRequestType | ProductVariantRequestType | LicenseKeyRequestType | WaitlistRestaurantRequestType | ReviewRequestType | ProductUnitRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TaxRateRequestType | TransactionRequestType | LoyaltyPointRequestType | ProductItemRequestType | LoyaltyRewardRequestType | ShippingMethodRequestType | ShippingRateRequestType | CartRequestType | DeliveryRouteRequestType | CartItemRequestType | PaymentProductRequestType | FailedJobRequestType | PaymentMethodRequestType | PageRequestType | AuthorRequestType | PostRequestType | PaymentTransactionRequestType | WebsocketRequestType | RequestRequestType | JobRequestType | LogRequestType | SubscriptionRequestType | ErrorRequestType

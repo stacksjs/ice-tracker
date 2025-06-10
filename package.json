@@ -17,6 +17,7 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "scripts": {
+    "build:reset": "rm -rf node_modules bun.lock && bun install && cd storage/framework && bun run build && cd ../../",
     "buddy": "bun ./storage/framework/core/buddy/src/cli.ts",
     "stacks": "./buddy",
     "setup": "./storage/framework/scripts/setup.sh",
@@ -54,7 +55,6 @@
     "stx": "./buddy"
   },
   "dependencies": {
-    "leaflet": "^1.9.4",
     "stacks": "workspace:*"
   },
   "config": {
@@ -77,7 +77,6 @@
     "storage/framework/server"
   ],
   "devDependencies": {
-    "@types/leaflet": "^1.9.18",
     "typescript": "5.8.3"
   },
   "overrides": {
