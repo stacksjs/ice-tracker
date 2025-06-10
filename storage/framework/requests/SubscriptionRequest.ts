@@ -21,10 +21,9 @@ interface RequestDataSubscription {
   provider_type: string
   provider_price_id: string
   quantity: number
-  trial_ends_at: string
-  ends_at: string
-  last_used_at: string
-  user_id: number
+  trial_ends_at: timestamp
+  ends_at: timestamp
+  last_used_at: timestamp
   created_at?: string
   updated_at?: string
 }
@@ -41,7 +40,6 @@ export class SubscriptionRequest extends Request<RequestDataSubscription> implem
   public trial_ends_at = ''
   public ends_at = ''
   public last_used_at = ''
-  public user_id = 0
   public created_at = ''
   public updated_at = ''
   public uuid = ''

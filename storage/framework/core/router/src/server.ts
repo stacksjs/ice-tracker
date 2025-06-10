@@ -1,37 +1,19 @@
 import type { Model, Options, Route, RouteParam, ServeOptions } from '@stacksjs/types'
+import type { WebSocketHandler } from 'bun'
 // import type { RateLimitResult } from 'ts-rate-limiter'
 
 import process from 'node:process'
-import { handleError } from '@stacksjs/error-handling'
+import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
-import { getModelName } from '@stacksjs/orm'
-import { extname, path } from '@stacksjs/path'
+import { getModelName, traitInterfaces } from '@stacksjs/orm'
+import { path } from '@stacksjs/path'
+import { BunSocket, handleWebSocketRequest, PusherDriver, setBunSocket, SocketDriver } from '@stacksjs/realtime'
 import { fs, globSync } from '@stacksjs/storage'
-import { isNumber } from '@stacksjs/validation'
+
+import { camelCase } from '@stacksjs/strings'
 // import { RateLimiter } from 'ts-rate-limiter'
 import { route, staticRoute } from '.'
-
-import { middlewares } from './middleware'
-
 import { request as RequestParam } from './request'
-
-// const limiter = new RateLimiter({
-//   windowMs: 15 * 60 * 1000, // 15 minutes
-//   maxRequests: 100,
-//   algorithm: 'sliding-window',
-//   handler: (req: Request, result: RateLimitResult) => {
-//     return new Response(JSON.stringify({
-//       error: 'Too many requests',
-//       retryAfter: Math.ceil(result.remaining / 1000),
-//     }), {
-//       status: 429,
-//       headers: {
-//         'Content-Type': 'application/json',
-//         'Retry-After': Math.ceil(result.remaining / 1000).toString(),
-//       },
-//     })
-//   },
-// })
 
 export async function serve(options: ServeOptions = {}): Promise<void> {
   const hostname = options.host || 'localhost'
@@ -42,18 +24,75 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
   if (options.timezone)
     process.env.TZ = options.timezone
 
-  Bun.serve({
+  let driver = null
+
+  // Initialize the appropriate driver based on configuration
+  switch (config.realtime?.driver) {
+    case 'bun':
+      driver = new BunSocket()
+      await driver.connect()
+      setBunSocket(driver)
+      break
+    case 'socket':
+      driver = new SocketDriver() // Use a different port for Socket.IO
+      await driver.connect()
+      break
+    case 'pusher':
+      driver = new PusherDriver()
+      await driver.connect()
+      break
+    default:
+      log.warn('No realtime driver configured')
+  }
+
+  const server = Bun.serve({
     static: staticFiles,
     hostname,
     port,
     development,
 
-    async fetch(req: Request) {
-      const reqBody = await req.text()
+    async fetch(req: Request, server) {
+      const url = new URL(req.url)
 
-      return await serverResponse(req, reqBody)
+      // Handle WebSocket connections based on the configured driver
+      if (url.pathname === '/ws') {
+        switch (config.realtime?.driver) {
+          case 'bun':
+            return handleWebSocketRequest(req, server)
+          case 'socket':
+            // Socket.IO handles its own WebSocket connections
+            return new Response('Socket.IO WebSocket endpoint', { status: 200 })
+          case 'pusher':
+            // Pusher connects directly to Pusher's servers
+            return new Response('Pusher WebSocket endpoint', { status: 200 })
+          default:
+            return new Response('No WebSocket driver configured', { status: 400 })
+        }
+      }
+
+      // Handle regular HTTP requests with body parsing
+      const reqBody = await req.text()
+      return serverResponse(req, reqBody)
     },
+
+    websocket: config.realtime?.driver === 'bun'
+      ? (driver as BunSocket)?.getWebSocketConfig() as WebSocketHandler<any>
+      : {
+          message() {},
+          open() {},
+          close() {},
+          drain() {},
+        },
   })
+
+  if (driver) {
+    if (config.realtime?.driver === 'bun') {
+      (driver as BunSocket).setServer(server)
+    }
+    log.info(`WebSocket server initialized with ${config.realtime?.driver} driver`)
+  }
+
+  log.info(`Server running at http://${hostname}:${port}`)
 }
 
 export async function serverResponse(req: Request, body: string): Promise<Response> {
@@ -85,8 +124,7 @@ export async function serverResponse(req: Request, body: string): Promise<Respon
   const foundRoute: Route | undefined = routesList
     .find((route: Route) => {
       const pattern = new RegExp(`^${route.uri.replace(/\{(\w+)\}/g, '(\\w+)')}$`)
-
-      return pattern.test(url.pathname)
+      return pattern.test(url.pathname) && route.method === req.method
     })
 
   log.info(`Found Route: ${JSON.stringify(foundRoute)}`)
@@ -123,7 +161,7 @@ function handleOptions() {
     status: 204,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
       'Access-Control-Allow-Headers':
         'Content-Type, Authorization, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Accept',
       'Access-Control-Max-Age': '86400', // Cache the preflight response for a day
@@ -151,21 +189,17 @@ function extractDynamicSegments(routePattern: string, path: string): RouteParam 
   return dynamicSegments
 }
 
-type CallbackWithStatus = Route['callback'] & { status: number }
-
-async function execute(foundRoute: Route, req: Request, { statusCode }: Options) {
-  const foundCallback: CallbackWithStatus = await route.resolveCallback(foundRoute.callback)
+async function execute(foundRoute: Route, req: Request, _options: Options) {
+  const foundCallback = await route.resolveCallback(foundRoute.callback)
 
   const middlewarePayload = await executeMiddleware(foundRoute)
-
   if (
     middlewarePayload !== null
     && typeof middlewarePayload === 'object'
     && Object.keys(middlewarePayload).length > 0
   ) {
     const { status, message } = middlewarePayload
-
-    return new Response(`<html><body><h1>${message}</h1<pre></pre></body></html>`, {
+    return new Response(`<html><body><h1>${message}</h1></body></html>`, {
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -175,18 +209,8 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     })
   }
 
-  if (!statusCode)
-    statusCode = 200
-
-  if (foundRoute?.method === 'GET' && (statusCode === 301 || statusCode === 302)) {
-    const callback = String(foundCallback)
-    const response = Response.redirect(callback, statusCode)
-
-    return noCache(response)
-  }
-
   if (foundRoute?.method !== req.method) {
-    return new Response('<html><body><h1>Method not allowed!</h1<pre></pre></body></html>', {
+    return new Response('<html><body><h1>Method not allowed!</h1></body></html>', {
       status: 405,
       headers: {
         'Access-Control-Allow-Origin': '*',
@@ -195,319 +219,123 @@ async function execute(foundRoute: Route, req: Request, { statusCode }: Options)
     })
   }
 
-  // Check if it's a path to an HTML file
-  if (isString(foundCallback) && extname(foundCallback) === '.html') {
-    try {
-      const fileContent = Bun.file(foundCallback)
+  // foundCallback is now a ResponseData object from response.ts
+  const { status, headers, body } = foundCallback
 
-      return new Response(fileContent, {
-        headers: {
-          'Content-Type': 'text/html',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': '*',
-        },
-      })
-    }
-    catch (error) {
-      handleError('Error reading the HTML file', error)
-      return new Response('Error reading the HTML file', {
-        status: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': '*',
-        },
-      })
-    }
-  }
-
-  if (isString(foundCallback)) {
-    return new Response(foundCallback, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': '*',
-      },
-      status: 200,
-    })
-  }
-
-  if (isNumber(foundCallback)) {
-    return new Response(String(foundCallback), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': '*',
-      },
-      status: 200,
-    })
-  }
-
-  if (foundCallback === undefined || foundCallback === null) {
-    return new Response('', {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': '*',
-      },
-      status: 204,
-    })
-  }
-
-  if (isFunction(foundCallback)) {
-    const result = foundCallback()
-
-    return new Response(JSON.stringify(result), {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': '*',
-      },
-    })
-  }
-
-  if (isObject(foundCallback) && foundCallback.status) {
-    if (foundCallback.status === 401) {
-      const { body } = await foundCallback
-
-      const { error } = JSON.parse(body)
-
-      return new Response(error, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': '*',
-        },
-        status: 401,
-      })
-    }
-
-    if (foundCallback.status === 404) {
-      const { body } = await foundCallback
-
-      return new Response(body, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': '*',
-        },
-        status: 404,
-      })
-    }
-
-    if (foundCallback.status === 403) {
-      const { body } = await foundCallback
-
-      const { error } = JSON.parse(body)
-
-      return new Response(`<html><body><h1>${error}</h1<pre></pre></body></html>`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': '*',
-        },
-        status: 403,
-      })
-    }
-
-    if (foundCallback.status === 422) {
-      const { status, ...rest } = await foundCallback
-
-      const { errors } = rest
-      return new Response(JSON.stringify(errors), {
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': '*',
-        },
-        status: 422,
-      })
-    }
-
-    if (foundCallback.status === 500) {
-      const { status, ...rest } = await foundCallback
-
-      const { errors, stack } = rest
-
-      const file = Bun.file(path.corePath('error-handling/src/views/500.html'))
-
-      return file.text().then((htmlContent) => {
-        // Replace the placeholder with the actual error message
-        const modifiedHtml = htmlContent.replace('{{ERROR_MESSAGE}}', errors)
-          .replace('{{STACK_TRACE}}', stack)
-
-        return new Response(modifiedHtml, {
-          headers: {
-            'Content-Type': 'text/html',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Headers': '*',
-          },
-          status: 500,
-        })
-      })
-    }
-  }
-
-  if (isObject(foundCallback)) {
-    const { body, status } = await foundCallback
-
-    const output = isString(body) ? body : JSON.stringify(body)
-
-    return new Response(output, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': '*',
-      },
-      status: status || 200,
-    })
-  }
-
-  // If no known type matched, return a generic error.
-  return new Response('Unknown callback type.', {
+  // Return the response with the exact body from response.ts
+  return new Response(body, {
     headers: {
-      'Content-Type': 'application/json',
+      ...headers,
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': '*',
     },
-    status: 500,
+    status,
   })
 }
 
-function noCache(response: Response): Response {
-  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
-  response.headers.set('Pragma', 'no-cache')
-  response.headers.set('Expires', '0')
+async function applyToAllRequests(operation: 'addBodies' | 'addParam' | 'addHeaders' | 'addQuery', data: any): Promise<void> {
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 
-  return response
+  // Process model files
+  for (const modelFile of modelFiles) {
+    const model = (await import(modelFile)).default as Model
+    const modelName = getModelName(model, modelFile)
+    const requestPath = path.frameworkPath(`requests/${modelName}Request.ts`)
+    const requestImport = await import(requestPath)
+    const requestInstance = requestImport[`${camelCase(modelName)}Request`]
+
+    if (requestInstance) {
+      requestInstance[operation](data)
+    }
+  }
+
+  // Process trait interfaces
+  for (const trait of traitInterfaces) {
+    const requestPath = path.frameworkPath(`requests/${trait.name}Request.ts`)
+    try {
+      const requestImport = await import(requestPath)
+      const requestInstance = requestImport[`${camelCase(trait.name)}Request`]
+
+      if (requestInstance) {
+        requestInstance[operation](data)
+      }
+    }
+    catch (error) {
+      log.error(`Error importing trait interface: ${error}`)
+      continue
+    }
+  }
+
+  RequestParam[operation](data)
 }
 
 async function addRouteQuery(url: URL): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
-
-  for (const modelFile of modelFiles) {
-    const model = (await import(modelFile)).default
-    const modelName = getModelName(model, modelFile)
-    const requestPath = path.frameworkPath(`requests/${modelName}Request.ts`)
-    const requestImport = await import(requestPath)
-    const requestInstance = requestImport.request
-
-    if (requestInstance) {
-      requestInstance.addQuery(url)
-    }
-  }
-
-  RequestParam.addQuery(url)
+  await applyToAllRequests('addQuery', url)
 }
 
 async function addBody(params: any): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
-
-  for (const modelFile of modelFiles) {
-    const model = (await import(modelFile)).default
-    const modelName = getModelName(model, modelFile)
-    const requestPath = path.frameworkPath(`requests/${modelName}Request.ts`)
-    const requestImport = await import(requestPath)
-    const requestInstance = requestImport.request
-
-    if (requestInstance) {
-      requestInstance.addBodies(JSON.parse(params))
-    }
-  }
-
-  RequestParam.addBodies(JSON.parse(params))
+  await applyToAllRequests('addBodies', JSON.parse(params))
 }
 
 async function addRouteParam(param: RouteParam): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
-
-  for (const modelFile of modelFiles) {
-    const model = (await import(modelFile)).default as Model
-    const modelName = getModelName(model, modelFile)
-    const requestPath = path.frameworkPath(`requests/${modelName}Request.ts`)
-    const requestImport = await import(requestPath)
-    const requestInstance = requestImport.request
-
-    if (requestInstance) {
-      requestInstance.addParam(param)
-    }
-  }
-
-  RequestParam.addParam(param)
+  await applyToAllRequests('addParam', param)
 }
 
 async function addHeaders(headers: Headers): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
-
-  for (const modelFile of modelFiles) {
-    const model = (await import(modelFile)).default as Model
-    const modelName = getModelName(model, modelFile)
-    const requestPath = path.frameworkPath(`requests/${modelName}Request.ts`)
-    const requestImport = await import(requestPath)
-    const requestInstance = requestImport.request
-
-    if (requestInstance) {
-      requestInstance.addHeaders(headers)
-    }
-  }
-
-  RequestParam.addHeaders(headers)
+  await applyToAllRequests('addHeaders', headers)
 }
 
 async function executeMiddleware(route: Route): Promise<any> {
   const { middleware = null } = route
 
-  if (middleware && await middlewares() && isObjectNotEmpty(await middlewares())) {
-    // let middlewareItem: MiddlewareOptions
-    if (isString(middleware)) {
-      let middlewarePath = path.userMiddlewarePath(`${middleware}.ts`)
+  if (!middleware)
+    return null
 
-      if (!fs.existsSync(middlewarePath)) {
-        middlewarePath = path.storagePath(`framework/defaults/middleware/${middleware}.ts`)
-      }
+  // Get middleware aliases from app/Middleware.ts
+  const middlewareAliases = (await import(path.appPath('Middleware.ts'))).default
 
+  // Helper function to resolve middleware path
+  async function resolveMiddlewarePath(middlewareName: string): Promise<string> {
+    // Check if it's an alias
+    const actualName = middlewareAliases[middlewareName] || middlewareName
+    let middlewarePath = path.userMiddlewarePath(`${actualName}.ts`)
+
+    if (!fs.existsSync(middlewarePath))
+      middlewarePath = path.storagePath(`framework/defaults/middleware/${actualName}.ts`)
+
+    if (!fs.existsSync(middlewarePath))
+      throw new Error(`Middleware "${middlewareName}" not found in user or default paths`)
+
+    return middlewarePath
+  }
+
+  // Helper function to execute a single middleware
+  async function executeSingleMiddleware(middlewareName: string) {
+    try {
+      const middlewarePath = await resolveMiddlewarePath(middlewareName)
       const middlewareInstance = (await import(middlewarePath)).default
 
-      try {
-        await middlewareInstance.handle()
-      }
-      catch (error: any) {
-        return error
-      }
+      if (!middlewareInstance?.handle)
+        throw new Error(`Middleware "${middlewareName}" does not have a handle method`)
+
+      await middlewareInstance.handle(RequestParam)
     }
-    else {
-      for (const middlewareElement of middleware) {
-        let middlewarePath = path.userMiddlewarePath(`${middlewareElement}.ts`)
-
-        if (!fs.existsSync(middlewarePath)) {
-          middlewarePath = path.storagePath(`framework/defaults/middleware/${middlewareElement}.ts`)
-        }
-
-        const middlewareInstance = (await import(middlewarePath)).default
-
-        try {
-          await middlewareInstance.handle()
-        }
-        catch (error: any) {
-          return error
-        }
+    catch (error: any) {
+      return {
+        status: error.status || 500,
+        message: error.message || 'Internal Server Error',
       }
     }
   }
-}
 
-function isString(val: unknown): val is string {
-  return typeof val === 'string'
-}
+  // Handle both single middleware and array of middleware
+  const middlewareList = Array.isArray(middleware) ? middleware : [middleware]
 
-function isObjectNotEmpty(obj: object): boolean {
-  return Object.keys(obj).length > 0
-}
+  for (const middlewareName of middlewareList) {
+    const result = await executeSingleMiddleware(middlewareName)
+    if (result)
+      return result // Return early if middleware returns an error
+  }
 
-// eslint-disable-next-line ts/no-unsafe-function-type
-function isFunction(val: unknown): val is Function {
-  return typeof val === 'function'
-}
-
-function isObject(val: unknown): val is object {
-  return typeof val === 'object'
+  return null
 }

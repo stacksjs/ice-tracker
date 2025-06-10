@@ -19,6 +19,7 @@
   "keywords": ["objects", "utilities", "functions", "stacks"],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {

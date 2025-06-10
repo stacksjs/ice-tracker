@@ -2,8 +2,8 @@ import type {
   AiConfig,
   AnalyticsConfig,
   AppConfig,
+  AuthConfig,
   BinaryConfig,
-  BroadcastingConfig,
   CacheConfig,
   CloudConfig,
   DatabaseConfig,
@@ -19,6 +19,7 @@ import type {
   PaymentConfig,
   Ports,
   QueueConfig,
+  RealtimeConfig,
   SaasConfig,
   SearchEngineConfig,
   SecurityConfig,
@@ -57,13 +58,22 @@ export interface StacksOptions {
   app: AppConfig
 
   /**
-   * **Broadcasting Options**
+   * **Auth Options**
    *
-   * This configuration defines all of your Broadcasting options. Because Stacks is fully-typed,
+   * This configuration defines all of your Auth options. Because Stacks is fully-typed, you
+   * may hover any of the options below and the definitions will be provided. In case
+   * you have any questions, feel free to reach out via Discord or GitHub Discussions.
+   */
+  auth: AuthConfig
+
+  /**
+   * **Realtime Options**
+   *
+   * This configuration defines all of your Realtime options. Because Stacks is fully-typed,
    * you may hover any of the options below and the definitions will be provided. In case
    * you have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
-  broadcasting: BroadcastingConfig
+  realtime: RealtimeConfig
 
   /**
    * **Cache Options**

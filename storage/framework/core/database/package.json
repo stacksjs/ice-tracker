@@ -27,6 +27,7 @@
   ],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
@@ -42,12 +43,12 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.797.0",
-    "@aws-sdk/lib-dynamodb": "^3.797.0",
-    "dynamodb-toolbox": "^2.1.2"
+    "@aws-sdk/client-dynamodb": "^3.826.0",
+    "@aws-sdk/lib-dynamodb": "^3.826.0",
+    "dynamodb-toolbox": "^2.5.0"
   },
   "optionalDependencies": {
-    "mysql2": "^3.14.0"
+    "mysql2": "^3.14.1"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
@@ -60,7 +61,7 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@types/tar": "^6.1.13",
-    "debug": "^4.4.0",
+    "debug": "^4.4.1",
     "dynamodb-tooling": "^0.3.2",
     "kysely-bun-worker": "^0.7.0",
     "mkdirp": "^3.0.1",

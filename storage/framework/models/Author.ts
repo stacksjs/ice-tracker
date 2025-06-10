@@ -42,8 +42,8 @@ export default {
     observe: true,
   },
 
-  belongsTo: ['User'],
   hasMany: ['Post'],
+  belongsTo: ['User'],
 
   attributes: {
     name: {
@@ -51,10 +51,10 @@ export default {
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().minLength(5).maxLength(255),
+        rule: schema.string().min(5).max(255),
         message: {
-          minLength: 'Name must have a minimum of 3 characters',
-          maxLength: 'Name must have a maximum of 255 characters',
+          min: 'Name must have a minimum of 3 characters',
+          max: 'Name must have a maximum of 255 characters',
         },
       },
 

@@ -62,10 +62,12 @@ export interface ModelElement {
   default: string | number | boolean | Date | undefined | null
   unique: boolean
   required: boolean
+  fillable: boolean
+  hidden: boolean
   fieldArray: FieldArrayElement | null
 }
 
-export interface AuthOptions {
+export interface UserAuthOptions {
   useTwoFactor?: boolean
   usePasskey?: boolean
 }
@@ -79,6 +81,8 @@ type ActionName = string
 type Action = ActionPath | ActionName | undefined
 
 export type ApiRoutes = 'index' | 'show' | 'store' | 'update' | 'destroy'
+
+export type SocialProviders = 'google' | 'github' | 'twitter' | 'facebook'
 
 export type VineType = VineString | VineNumber | VineBoolean | Date | Nullable<any>
 export interface SeedOptions {
@@ -99,6 +103,8 @@ export interface Relations {
   belongsTo: BelongsTo<ModelNames> | ModelNames[]
   belongsToMany: BelongsToMany<ModelNames> | ModelNames[]
 }
+
+export type SocialOptions = SocialProviders[]
 
 export interface ApiSettings {
   uri: string
@@ -157,11 +163,12 @@ export interface ModelOptions extends Base {
     categorizable?: boolean // defaults to false
     taggable?: boolean // defaults to false
     commentables?: boolean // defaults to false
-    useAuth?: boolean | AuthOptions // defaults to false
-    authenticatable?: boolean | AuthOptions // useAuth alias
+    useAuth?: boolean | UserAuthOptions // defaults to false
+    authenticatable?: boolean | UserAuthOptions // useAuth alias
     useSeeder?: boolean | SeedOptions // defaults to a count of 10
     seedable?: boolean | SeedOptions // useSeeder alias
     useSearch?: boolean | SearchOptions // defaults to false
+    useSocials?: SocialOptions // defaults to false
     searchable?: boolean | SearchOptions // useSearch alias
     useApi?: ApiOptions | boolean
     observe?: string[] | boolean

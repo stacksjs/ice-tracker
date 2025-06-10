@@ -36,6 +36,7 @@
   ],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
@@ -55,8 +56,8 @@
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@types/validator": "^13.15.0",
+    "@types/validator": "^13.15.1",
     "macroable": "^7.0.2",
-    "validator": "^13.15.0"
+    "validator": "^13.15.15"
   }
 }

@@ -19,6 +19,7 @@
   "keywords": ["errors", "error-handling", "neverthrow", "type safe", "stacks"],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {

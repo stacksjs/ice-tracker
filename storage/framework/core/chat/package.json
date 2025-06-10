@@ -19,6 +19,7 @@
   "keywords": ["chat", "stacks", "discord", "microsoft teams", "slack"],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {

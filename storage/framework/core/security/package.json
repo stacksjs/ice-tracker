@@ -19,6 +19,7 @@
   "keywords": ["security", "framework", "typescript", "javascript"],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {

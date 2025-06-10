@@ -19,6 +19,7 @@
   "keywords": ["stacks", "kysely"],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
@@ -37,10 +38,10 @@
     "@stacksjs/database": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@types/pg": "^8.11.14",
+    "@types/pg": "^8.15.4",
     "kysely": "^0.28.2",
     "kysely-bun-worker": "^0.7.0",
-    "mysql2": "^3.14.0",
-    "pg": "^8.15.6"
+    "mysql2": "^3.14.1",
+    "pg": "^8.16.0"
   }
 }

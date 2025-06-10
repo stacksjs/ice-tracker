@@ -1,11 +1,9 @@
-import type { ViteConfig } from '@stacksjs/types'
+import type { UserConfig as ViteConfig } from 'vite'
 import { alias } from '@stacksjs/alias'
-import { env } from '@stacksjs/env'
 import { path as p } from '@stacksjs/path'
 import {
   autoImports,
   components,
-  cssEngine,
   devtools,
   i18n,
   layouts,
@@ -15,7 +13,6 @@ import {
   stacks,
   uiEngine,
 } from '@stacksjs/vite-plugin'
-import Local from 'vite-plugin-local'
 import generateSitemap from 'vite-ssg-sitemap'
 
 // import { fonts } from './plugin/fonts'
@@ -63,15 +60,15 @@ export const viewsConfig: ViteConfig = {
   },
 
   plugins: [
-    Local({
-      domain: env.APP_URL ?? 'stacks.localhost',
-      https: true, // Use default SSL config, pass TlsConfig options to customize
-      cleanup: {
-        hosts: true, // Clean up relating /etc/hosts entry
-        certs: false, // Clean up relating SSL certificates
-      },
-      verbose: false, // Enable detailed logging
-    }),
+    // Local({
+    //   domain: env.APP_URL ?? 'stacks.localhost',
+    //   https: true, // Use default SSL config, pass TlsConfig options to customize
+    //   cleanup: {
+    //     hosts: true, // Clean up relating /etc/hosts entry
+    //     certs: false, // Clean up relating SSL certificates
+    //   },
+    //   verbose: false, // Enable detailed logging
+    // }),
 
     uiEngine(),
 
@@ -82,7 +79,9 @@ export const viewsConfig: ViteConfig = {
     layouts(),
     autoImports(),
     components(),
-    cssEngine(),
+    Unocss({
+      configFile: p.uiPath('src/uno.config.ts'),
+    }),
     markdown(),
     pwa(),
     devtools(),

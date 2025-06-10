@@ -4,9 +4,7 @@ import type { VineType } from '@stacksjs/types'
 
 type ActionPath = string
 // need to refactor before, after, view to be a part of some other type
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'before' | 'after' | 'view'
-
-export type RouteCallback = (params?: Record<string, any>) => any | string | object
+export type RouteCallback = ((params?: Record<string, any>) => any | string | object) | ((req: any, res: any) => Promise<void>)
 
 export interface RequestData {
   [key: string]: any
@@ -56,7 +54,7 @@ export interface MiddlewareOptions {
   name: string
   description?: string
   priority: number
-  handle: (request: Request) => Promise<void>
+  handle: (request: Request) => Promise<void> | void
 }
 
 export type StatusCode = 200 | 201 | 202 | 204 | 301 | 302 | 304 | 400 | 401 | 403 | 404 | 500

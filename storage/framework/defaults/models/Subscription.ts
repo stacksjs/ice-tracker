@@ -15,11 +15,11 @@ export default {
       required: true,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(512),
+        rule: schema.string().max(512),
         message: {
           string: 'type must be a string',
           required: 'type is required',
-          maxLength: 'type must have a maximum of 512 characters',
+          max: 'type must have a maximum of 512 characters',
         },
       },
       factory: faker => faker.lorem.lines(1),
@@ -28,11 +28,11 @@ export default {
     plan: {
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(100),
+        rule: schema.string().max(100),
         message: {
           string: 'plan must be a string',
           required: 'plan is required',
-          maxLength: 'plan must have a maximum of 100 characters',
+          max: 'plan must have a maximum of 100 characters',
         },
       },
       factory: faker => faker.helpers.arrayElement(['free', 'starter', 'pro', 'enterprise']),
@@ -43,11 +43,11 @@ export default {
       unique: true,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(512),
+        rule: schema.string().max(255),
         message: {
           string: 'provider_id must be a string',
           required: 'provider_id is required',
-          maxLength: 'provider_id must have a maximum of 512 characters',
+          max: 'provider_id must have a maximum of 512 characters',
         },
       },
       factory: faker => faker.string.alphanumeric(10),
@@ -115,30 +115,30 @@ export default {
     trialEndsAt: {
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.timestamp(),
         message: {
-          string: 'trial_ends_at must be a string',
+          timestamp: 'trial_ends_at must be a valid timestamp',
         },
       },
-      factory: faker => faker.date.future().toString(),
+      factory: faker => faker.date.future().getTime(),
     },
 
     endsAt: {
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.timestamp(),
         message: {
-          string: 'ends_at must be a string',
+          timestamp: 'ends_at must be a valid timestamp',
         },
       },
-      factory: faker => faker.date.future().toString(),
+      factory: faker => faker.date.future().getTime(),
     },
 
     lastUsedAt: {
       validation: {
-        rule: schema.string(),
+        rule: schema.timestamp(),
         message: {
-          string: 'last_used_at must be a string',
+          timestamp: 'last_used_at must be a valid timestamp',
         },
       },
       fillable: true,

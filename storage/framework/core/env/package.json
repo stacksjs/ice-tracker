@@ -19,6 +19,7 @@
   "keywords": ["env", "utilities", "functions", "stacks"],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
@@ -33,7 +34,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.41.0"
+    "@dotenvx/dotenvx": "^1.44.1"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",

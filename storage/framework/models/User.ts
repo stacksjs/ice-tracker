@@ -1,4 +1,5 @@
 import type { Attributes, Model } from '@stacksjs/types'
+import { makeHash } from '@stacksjs/security'
 // soon, these will be auto-imported
 import { schema } from '@stacksjs/validation'
 
@@ -14,10 +15,6 @@ export default {
       name: 'users_email_name_index',
       columns: ['email', 'name'],
     },
-    {
-      name: 'users_job_title_status_index',
-      columns: ['job_title', 'created_at'],
-    },
   ],
 
   traits: {
@@ -26,11 +23,12 @@ export default {
     },
     useUuid: true,
     useTimestamps: true, // defaults to true, `timestampable` used as an alias
+    useSocials: ['github'],
     useSearch: {
-      displayable: ['id', 'job_title', 'name', 'email'], // the fields to become d (defaults to all fields)
-      searchable: ['job_title', 'name', 'email'], // the fields to become searchable (defaults to all fields)
+      displayable: ['id', 'name', 'email'], // the fields to become d (defaults to all fields)
+      searchable: ['name', 'email'], // the fields to become searchable (defaults to all fields)
       sortable: ['created_at', 'updated_at'], // the fields to become sortable (defaults to all fields)
-      filterable: ['job_title'], // the fields to become filterable (defaults to all fields)
+      filterable: [], // the fields to become filterable (defaults to all fields)
       // options: {}, // you may pass options to the search engine
     },
 
@@ -46,12 +44,19 @@ export default {
     },
 
     observe: true,
-
-    billable: true,
   },
 
-  hasOne: ['Subscriber', 'Driver'],
-  hasMany: ['Deployment', 'Subscription', 'PaymentMethod', 'Post', 'PaymentTransaction', 'Customer'],
+  hasOne: ['Subscriber', 'Driver', 'Author'],
+  hasMany: [
+    {
+      model: 'PersonalAccessToken',
+      foreignKey: 'user_id',
+    },
+    {
+      model: 'OauthAccessToken',
+      foreignKey: 'user_id',
+    },
+  ],
 
   belongsToMany: ['Team'],
 
@@ -61,10 +66,10 @@ export default {
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string().minLength(5).maxLength(255),
+        rule: schema.string().min(5).max(255),
         message: {
-          minLength: 'Name must have a minimum of 3 characters',
-          maxLength: 'Name must have a maximum of 255 characters',
+          min: 'Name must have a minimum of 3 characters',
+          max: 'Name must have a maximum of 255 characters',
         },
       },
 
@@ -85,31 +90,16 @@ export default {
 
       factory: faker => faker.internet.email(),
     },
-
-    jobTitle: {
-      required: true,
-      order: 5,
-      fillable: true,
-      validation: {
-        rule: schema.string().minLength(3).maxLength(255),
-        message: {
-          minLength: 'Job title must have a minimum of 3 characters',
-          maxLength: 'Job title must have a maximum of 255 characters',
-        },
-      },
-
-      factory: faker => faker.person.jobTitle(),
-    },
     password: {
       required: true,
       order: 3,
       hidden: true,
       fillable: true,
       validation: {
-        rule: schema.string().minLength(6).maxLength(255),
+        rule: schema.string().min(6).max(255),
         message: {
-          minLength: 'Password must have a minimum of 6 characters',
-          maxLength: 'Password must have a maximum of 255 characters',
+          min: 'Password must have a minimum of 6 characters',
+          max: 'Password must have a maximum of 255 characters',
         },
       },
 
@@ -123,7 +113,9 @@ export default {
   },
 
   set: {
-    password: (attributes: Attributes) => Bun.password.hash(String(attributes.password)),
+    password: async (attributes: Attributes) => {
+      return await makeHash(attributes.password, { algorithm: 'bcrypt' })
+    },
   },
   dashboard: {
     highlight: true,

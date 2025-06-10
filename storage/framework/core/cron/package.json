@@ -19,6 +19,7 @@
   "keywords": ["cron", "croner", "jobs", "bun", "stacks"],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {

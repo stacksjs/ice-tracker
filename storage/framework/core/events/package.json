@@ -19,6 +19,7 @@
   "keywords": ["events", "functional", "functions", "mitt", "stacks"],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {

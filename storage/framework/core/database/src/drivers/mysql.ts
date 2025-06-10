@@ -113,15 +113,17 @@ async function createTableMigration(modelPath: string): Promise<void> {
   log.debug('createTableMigration modelPath:', modelPath)
 
   const model = (await import(modelPath)).default as Model
+  const modelName = getModelName(model, modelPath)
   const tableName = getTableName(model, modelPath)
 
   const twoFactorEnabled
     = model.traits?.useAuth && typeof model.traits.useAuth !== 'boolean' ? model.traits.useAuth.useTwoFactor : false
 
   await createPivotTableMigration(model, modelPath)
-  const otherModelRelations = await fetchOtherModelRelations(modelPath)
+  const otherModelRelations = await fetchOtherModelRelations(modelName)
 
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
+  const useSocials = model?.traits?.useSocials && Array.isArray(model.traits.useSocials) && model.traits.useSocials.length > 0
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
 
   const usePasskey = (typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey) ?? false
@@ -139,11 +141,25 @@ async function createTableMigration(modelPath: string): Promise<void> {
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
 
   if (useUuid)
-    migrationContent += `    .addColumn('uuid', 'text')\n`
+    migrationContent += `    .addColumn('uuid', 'varchar(255)')\n`
+
+  if (useSocials) {
+    const socials = model.traits?.useSocials || []
+
+    if (socials.includes('google'))
+      migrationContent += `    .addColumn('google_id', 'varchar(255)')\n`
+    if (socials.includes('github'))
+      migrationContent += `    .addColumn('github_id', 'varchar(255)')\n`
+    if (socials.includes('twitter'))
+      migrationContent += `    .addColumn('twitter_id', 'varchar(255)')\n`
+    if (socials.includes('facebook'))
+      migrationContent += `    .addColumn('facebook_id', 'varchar(255)')\n`
+  }
 
   for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute
     const fieldNameFormatted = snakeCase(fieldName)
+
     const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule)
     migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
@@ -168,23 +184,25 @@ async function createTableMigration(modelPath: string): Promise<void> {
     migrationContent += `)\n`
   }
 
+  if (otherModelRelations?.length) {
+    for (const modelRelation of otherModelRelations) {
+      if (!modelRelation.foreignKey)
+        continue
+
+      migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
+        col.references('${modelRelation.relationTable}.id').onDelete('cascade')
+      ) \n`
+    }
+  }
+
   if (twoFactorEnabled !== false && twoFactorEnabled)
     migrationContent += `    .addColumn('two_factor_secret', 'varchar(255)')\n`
 
   if (useBillable)
     migrationContent += `    .addColumn('stripe_id', 'varchar(255)')\n`
 
-  if (otherModelRelations?.length) {
-    for (const modelRelation of otherModelRelations) {
-      if (!modelRelation.foreignKey)
-        continue
-
-      migrationContent += generateForeignKeyIndexSQL(tableName, modelRelation.foreignKey)
-    }
-  }
-
   if (usePasskey)
-    migrationContent += `    .addColumn('public_passkey', 'text')\n`
+    migrationContent += `    .addColumn('public_passkey', 'varchar(255)')\n`
 
   // Append created_at and updated_at columns if useTimestamps is true
   if (useTimestamps) {
@@ -203,6 +221,15 @@ async function createTableMigration(modelPath: string): Promise<void> {
     migrationContent += '\n'
     for (const index of model.indexes) {
       migrationContent += generateIndexCreationSQL(tableName, index.name, index.columns)
+    }
+  }
+
+  if (otherModelRelations?.length) {
+    for (const modelRelation of otherModelRelations) {
+      if (!modelRelation.foreignKey)
+        continue
+
+      migrationContent += generateForeignKeyIndexSQL(tableName, modelRelation.foreignKey)
     }
   }
 

@@ -19,6 +19,7 @@
   "keywords": ["slugs", "models", "urls", "stacks"],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {

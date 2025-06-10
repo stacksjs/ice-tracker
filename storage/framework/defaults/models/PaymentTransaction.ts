@@ -20,11 +20,11 @@ export default {
       required: true,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(255),
+        rule: schema.string().max(255),
         message: {
           string: 'name must be a string',
           required: 'name is required',
-          maxLength: 'name must have a maximum of 255 characters',
+          max: 'name must have a maximum of 255 characters',
         },
       },
       factory: () => 'Dashboard Subscription',
@@ -58,10 +58,10 @@ export default {
       required: true,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(50),
+        rule: schema.string().max(50),
         message: {
           string: 'type must be a string',
-          maxLength: 'type must have a maximum of 512 characters',
+          max: 'type must have a maximum of 512 characters',
         },
       },
       factory: () => collect(['one-time', 'subscription']).random().first(),
@@ -69,7 +69,7 @@ export default {
     providerId: {
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(255),
+        rule: schema.string().max(255),
         message: {
           string: 'provider_id must be a number',
           required: 'provider_id is required',

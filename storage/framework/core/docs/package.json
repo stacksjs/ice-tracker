@@ -19,6 +19,7 @@
   "keywords": ["docs", "utilities", "functions", "stacks"],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
@@ -34,13 +35,13 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@iconify-json/carbon": "^1.2.8",
-    "@shikijs/vitepress-twoslash": "^3.3.0",
+    "@iconify-json/carbon": "^1.2.9",
+    "@shikijs/vitepress-twoslash": "^3.6.0",
     "@vite-pwa/assets-generator": "^1.0.0",
     "@vite-pwa/vitepress": "^1.0.0",
-    "unocss": "^66.0.0",
+    "unocss": "^66.1.4",
     "unplugin-icons": "^22.1.0",
-    "unplugin-vue-components": "^28.5.0",
+    "unplugin-vue-components": "^28.7.0",
     "vite-plugin-pwa": "^1.0.0",
     "vitepress": "1.6.3"
   },

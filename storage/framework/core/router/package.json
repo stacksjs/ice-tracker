@@ -19,6 +19,7 @@
   "keywords": ["router", "stacks", "framework", "typescript", "javascript"],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
@@ -35,7 +36,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "ts-rate-limiter": "^0.3.1"
+    "ts-rate-limiter": "^0.4.0"
   },
   "devDependencies": {
     "@stacksjs/actions": "workspace:*",

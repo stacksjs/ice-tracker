@@ -24,11 +24,11 @@ export default {
       required: true,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(512),
+        rule: schema.string().max(255),
         message: {
           string: 'commit_sha must be a string',
           required: 'commit_sha is required',
-          maxLength: 'commit_sha must have a maximum of 512 characters',
+          max: 'commit_sha must have a maximum of 512 characters',
         },
       },
 

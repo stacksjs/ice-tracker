@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'title', 'author', 'category', 'views', 'status', 'poster'],
-      searchable: ['title', 'author', 'category', 'body'],
+      displayable: ['id', 'title', 'author', 'views', 'status', 'poster'],
+      searchable: ['title', 'author', 'body', 'excerpt'],
       sortable: ['published_at', 'views', 'comments'],
-      filterable: ['category', 'status'],
+      filterable: ['status'],
     },
 
     useSeeder: {
@@ -37,29 +37,14 @@ export default {
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.string().minLength(3).maxLength(255),
+        rule: schema.string().min(3).max(255),
         message: {
-          minLength: 'Title must have a minimum of 3 characters',
-          maxLength: 'Title must have a maximum of 255 characters',
+          min: 'Title must have a minimum of 3 characters',
+          max: 'Title must have a maximum of 255 characters',
         },
       },
       factory: faker => faker.lorem.sentence(),
     },
-
-    category: {
-      required: true,
-      order: 3,
-      fillable: true,
-      validation: {
-        rule: schema.string().minLength(2).maxLength(100),
-        message: {
-          minLength: 'Category must have a minimum of 2 characters',
-          maxLength: 'Category must have a maximum of 100 characters',
-        },
-      },
-      factory: faker => faker.word.noun(),
-    },
-
     poster: {
       required: false,
       order: 4,
@@ -73,22 +58,36 @@ export default {
       factory: faker => faker.image.url(),
     },
 
-    body: {
+    content: {
       required: true,
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.string().minLength(10),
+        rule: schema.string().min(10),
         message: {
-          minLength: 'Post body must have a minimum of 10 characters',
+          min: 'Post body must have a minimum of 10 characters',
         },
       },
       factory: faker => faker.lorem.paragraphs(3),
     },
 
-    views: {
+    excerpt: {
       required: false,
       order: 6,
+      fillable: true,
+      validation: {
+        rule: schema.string().min(10).max(500),
+        message: {
+          min: 'Excerpt must have a minimum of 10 characters',
+          max: 'Excerpt must have a maximum of 500 characters',
+        },
+      },
+      factory: faker => faker.lorem.paragraph(),
+    },
+
+    views: {
+      required: false,
+      order: 7,
       fillable: true,
       default: 0,
       validation: {
@@ -101,13 +100,13 @@ export default {
     },
 
     publishedAt: {
-      required: true,
+      required: false,
       order: 8,
       fillable: true,
       validation: {
-        rule: schema.number().min(0),
+        rule: schema.timestamp(),
         message: {
-          min: 'Published timestamp cannot be negative',
+          timestamp: 'Published timestamp must be a valid timestamp',
         },
       },
       factory: faker => faker.date.past().getTime(),
@@ -125,6 +124,19 @@ export default {
         },
       },
       factory: faker => faker.helpers.arrayElement(['published', 'draft', 'archived']),
+    },
+
+    isFeatured: {
+      required: false,
+      order: 10,
+      fillable: true,
+      validation: {
+        rule: schema.number(),
+        message: {
+          number: 'Featured must be a number value',
+        },
+      },
+      factory: faker => faker.number.int({ min: 0, max: 1 }),
     },
   },
 } satisfies Model

@@ -26,6 +26,7 @@
   ],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
@@ -45,6 +46,6 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "ofetch": "^1.4.1",
-    "openapi-typescript": "^7.6.1"
+    "openapi-typescript": "^7.8.0"
   }
 }

@@ -81,9 +81,13 @@ export async function generateModelString(
   modelName: string,
   model: Model,
   attributes: ModelElement[],
+  imports: string[] = [],
 ): Promise<string> {
   const formattedTableName = pascalCase(tableName) // users -> Users
   const formattedModelName = camelCase(modelName) // User -> user
+
+  // Start with the imports
+  const importsString = `${imports.join('\n')}\n\n`
 
   let instanceSoftDeleteStatements = ''
   let instanceSoftDeleteStatementsSelectFrom = ''
@@ -127,6 +131,7 @@ export async function generateModelString(
     relationImports += `import type {${relationInstance.model}Model} from './${relationInstance.model}'\n\n`
 
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
+  const useSocials = model?.traits?.useSocials && Array.isArray(model.traits.useSocials) && model.traits.useSocials.length > 0
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
   const observer = model?.traits?.observe
   const useUuid = model?.traits?.useUuid || false
@@ -198,9 +203,9 @@ export async function generateModelString(
   }
 
   if (useCommentables) {
-    commentablesImports += `import type { commentablesTable } from '@stacksjs/orm'\n`
+    commentablesImports += `import type { CommentablesTable } from '@stacksjs/orm'\n`
     relationMethods += `
-      async comments(id: number): Promise<commentablesTable[]> {
+      async comments(id: number): Promise<CommentablesTable[]> {
         return await this.baseComments(id)
       }
 
@@ -212,15 +217,15 @@ export async function generateModelString(
         return await this.baseAddComment(id, comment)
       }
 
-      async approvedComments(id: number): Promise<commentablesTable[]> {
+      async approvedComments(id: number): Promise<CommentablesTable[]> {
         return await this.baseApprovedComments(id)
       }
 
-      async pendingComments(id: number): Promise<commentablesTable[]> {
+      async pendingComments(id: number): Promise<CommentablesTable[]> {
         return await this.basePendingComments(id)
       }
 
-      async rejectedComments(id: number): Promise<commentablesTable[]> {
+      async rejectedComments(id: number): Promise<CommentablesTable[]> {
         return await this.baseRejectedComments(id)
       }
     `
@@ -280,16 +285,8 @@ export async function generateModelString(
         return await this.baseInactiveCategories(id)
       }
 
-      async removeCategory(id: number, categoryId: number): Promise<void> {
-        await this.baseRemoveCategory(id, categoryId)
-      }
-
-      async parentCategories(id: number): Promise<CategorizableTable[]> {
-        return await this.baseParentCategories(id)
-      }
-
-      async childCategories(id: number, parentId: number): Promise<CategorizableTable[]> {
-        return await this.baseChildCategories(id, parentId)
+      async removeCategory(categoryId: number): Promise<void> {
+        await this.baseRemoveCategory(categoryId)
       }
     `
   }
@@ -898,7 +895,9 @@ export async function generateModelString(
       this.attributes.${snakeCase(attribute.field)} = value
     }\n\n`
 
-    jsonFields += `${snakeCase(attribute.field)}: this.${snakeCase(attribute.field)},\n   `
+    // Only add to jsonFields if the attribute is not hidden
+    if (!attribute.hidden)
+      jsonFields += `${snakeCase(attribute.field)}: this.${snakeCase(attribute.field)},\n   `
 
     whereStatements += `static where${pascalCase(attribute.field)}(value: string): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
@@ -914,6 +913,50 @@ export async function generateModelString(
 
           return results.map((modelItem: ${modelName}JsonResponse) => new ${modelName}Model(modelItem))
         } \n\n`
+  }
+
+  if (useSocials) {
+    const socials = model.traits?.useSocials || []
+
+    if (socials.includes('google')) {
+      setFields += `set google_id(value: string) {
+        this.attributes.google_id = value
+      }\n\n`
+
+      getFields += `get google_id(): string | undefined {
+        return this.attributes.google_id
+      }\n\n`
+    }
+
+    if (socials.includes('github')) {
+      setFields += `set github_id(value: string) {
+        this.attributes.github_id = value
+      }\n\n`
+
+      getFields += `get github_id(): string | undefined {
+        return this.attributes.github_id
+      }\n\n`
+    }
+
+    if (socials.includes('twitter')) {
+      setFields += `set twitter_id(value: string) {
+        this.attributes.twitter_id = value
+      }\n\n`
+
+      getFields += `get twitter_id(): string | undefined {
+        return this.attributes.twitter_id
+      }\n\n`
+    }
+
+    if (socials.includes('facebook')) {
+      setFields += `set facebook_id(value: string) {
+        this.attributes.facebook_id = value
+      }\n\n`
+
+      getFields += `get facebook_id(): string | undefined {
+        return this.attributes.facebook_id
+      }\n\n`
+    }
   }
 
   if (useTimestamps) {
@@ -965,6 +1008,29 @@ export async function generateModelString(
   jsonFields += `...this.customColumns,\n`
 
   const otherModelRelations = await fetchOtherModelRelations(modelName)
+
+  if (useSocials) {
+    const socials = model.traits?.useSocials || []
+    if (socials.includes('google')) {
+      jsonFields += 'google_id: this.google_id,\n'
+      fieldString += 'google_id?: string \n'
+    }
+
+    if (socials.includes('github')) {
+      jsonFields += 'github_id: this.github_id,\n'
+      fieldString += 'github_id?: string \n'
+    }
+
+    if (socials.includes('twitter')) {
+      jsonFields += 'twitter_id: this.twitter_id,\n'
+      fieldString += 'twitter_id?: string \n'
+    }
+
+    if (socials.includes('facebook')) {
+      jsonFields += 'facebook_id: this.facebook_id,\n'
+      fieldString += 'facebook_id?: string \n'
+    }
+  }
 
   if (useTwoFactor && tableName === 'users') {
     jsonFields += 'two_factor_secret: this.two_factor_secret\n'
@@ -1020,6 +1086,7 @@ export async function generateModelString(
       ${relationImports}
       ${categorizableImports}
       ${commentablesImports}
+      ${importsString}
       ${taggableImports}
       export interface ${formattedTableName}Table {
         id: Generated<number>

@@ -373,6 +373,7 @@ function upvoteActivity() {
     <!-- Dialog for Activity Form -->
     <Dialog
       v-if="showActivityDialog && !isSelectingLocation"
+      :modelValue="showActivityDialog"
       @close="showActivityDialog = false"
       class="relative z-[500]"
     >
@@ -539,6 +540,7 @@ function upvoteActivity() {
     <!-- Dialog for Login (shown after submit) -->
     <Dialog
       v-if="showLoginDialog"
+      :modelValue="showLoginDialog"
       @close="showLoginDialog = false"
       class="relative z-[600]"
     >

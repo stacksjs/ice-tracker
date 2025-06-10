@@ -14,15 +14,15 @@ import type {
 } from '@stacksjs/types'
 import { generator, parser, traverse } from '@stacksjs/build'
 import { italic, log } from '@stacksjs/cli'
+import { getTraitTables } from '@stacksjs/database'
 import { handleError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 import { camelCase, kebabCase, plural, singular, slugify, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
-
 import { globSync } from 'tinyglobby'
 import { generateModelString } from './generate'
-import { generateTraitRequestTypes, generateTraitTableInterfaces } from './generated/table-traits'
+import { generateTraitRequestTypes, generateTraitTableInterfaces, traitInterfaces } from './generated/table-traits'
 
 type ModelPath = string
 
@@ -100,10 +100,41 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
   return relationships
 }
 
+async function loadModels(modelName: string, relationModel: string): Promise<{ modelRelation: Model, modelPath: string, modelRelationPath: string }> {
+  const modelRelationPath = findUserModel(`${relationModel}.ts`)
+  const userModelPath = findUserModel(`${modelName}.ts`)
+  const coreModelPath = findCoreModel(`${modelName}.ts`)
+  const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
+
+  // Check if any model paths exist
+  if (!modelRelationPath && !coreModelRelationPath)
+    throw new Error(`Model not found: ${relationModel}`)
+
+  if (!userModelPath && !coreModelPath)
+    throw new Error(`Model not found: ${modelName}`)
+
+  let modelRelation: Model
+  try {
+    if (fs.existsSync(modelRelationPath))
+      modelRelation = (await import(modelRelationPath)).default as Model
+    else
+      modelRelation = (await import(coreModelRelationPath)).default as Model
+  }
+  catch (error: any) {
+    throw new Error(`Failed to load model: ${relationModel}. Error: ${error?.message || 'Unknown error'}`)
+  }
+
+  const modelPath = fs.existsSync(userModelPath) ? userModelPath : coreModelPath
+
+  return {
+    modelRelation,
+    modelPath,
+    modelRelationPath: fs.existsSync(modelRelationPath) ? modelRelationPath : coreModelRelationPath,
+  }
+}
+
 async function processHasThrough(relationInstance: ModelNames | BaseHasOneThrough<ModelNames>, model: Model, modelName: string, relation: string) {
   let relationModel = ''
-  let modelRelation: Model
-  let modelPath: string
   let relationName = ''
   let throughModel = ''
   let throughForeignKey = ''
@@ -118,20 +149,7 @@ async function processHasThrough(relationInstance: ModelNames | BaseHasOneThroug
     throughForeignKey = relationInstance.throughForeignKey || ''
   }
 
-  const modelRelationPath = findUserModel(`${relationModel}.ts`)
-  const userModelPath = findUserModel(`${modelName}.ts`)
-  const coreModelPath = findCoreModel(`${modelName}.ts`)
-  const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
-
-  if (fs.existsSync(modelRelationPath))
-    modelRelation = (await import(modelRelationPath)).default as Model
-  else
-    modelRelation = (await import(coreModelRelationPath)).default as Model
-
-  if (fs.existsSync(userModelPath))
-    modelPath = userModelPath
-  else
-    modelPath = coreModelPath
+  const { modelRelation, modelPath, modelRelationPath } = await loadModels(modelName, relationModel)
 
   const modelRelationTable = getTableName(modelRelation, modelRelationPath)
   const table = getTableName(model, modelPath)
@@ -159,8 +177,6 @@ async function processHasThrough(relationInstance: ModelNames | BaseHasOneThroug
 
 async function processBelongsToMany(relationInstance: ModelNames | BaseBelongsToMany<ModelNames>, model: Model, modelName: string, relation: string) {
   let relationModel = ''
-  let modelRelation: Model
-  let modelPath: string
   let pivotTable = ''
   let pivotForeign = ''
 
@@ -175,20 +191,7 @@ async function processBelongsToMany(relationInstance: ModelNames | BaseBelongsTo
     pivotForeign = relationInstance.firstForeignKey || `${formattedModelName}_id`
   }
 
-  const modelRelationPath = findUserModel(`${relationModel}.ts`)
-  const userModelPath = findUserModel(`${modelName}.ts`)
-  const coreModelPath = findCoreModel(`${modelName}.ts`)
-  const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
-
-  if (fs.existsSync(modelRelationPath))
-    modelRelation = (await import(modelRelationPath)).default as Model
-  else
-    modelRelation = (await import(coreModelRelationPath)).default as Model
-
-  if (fs.existsSync(userModelPath))
-    modelPath = userModelPath
-  else
-    modelPath = coreModelPath
+  const { modelRelation, modelPath, modelRelationPath } = await loadModels(modelName, relationModel)
 
   const modelRelationTable = getTableName(modelRelation, modelRelationPath)
   const table = getTableName(model, modelPath)
@@ -219,41 +222,22 @@ async function processMorphOne(relationInstance: ModelNames | MorphOne<ModelName
   let typeColumn = ''
   let idColumn = ''
 
-  // Determine if it's a simple string or a configuration object
   if (isString(relationInstance)) {
     relationModel = relationInstance
-    // Convert model name to "able" format (e.g. "Post" -> "postable")
     morphName = `${snakeCase(modelName)}able`
   }
   else {
     relationModel = relationInstance.model
-    // Use provided morphName or generate default "-able" suffix
     morphName = relationInstance.morphName || `${snakeCase(modelName)}able`
     typeColumn = relationInstance.type || `${morphName}_type`
     idColumn = relationInstance.id || `${morphName}_id`
   }
 
-  // Load the related model
-  const modelRelationPath = findUserModel(`${relationModel}.ts`)
-  const userModelPath = findUserModel(`${modelName}.ts`)
-  const coreModelPath = findCoreModel(`${modelName}.ts`)
-  const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
+  const { modelRelation, modelPath, modelRelationPath } = await loadModels(modelName, relationModel)
 
-  let modelRelation: Model
-  if (fs.existsSync(modelRelationPath)) {
-    modelRelation = (await import(modelRelationPath)).default as Model
-  }
-  else {
-    modelRelation = (await import(coreModelRelationPath)).default as Model
-  }
-
-  const modelPath = fs.existsSync(userModelPath) ? userModelPath : coreModelPath
-
-  // Get table names
   const modelRelationTable = getTableName(modelRelation, modelRelationPath)
   const table = getTableName(model, modelPath)
 
-  // Create relationship config
   const relationshipData: RelationConfig = {
     relationship: relation,
     model: relationModel,
@@ -275,8 +259,6 @@ async function processMorphOne(relationInstance: ModelNames | MorphOne<ModelName
 
 async function processHasOneAndMany(relationInstance: ModelNames | Relation<ModelNames>, model: Model, modelName: string, relation: string) {
   let relationModel = ''
-  let modelRelation: Model
-  let modelPath: string
   let relationName = ''
 
   if (isString(relationInstance)) {
@@ -287,20 +269,7 @@ async function processHasOneAndMany(relationInstance: ModelNames | Relation<Mode
     relationName = relationInstance.relationName || ''
   }
 
-  const modelRelationPath = findUserModel(`${relationModel}.ts`)
-  const userModelPath = findUserModel(`${modelName}.ts`)
-  const coreModelPath = findCoreModel(`${modelName}.ts`)
-  const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
-
-  if (fs.existsSync(modelRelationPath))
-    modelRelation = (await import(modelRelationPath)).default as Model
-  else
-    modelRelation = (await import(coreModelRelationPath)).default as Model
-
-  if (fs.existsSync(userModelPath))
-    modelPath = userModelPath
-  else
-    modelPath = coreModelPath
+  const { modelRelation, modelPath, modelRelationPath } = await loadModels(modelName, relationModel)
 
   const modelRelationTable = getTableName(modelRelation, modelRelationPath)
   const table = getTableName(model, modelPath)
@@ -539,8 +508,14 @@ export async function writeModelNames(): Promise<void> {
 
 export async function writeTableNames(): Promise<void> {
   const models = globSync([path.userModelsPath('**/*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+  const traitTables = getTraitTables()
 
   let fileString = `export type TableNames = `
+
+  // Add trait tables first, only once
+  for (const trait of traitTables) {
+    fileString += `'${trait}' | `
+  }
 
   for (let i = 0; i < models.length; i++) {
     const modelPath = models[i] as string
@@ -550,8 +525,7 @@ export async function writeTableNames(): Promise<void> {
     const pivotTables = await getPivotTables(model, modelPath)
 
     for (const pivot of pivotTables) {
-      fileString += `'${pivot.table}'`
-      fileString += ' | '
+      fileString += `'${pivot.table}' | `
     }
 
     fileString += `'${tableName}'`
@@ -653,6 +627,84 @@ export async function writeModelRequest(): Promise<void> {
   let importTypesString = ``
   let typeString = `import { Request } from '../core/router/src/request'\nimport type { VineType, CustomAttributes } from '@stacksjs/types'\n\n`
 
+  // Generate trait request files
+  for (const trait of traitInterfaces) {
+    let fieldString = ''
+    let fieldStringInt = ''
+    let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField, customValidate, type schema } from '@stacksjs/validation'\n`
+
+    // Add fields to the interface
+    for (const [field, type] of Object.entries(trait.fields)) {
+      fieldString += ` ${field}: ${type}\n     `
+      let defaultValue = `''`
+
+      if (type === 'boolean')
+        defaultValue = 'false'
+      if (type === 'number')
+        defaultValue = '0'
+      if (type === 'number | null')
+        defaultValue = 'null'
+      if (type === 'string | null')
+        defaultValue = 'null'
+
+      fieldStringInt += `public ${field} = ${defaultValue}\n`
+    }
+
+    const fieldStringType = `get: <T = string>(element: string, defaultValue?: T) => T`
+
+    const requestFile = Bun.file(path.frameworkPath(`requests/${trait.name}Request.ts`))
+
+    importTypes = `${trait.name}RequestType`
+    importTypesString += `${importTypes}`
+
+    if (trait !== traitInterfaces[traitInterfaces.length - 1])
+      importTypesString += ` | `
+
+    fileString += `import type { ${importTypes} } from '../types/requests'\n\n`
+    fileString += `interface ValidationField {
+      rule: ReturnType<typeof schema.string>
+      message: Record<string, string>
+    }\n\n`
+    fileString += `interface CustomAttributes {
+      [key: string]: ValidationField
+    }\n`
+
+    const types = `export interface ${trait.name}RequestType extends Request {
+      validate(attributes?: CustomAttributes): Promise<void>
+      ${fieldStringType}
+      all(): RequestData${trait.name}
+      ${fieldString}
+    }\n\n`
+
+    typeString += `interface RequestData${trait.name} {
+      ${fieldString}
+    }\n`
+
+    fileString += `interface RequestData${trait.name} {
+      ${fieldString}
+    }\n`
+
+    typeString += types
+
+    fileString += `export class ${trait.name}Request extends Request<RequestData${trait.name}> implements ${trait.name}RequestType {
+      ${fieldStringInt}
+      public async validate(attributes?: CustomAttributes): Promise<void> {
+        if (attributes === undefined || attributes === null) {
+          await validateField('${trait.name}', this.all())
+        } else {
+          await customValidate(attributes, this.all())
+        }
+      }
+    }
+
+    export const ${camelCase(trait.name)}Request = new ${trait.name}Request()
+    `
+
+    const writer = requestFile.writer()
+    writer.write(fileString)
+  }
+
+  // Generate model request files
   for (let i = 0; i < modelFiles.length; i++) {
     let fieldStringType = ``
     let fieldString = ``
@@ -776,7 +828,6 @@ export async function writeModelRequest(): Promise<void> {
         } else {
           await customValidate(attributes, this.all())
         }
-
       }
     }
 
@@ -784,7 +835,6 @@ export async function writeModelRequest(): Promise<void> {
     `
 
     const writer = requestFile.writer()
-
     writer.write(fileString)
   }
 
@@ -915,11 +965,15 @@ export async function extractFields(model: Model, modelFile: string): Promise<Mo
     let defaultValue = null
     let uniqueValue = false
     let requiredValue = false
+    let hiddenValue = false
+    let fillableValue = false
 
     if (fieldExist) {
       defaultValue = fieldExist || null
       uniqueValue = fieldExist.unique || false
       requiredValue = fieldExist.required || false
+      hiddenValue = fieldExist.hidden || false
+      fillableValue = fieldExist.fillable || false
     }
 
     return {
@@ -927,6 +981,8 @@ export async function extractFields(model: Model, modelFile: string): Promise<Mo
       default: defaultValue,
       unique: uniqueValue,
       required: requiredValue,
+      hidden: hiddenValue,
+      fillable: fillableValue,
       fieldArray: parseRule(rules[index] ?? ''),
     }
   }) as ModelElement[]
@@ -1167,6 +1223,21 @@ export async function deleteExistingOrmRoute(): Promise<void> {
   await fs.writeFile(ormRoute, '')
 }
 
+export function generateTraitBasedTables(): string {
+  let text = ''
+  text += '  migrations: MigrationsTable\n'
+  text += '  passkeys: PasskeysTable\n'
+  text += '  commentables: CommentablesTable\n'
+  text += '  taggables: TaggableTable\n'
+  text += '  commentable_upvotes: CommentableUpvotesTable\n'
+  text += '  categorizables: CategorizableTable\n'
+  text += '  categorizable_models: CategorizableModelsTable\n'
+  text += '  taggable_models: TaggableModelsTable\n'
+  text += '  password_resets: PasswordResetsTable\n'
+  text += '  query_logs: QueryLogsTable\n'
+  return text
+}
+
 export async function generateKyselyTypes(): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('**/*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 
@@ -1232,15 +1303,7 @@ export async function generateKyselyTypes(): Promise<void> {
   }
 
   // Add trait-based tables
-  text += '  migrations: MigrationsTable\n'
-  text += '  passkeys: PasskeysTable\n'
-  text += '  commentables: commentablesTable\n'
-  text += '  taggable: TaggableTable\n'
-  text += '  comment_upvotes: CommenteableUpvotesTable\n'
-  text += '  categorizable: CategorizableTable\n'
-  text += '  categorizable_models: CategorizableModelsTable\n'
-  text += '  taggable_models: TaggableModelsTable\n'
-  text += '  password_resets: PasswordResetsTable\n'
+  text += generateTraitBasedTables()
   text += '}\n'
 
   const file = Bun.file(path.frameworkPath('orm/src/types.ts'))
@@ -1253,11 +1316,40 @@ export async function generateKyselyTypes(): Promise<void> {
 }
 
 export function mapEntity(attribute: ModelElement): string | undefined {
-  const entity = attribute.fieldArray?.entity === 'enum' ? 'string | string[]' : attribute.fieldArray?.entity
+  const entity = attribute.fieldArray?.entity
 
-  const mapEntity = entity === 'date' ? 'Date | string' : entity
+  switch (entity) {
+    case 'enum':
+      return 'string | string[]'
+    case 'date':
+      return 'Date | string'
+    case 'timestamp':
+      return 'Date | string'
+    case 'datetime':
+      return 'Date | string'
+    default:
+      return entity
+  }
+}
 
-  return mapEntity
+export function extractImports(filePath: string): string[] {
+  const content = fs.readFileSync(filePath, 'utf8')
+  const ast = parser.parse(content, {
+    sourceType: 'module',
+    plugins: ['typescript', 'classProperties', 'decorators-legacy'],
+  })
+
+  const imports: string[] = []
+
+  traverse(ast, {
+    ImportDeclaration(path) {
+      // Convert the import node back to code
+      const generated = generator(path.node, {}, content)
+      imports.push(generated.code)
+    },
+  })
+
+  return imports
 }
 
 export async function generateModelFiles(modelStringFile?: string): Promise<void> {
@@ -1342,8 +1434,6 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     await generateApiRoutes(modelFiles)
     log.success('Generated API Routes')
 
-    await writeModelOrmImports(modelFiles)
-
     for (const modelFile of modelFiles) {
       if (modelStringFile && modelStringFile !== modelFile)
         continue
@@ -1354,18 +1444,25 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
       const modelName = getModelName(model, modelFile)
       const file = Bun.file(path.frameworkPath(`orm/src/models/${modelName}.ts`))
       const fields = await extractFields(model, modelFile)
-      const classString = await generateModelString(tableName, modelName, model, fields)
+
+      // Extract imports from the original model file
+      const imports = extractImports(modelFile)
+      const classString = await generateModelString(tableName, modelName, model, fields, imports)
 
       const writer = file.writer()
-      log.info(`Writing API Endpoints for: ${italic(modelName)}`)
+      log.info(`Writing Model: ${italic(modelName)}`)
       writer.write(classString)
-      log.success(`Wrote API endpoints for: ${italic(modelName)}`)
+      log.success(`Wrote Model: ${italic(modelName)}`)
       await writer.end()
     }
 
     log.info('Generating Query Builder types...')
     await generateKyselyTypes()
     log.success('Generated Query Builder types')
+
+    log.info('Writing Model Orm Imports...')
+    await writeModelOrmImports(modelFiles)
+    log.success('Wrote Model Orm Imports')
 
     // we need to lint:fix the auto-generated code, given there is a chance that
     // the codebase has lint issues unrelating to our auto-generated code, we
@@ -1384,7 +1481,7 @@ async function writeModelOrmImports(modelFiles: string[]): Promise<void> {
 
     const modelName = getModelName(model, modelFile)
 
-    ormImportString += `export { default as ${modelName}, type ${modelName}JsonResponse, type New${modelName}, type ${modelName}Update } from './models/${modelName}'\n\n`
+    ormImportString += `export { default as ${modelName}, type ${modelName}JsonResponse, ${modelName}Model, type New${modelName}, type ${modelName}Update } from './models/${modelName}'\n\n`
   }
 
   const file = Bun.file(path.frameworkPath(`orm/src/index.ts`))

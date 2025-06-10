@@ -19,6 +19,7 @@
   "keywords": ["git", "github", "utilities", "functions", "stacks"],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
@@ -35,8 +36,8 @@
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "bumpp": "^10.1.0",
-    "bun-git-hooks": "^0.2.12",
+    "bumpp": "^10.1.1",
+    "bun-git-hooks": "^0.2.16",
     "changelogen": "^0.6.1",
     "commitizen": "^4.3.1",
     "cz-git": "^1.11.1",

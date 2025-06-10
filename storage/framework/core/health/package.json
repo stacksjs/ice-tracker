@@ -19,6 +19,7 @@
   "keywords": ["health", "oh dear", "stacks", "api", "headless"],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {

@@ -1,5 +1,5 @@
-import type { BroadcastingConfig } from '@stacksjs/types'
-import type { DriverType, RealtimeDriver } from './types'
+import type { DriverType, RealtimeDriver } from '@stacksjs/types'
+import { BunSocket } from './drivers/bun'
 import { PusherDriver } from './drivers/pusher'
 import { SocketDriver } from './drivers/socket'
 
@@ -16,16 +16,18 @@ export class RealtimeFactory {
     return RealtimeFactory.instance
   }
 
-  getDriver(type: DriverType, config?: BroadcastingConfig): RealtimeDriver {
+  getDriver(type: DriverType): RealtimeDriver {
     if (!this.drivers.has(type)) {
       switch (type) {
         case 'socket':
-          this.drivers.set(type, new SocketDriver(config?.socket))
+          this.drivers.set(type, new SocketDriver())
           break
         case 'pusher':
           this.drivers.set(type, new PusherDriver())
           break
-        // Add more cases for other drivers here
+        case 'bun':
+          this.drivers.set(type, new BunSocket())
+          break
         default:
           throw new Error(`Unsupported driver type: ${type}`)
       }

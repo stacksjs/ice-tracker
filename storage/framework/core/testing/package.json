@@ -29,6 +29,7 @@
   ],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {
@@ -44,7 +45,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@happy-dom/global-registrator": "^17.4.4",
+    "@happy-dom/global-registrator": "^17.6.3",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
     "@stacksjs/development": "workspace:*"

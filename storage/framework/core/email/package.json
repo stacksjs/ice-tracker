@@ -19,6 +19,7 @@
   "keywords": ["email", "ses", "aws", "stacks", "emailjs", "mailgun"],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {

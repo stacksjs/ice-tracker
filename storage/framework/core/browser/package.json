@@ -19,6 +19,7 @@
   "keywords": ["frontend", "browser", "stacks", "api"],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {

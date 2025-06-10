@@ -1,7 +1,5 @@
 import type { Database } from '@stacksjs/orm'
 import type { RawBuilder } from 'kysely'
-import { config } from '@stacksjs/config'
-import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import { Kysely, MysqlDialect, PostgresDialect, sql } from 'kysely'
 import { BunWorkerDialect } from 'kysely-bun-worker'
@@ -11,7 +9,7 @@ import { Pool } from 'pg'
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded
 let appEnv = 'local'
-let dbDriver = 'sqlite'
+let dbDriver = 'mysql'
 let dbConfig = {
   connections: {
     sqlite: {
@@ -67,8 +65,6 @@ export function getDialect(): MysqlDialect | PostgresDialect | BunWorkerDialect 
   const driver = getDriver()
   const database = getDatabaseConfig()
 
-  log.debug(`Using database driver: ${driver}`)
-
   if (driver === 'sqlite') {
     const defaultName = appEnv !== 'testing' ? 'database/stacks.sqlite' : 'database/stacks_testing.sqlite'
     const sqliteDbName = database.connections?.sqlite?.database ?? defaultName
@@ -114,22 +110,33 @@ export const dbNow: RawBuilder<any> = sql`now()`
 export const db: Kysely<Database> = new Kysely<Database>({
   dialect: getDialect(),
 
-  log(event) {
-    if (!config.database.logging)
-      return
+  // log(event: LogEvent) {
+  //   console.log(event)
+  //   // Always log errors
+  //   if (event.level === 'error') {
+  //     log.error('Query failed : ', {
+  //       durationMs: event.queryDurationMillis,
+  //       error: event.error,
+  //       sql: event.query.sql,
+  //     })
+  //   }
 
-    if (event.level === 'error') {
-      log.error('Query failed : ', {
-        durationMs: event.queryDurationMillis,
-        error: event.error,
-        sql: event.query.sql,
-      })
-    }
-    else {
-      log.info('Query executed : ', {
-        durationMs: event.queryDurationMillis,
-        sql: event.query.sql,
-      })
-    }
-  },
+  //   // Log to console if logging is enabled
+  //   if (config.database.logging) {
+  //     if (event.level === 'query') {
+  //       log.info('Query executed : ', {
+  //         durationMs: event.queryDurationMillis,
+  //         sql: event.query.sql,
+  //       })
+  //     }
+  //   }
+  //   // Store query in the database regardless of console logging setting
+  //   // if query logging to database is enabled
+
+  //   // setTimeout(() => {
+  //   //   logQuery(event).catch((err) => {
+  //   //     log.debug('Failed to log query to database:', err)
+  //   //   })
+  //   // }, 1000 * 10)
+  // },
 })

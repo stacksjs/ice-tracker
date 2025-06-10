@@ -1,9 +1,10 @@
+import type { ValidationInstance } from '@stacksjs/ts-validation'
 import type { Model, VineType } from '@stacksjs/types'
-import type { SchemaTypes } from '@vinejs/vine/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
+import { globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
-import { reportError, schema, SimpleMessagesProvider, VineError } from './'
+import { reportError, schema } from './'
 
 interface RequestData {
   [key: string]: any
@@ -26,14 +27,24 @@ export function isObjectNotEmpty(obj: object | undefined): boolean {
 }
 
 export async function validateField(modelFile: string, params: RequestData): Promise<any> {
-  const model = (await import(/* @vite-ignore */ path.userModelsPath(`${modelFile}.ts`))).default as Model
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+  const modelPath = modelFiles.find(file => file.endsWith(`${modelFile}.ts`))
+
+  if (!modelPath)
+    throw new HttpError(500, `Model ${modelFile} not found`)
+
+  const model = (await import(modelPath)).default as Model
   const attributes = model.attributes
 
-  const ruleObject: Record<string, SchemaTypes> = {}
+  const ruleObject: Record<string, ValidationInstance> = {}
   const messageObject: Record<string, string> = {}
 
   for (const key in attributes) {
     if (Object.prototype.hasOwnProperty.call(attributes, key)) {
+      // Skip validation if the attribute has a default value or is required
+      if (attributes[key]?.default !== undefined || attributes[key]?.required === false)
+        continue
+
       ruleObject[snakeCase(key)] = attributes[key]?.validation?.rule
       const validatorMessages = attributes[key]?.validation?.message
 
@@ -46,30 +57,32 @@ export async function validateField(modelFile: string, params: RequestData): Pro
     }
   }
 
-  schema.messagesProvider = new SimpleMessagesProvider(messageObject)
-
   try {
-    const vineSchema = schema.object(ruleObject)
-    const validator = schema.compile(vineSchema)
-    await validator.validate(params)
+    const validator = schema.object().shape(ruleObject)
+    const result = await validator.validate(params)
+
+    if (!result.valid) {
+      reportError(result.errors)
+      throw new HttpError(422, JSON.stringify(result.errors))
+    }
+
+    return result
   }
   catch (error: any) {
-    if (error instanceof VineError.E_VALIDATION_ERROR)
-      reportError(error.messages)
-
-    throw new HttpError(422, JSON.stringify(error.messages))
+    if (error instanceof HttpError)
+      throw error
   }
 }
 
 export async function customValidate(attributes: CustomAttributes, params: RequestData): Promise<any> {
-  const ruleObject: Record<string, SchemaTypes> = {}
+  const ruleObject: Record<string, ValidationInstance> = {}
   const messageObject: Record<string, string> = {}
 
   for (const key in attributes) {
     if (Object.prototype.hasOwnProperty.call(attributes, key)) {
       const rule = attributes[key]?.rule
       if (rule)
-        ruleObject[key] = rule as SchemaTypes
+        ruleObject[key] = rule as ValidationInstance
 
       const validatorMessages = attributes[key]?.message
 
@@ -80,17 +93,17 @@ export async function customValidate(attributes: CustomAttributes, params: Reque
     }
   }
 
-  schema.messagesProvider = new SimpleMessagesProvider(messageObject)
-
   try {
-    const vineSchema = schema.object(ruleObject)
-    const validator = schema.compile(vineSchema)
-    await validator.validate(params)
+    const validator = schema.object().shape(ruleObject)
+    const result = await validator.validate(params)
+
+    if (!result.valid)
+      throw new HttpError(422, JSON.stringify(result.errors))
+
+    return result
   }
   catch (error: any) {
-    if (error instanceof VineError.E_VALIDATION_ERROR)
-      reportError(error.messages)
-
-    throw new HttpError(422, JSON.stringify(error.messages))
+    if (error instanceof HttpError)
+      throw error
   }
 }

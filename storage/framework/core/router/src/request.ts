@@ -1,6 +1,7 @@
-import type { AuthToken, CustomAttributes, NumericField, RequestData, RequestInstance, RouteParam, RouteParams } from '@stacksjs/types'
-
-import { customValidate, validateField } from '@stacksjs/validation'
+import type { AuthUser } from '@stacksjs/auth'
+import type { AuthToken, CustomAttributes, HttpMethod, NumericField, RequestData, RequestInstance, RouteParam, RouteParams } from '@stacksjs/types'
+import { getCurrentUser } from '@stacksjs/auth'
+import { customValidate } from '@stacksjs/validation'
 
 const numericFields = new Set<NumericField>([
   'id',
@@ -50,16 +51,58 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   public params: RouteParams = {} as RouteParams
   public headers: any = {}
 
+  private sanitizeString(input: string): string {
+    // Remove any null bytes
+    let sanitized = input.replace(/\0/g, '')
+
+    // Remove any HTML tags
+    sanitized = sanitized.replace(/<[^>]*>/g, '')
+
+    // Remove any SQL injection patterns
+    sanitized = sanitized.replace(/(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|ALTER|EXEC|DECLARE)\b)/gi, '')
+
+    // Remove any potential command injection characters
+    sanitized = sanitized.replace(/[;&|`$]/g, '')
+
+    // Remove any potential XSS patterns
+    sanitized = sanitized.replace(/javascript:/gi, '')
+    sanitized = sanitized.replace(/on\w+=/gi, '')
+
+    return sanitized.trim()
+  }
+
+  private sanitizeValue(value: any): any {
+    if (typeof value === 'string')
+      return this.sanitizeString(value)
+
+    if (Array.isArray(value))
+      return value.map(item => this.sanitizeValue(item))
+
+    if (value && typeof value === 'object') {
+      return Object.fromEntries(
+        Object.entries(value).map(([k, v]) => [this.sanitizeString(k), this.sanitizeValue(v)]),
+      )
+    }
+
+    return value
+  }
+
   public addQuery(url: URL): void {
-    this.query = Object.fromEntries(url.searchParams) as unknown as T
+    const sanitizedQuery: Record<string, any> = {}
+    for (const [key, value] of url.searchParams) {
+      const sanitizedKey = this.sanitizeString(key.trim())
+      const sanitizedValue = this.sanitizeValue(value)
+      sanitizedQuery[sanitizedKey] = sanitizedValue
+    }
+    this.query = sanitizedQuery as unknown as T
   }
 
   public addBodies(params: any): void {
-    this.query = params
+    this.query = this.sanitizeValue(params)
   }
 
   public addParam(param: RouteParam): void {
-    this.params = param
+    this.params = this.sanitizeValue(param)
   }
 
   public addHeaders(headerParams: Headers): void {
@@ -67,7 +110,27 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   }
 
   public get<T = string>(element: string, defaultValue?: T): T {
-    return this.query[typeof element] || defaultValue
+    const value = this.query[element]
+
+    if (!value)
+      return defaultValue as T
+
+    // If the value is already the expected type, return it
+    if (typeof value === typeof defaultValue)
+      return value as T
+
+    // Try to parse string values that might be JSON
+    if (typeof value === 'string') {
+      const trimmedValue = value.trim()
+      try {
+        return JSON.parse(trimmedValue) as T
+      }
+      catch {
+        return trimmedValue as T
+      }
+    }
+
+    return value as T
   }
 
   public all(): T {
@@ -75,12 +138,8 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
   }
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
-    if (attributes === undefined || attributes === null) {
-      await validateField('Release', this.all())
-    }
-    else {
+    if (attributes)
       await customValidate(attributes, this.all())
-    }
   }
 
   public has(element: string): boolean {
@@ -182,6 +241,20 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
     }
 
     return null
+  }
+
+  public getMethod(): HttpMethod {
+    const method = this.headers.get('x-http-method-override')
+      || this.headers.get('x-method-override')
+      || this.headers.get('x-requested-with')
+      || this.headers.get('method')
+      || 'GET'
+
+    return method.toUpperCase() as HttpMethod
+  }
+
+  public async user(): Promise<AuthUser | undefined> {
+    return await getCurrentUser()
   }
 }
 

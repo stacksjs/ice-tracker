@@ -17,11 +17,11 @@ export default {
       required: true,
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(512),
+        rule: schema.string().max(512),
         message: {
           string: 'type must be a string',
           required: 'type is required',
-          maxLength: 'type must have a maximum of 512 characters',
+          max: 'type must have a maximum of 512 characters',
         },
       },
       factory: faker => faker.food.dish(),
@@ -82,7 +82,7 @@ export default {
     providerId: {
       fillable: true,
       validation: {
-        rule: schema.string().maxLength(255),
+        rule: schema.string().max(255),
         message: {
           string: 'provider_id must be a string',
         },

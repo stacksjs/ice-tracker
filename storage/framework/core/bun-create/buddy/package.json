@@ -18,6 +18,7 @@
   "keywords": ["project-starter", "stacks"],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
     "./*": {

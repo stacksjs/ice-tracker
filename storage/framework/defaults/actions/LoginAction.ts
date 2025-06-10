@@ -1,12 +1,11 @@
-// import { epmailSubscribeRequest } from '@stacksjs/validation'
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { attempt, authToken, team } from '@stacksjs/auth'
+import { Auth } from '@stacksjs/auth'
 import { schema } from '@stacksjs/validation'
 
 export default new Action({
   name: 'LoginAction',
-  description: 'Login to Dashboard',
+  description: 'Login to the application',
   method: 'POST',
   async handle(request: RequestInstance) {
     const email = request.get('email')
@@ -21,20 +20,26 @@ export default new Action({
       },
 
       password: {
-        rule: schema.string().minLength(6).maxLength(255),
+        rule: schema.string().min(6).max(255),
         message: {
-          minLength: 'Password must have a minimum of 6 characters',
-          maxLength: 'Password must have a maximum of 255 characters',
+          min: 'Password must have a minimum of 6 characters',
+          max: 'Password must have a maximum of 255 characters',
         },
       },
     })
 
-    if (await attempt({ email, password })) {
-      const token = await authToken()
+    const result = await Auth.login({ email, password })
 
-      const teamValue = await team()
-
-      return { token, team: teamValue }
+    if (result) {
+      const user = await Auth.getUserFromToken(result.token)
+      return {
+        token: result.token,
+        user: {
+          id: user?.id,
+          email: user?.email,
+          name: user?.name,
+        },
+      }
     }
 
     return { message: 'Incorrect email or password', status: 401 }

@@ -6,6 +6,7 @@ import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
+
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
@@ -50,7 +51,7 @@ export type AuthorUpdate = Updateable<AuthorWrite>
 
 export class AuthorModel extends BaseOrm<AuthorModel, AuthorsTable, AuthorJsonResponse> {
   private readonly hidden: Array<keyof AuthorJsonResponse> = []
-  private readonly fillable: Array<keyof AuthorJsonResponse> = ['name', 'email', 'uuid', 'two_factor_secret', 'public_key']
+  private readonly fillable: Array<keyof AuthorJsonResponse> = ['name', 'email', 'uuid', 'two_factor_secret', 'public_key', 'user_id']
   private readonly guarded: Array<keyof AuthorJsonResponse> = []
   protected attributes = {} as AuthorJsonResponse
   protected originalAttributes = {} as AuthorJsonResponse

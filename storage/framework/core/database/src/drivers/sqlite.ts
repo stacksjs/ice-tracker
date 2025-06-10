@@ -158,6 +158,7 @@ async function createTableMigration(modelPath: string) {
   const otherModelRelations = await fetchOtherModelRelations(modelName)
 
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
+  const useSocials = model?.traits?.useSocials && Array.isArray(model.traits.useSocials) && model.traits.useSocials.length > 0
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
 
   const usePasskey = (typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey) ?? false
@@ -174,9 +175,23 @@ async function createTableMigration(modelPath: string) {
   if (useUuid)
     migrationContent += `    .addColumn('uuid', 'text')\n`
 
+  if (useSocials) {
+    const socials = model.traits?.useSocials || []
+
+    if (socials.includes('google'))
+      migrationContent += `    .addColumn('google_id', 'text')\n`
+    if (socials.includes('github'))
+      migrationContent += `    .addColumn('github_id', 'text')\n`
+    if (socials.includes('twitter'))
+      migrationContent += `    .addColumn('twitter_id', 'text')\n`
+    if (socials.includes('facebook'))
+      migrationContent += `    .addColumn('facebook_id', 'text')\n`
+  }
+
   for (const [fieldName, options] of arrangeColumns(model.attributes)) {
     const fieldOptions = options as Attribute
     const fieldNameFormatted = snakeCase(fieldName)
+
     const columnType = mapFieldTypeToColumnType(fieldOptions.validation?.rule, 'sqlite')
     migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
@@ -201,15 +216,6 @@ async function createTableMigration(modelPath: string) {
     migrationContent += `)\n`
   }
 
-  if (twoFactorEnabled !== false && twoFactorEnabled)
-    migrationContent += `    .addColumn('two_factor_secret', 'varchar(255)')\n`
-
-  if (useBillable)
-    migrationContent += `    .addColumn('stripe_id', 'varchar(255)')\n`
-
-  if (useSoftDeletes)
-    migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
-
   if (otherModelRelations?.length) {
     for (const modelRelation of otherModelRelations) {
       if (!modelRelation.foreignKey)
@@ -221,8 +227,28 @@ async function createTableMigration(modelPath: string) {
     }
   }
 
+  if (twoFactorEnabled !== false && twoFactorEnabled)
+    migrationContent += `    .addColumn('two_factor_secret', 'text')\n`
+
+  if (useBillable)
+    migrationContent += `    .addColumn('stripe_id', 'text')\n`
+
+  if (useSoftDeletes)
+    migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
+
   if (usePasskey)
     migrationContent += `    .addColumn('public_passkey', 'text')\n`
+
+  if (otherModelRelations?.length) {
+    for (const modelRelation of otherModelRelations) {
+      if (!modelRelation.foreignKey)
+        continue
+
+      migrationContent += `    .addColumn('${modelRelation.foreignKey}', 'integer', (col) =>
+        col.references('${modelRelation.relationTable}.id').onDelete('cascade')
+      ) \n`
+    }
+  }
 
   // Append created_at and updated_at columns if useTimestamps is true
   if (useTimestamps) {
@@ -335,7 +361,7 @@ async function createAlterTableMigration(modelPath: string) {
     const fieldNameFormatted = snakeCase(fieldValidation.key)
     migrationContent += `await sql\`
         ALTER TABLE ${tableName}
-        MODIFY COLUMN ${fieldNameFormatted} VARCHAR(${fieldValidation.max})
+        MODIFY COLUMN ${fieldNameFormatted} TEXT
       \`.execute(db)\n\n`
   }
 
@@ -425,7 +451,7 @@ function reArrangeColumns(attributes: AttributesElements | undefined, tableName:
     if (previousField) {
       migrationContent += `await sql\`
         ALTER TABLE ${tableName}
-        MODIFY COLUMN ${fieldNameFormatted} VARCHAR(255) NOT NULL AFTER ${snakeCase(previousField)};
+        MODIFY COLUMN ${fieldNameFormatted} TEXT NOT NULL AFTER ${snakeCase(previousField)};
       \`.execute(db)\n\n`
     }
 
@@ -436,13 +462,14 @@ function reArrangeColumns(attributes: AttributesElements | undefined, tableName:
 }
 
 function generateIndexCreationSQL(tableName: string, indexName: string, columns: string[]): string {
-  const columnsStr = columns.map(col => `'${snakeCase(col)}'`).join(', ')
+  const columnsStr = columns.map(col => `\`${snakeCase(col)}\``).join(', ')
   return `  await db.schema.createIndex('${indexName}').on('${tableName}').columns([${columnsStr}]).execute()\n`
 }
+
 function generatePrimaryKeyIndexSQL(tableName: string): string {
   return `  await db.schema.createIndex('${tableName}_id_index').on('${tableName}').column('id').execute()\n`
 }
 
 function generateForeignKeyIndexSQL(tableName: string, foreignKey: string): string {
-  return `  await db.schema.createIndex('${tableName}_${foreignKey}_index').on('${tableName}').column('${foreignKey}').execute()\n\n`
+  return `  await db.schema.createIndex('${tableName}_${foreignKey}_index').on('${tableName}').column(\`${foreignKey}\`).execute()\n\n`
 }

@@ -14,13 +14,13 @@ interface CustomAttributes {
 interface RequestDataPost {
   id: number
   title: string
-  category: string
   poster: string
-  body: string
+  content: string
+  excerpt: string
   views: number
-  published_at: number
+  published_at: timestamp
   status: string[] | string
-  user_id: number
+  is_featured: number
   author_id: number
   created_at?: string
   updated_at?: string
@@ -28,13 +28,13 @@ interface RequestDataPost {
 export class PostRequest extends Request<RequestDataPost> implements PostRequestType {
   public id = 1
   public title = ''
-  public category = ''
   public poster = ''
-  public body = ''
+  public content = ''
+  public excerpt = ''
   public views = 0
-  public published_at = 0
+  public published_at = ''
   public status = []
-  public user_id = 0
+  public is_featured = 0
   public author_id = 0
   public created_at = ''
   public updated_at = ''
