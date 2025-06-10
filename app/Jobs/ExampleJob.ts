@@ -1,4 +1,4 @@
-// import { HttpError } from '@stacksjs/error-handling'
+import { log } from '@stacksjs/logging'
 import { Job } from '@stacksjs/queue'
 import { Every } from '@stacksjs/types'
 
@@ -14,7 +14,7 @@ export default new Job({
     factor: 3,
   },
   handle: (payload: any) => {
-    console.log('test')
+    log.info(payload)
   },
   // action: 'SendWelcomeEmail', // instead of handle, you may target an action or `action: () => {`
 })

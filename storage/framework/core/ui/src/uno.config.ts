@@ -61,7 +61,7 @@ const config: UnoConfig = {
         // Directory to save the fonts assets
         fontAssetsDir: path.resourcesPath('assets/fonts'),
 
-        // Base URL to serve the fonts from the client
+      // Base URL to serve the fonts from the client
         fontServeBaseUrl: path.resourcesPath('assets/fonts'),
       }),
     }),

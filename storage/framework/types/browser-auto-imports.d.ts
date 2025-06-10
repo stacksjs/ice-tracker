@@ -492,7 +492,6 @@ declare module 'vue' {
     readonly confirmPayment: UnwrapRef<typeof import('../core/browser/src/utils/billable')['confirmPayment']>
     readonly controlledComputed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['controlledComputed']>
     readonly controlledRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['controlledRef']>
-    readonly count: UnwrapRef<typeof import('../../../resources/functions/counter')['count']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createControlledPromise: UnwrapRef<typeof import('../core/browser/src/utils/promise')['createControlledPromise']>
     readonly createEventHook: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['createEventHook']>
@@ -544,7 +543,6 @@ declare module 'vue' {
     readonly global: UnwrapRef<typeof import('../core/browser/src/utils/regex')['global']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly ignorableWatch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['ignorableWatch']>
-    readonly increment: UnwrapRef<typeof import('../../../resources/functions/counter')['increment']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectHead: UnwrapRef<typeof import('@unhead/vue')['injectHead']>
     readonly injectLocal: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['injectLocal']>
