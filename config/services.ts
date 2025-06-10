@@ -21,6 +21,34 @@ export default {
     region: env.AWS_DEFAULT_REGION || 'us-east-1',
   },
 
+  github: {
+    clientId: env.GITHUB_CLIENT_ID || '',
+    clientSecret: env.GITHUB_CLIENT_SECRET || '',
+    redirectUrl: env.GITHUB_REDIRECT_URL || 'http://localhost:3000/auth/github/callback',
+    scopes: ['read:user', 'user:email'],
+  },
+
+  google: {
+    clientId: env.GOOGLE_CLIENT_ID || '',
+    clientSecret: env.GOOGLE_CLIENT_SECRET || '',
+    redirectUrl: env.GOOGLE_REDIRECT_URL || 'http://localhost:3000/auth/google/callback',
+    scopes: ['profile', 'email'],
+  },
+
+  facebook: {
+    clientId: env.FACEBOOK_CLIENT_ID || '',
+    clientSecret: env.FACEBOOK_CLIENT_SECRET || '',
+    redirectUrl: env.FACEBOOK_REDIRECT_URL || 'http://localhost:3000/auth/facebook/callback',
+    scopes: ['email', 'public_profile'],
+  },
+
+  twitter: {
+    clientId: env.TWITTER_CLIENT_ID || '',
+    clientSecret: env.TWITTER_CLIENT_SECRET || '',
+    redirectUrl: env.TWITTER_REDIRECT_URL || 'http://localhost:3000/auth/twitter/callback',
+    scopes: ['tweet.read', 'users.read', 'offline.access'],
+  },
+
   digitalOcean: {
     appId: '',
     apiKey: '',
@@ -79,7 +107,7 @@ export default {
     retryTimeout: env.SENDGRID_RETRY_TIMEOUT ? Number.parseInt(env.SENDGRID_RETRY_TIMEOUT) : 1000,
   },
   stripe: {
-    appId: '',
-    apiKey: '',
+    secretKey: env.STRIPE_SECRET_KEY,
+    publicKey: env.STRIPE_PUBLISHABLE_KEY,
   },
 } satisfies ServicesConfig

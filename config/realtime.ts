@@ -1,10 +1,10 @@
-import type { BroadcastingConfig } from '@stacksjs/types'
+import type { RealtimeConfig } from '@stacksjs/types'
 import { env } from '@stacksjs/env'
 
 /**
- * **Broadcasting Configuration**
+ * **Realtime Configuration**
  *
- * This configuration defines all of your broadcasting options. Because Stacks is fully-typed,
+ * This configuration defines all of your realtime options. Because Stacks is fully-typed,
  * you may hover any of the options below and the definitions will be provided. In case
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
@@ -27,4 +27,4 @@ export default {
     cluster: env.PUSHER_APP_CLUSTER || 'mt1',
     useTLS: env.PUSHER_APP_USE_TLS || true,
   },
-} satisfies BroadcastingConfig
+} satisfies RealtimeConfig
