@@ -348,14 +348,15 @@ function upvoteActivity() {
 // -- Handle form submission
 function handleFormSubmit(formData: any) {
   emit('report', formData)
-  showLoginDialog.value = true
+  // showLoginDialog.value = true
+  showActivityDialog.value = false
 }
 </script>
 
 <template>
   <div class="relative h-full bg-white">
     <!-- The Map Container -->
-    <div ref="mapContainer" class="w-full h-full"></div>
+    <div ref="mapContainer" class="w-full h-full map-container"></div>
 
     <!-- Floating Button to open the Activity Dialog -->
     <button
@@ -403,11 +404,11 @@ function handleFormSubmit(formData: any) {
       class="relative z-[600]"
     >
       <!-- Overlay -->
-      <div class="fixed inset-0 bg-black bg-opacity-50" aria-hidden="true"></div>
+      <div class="fixed inset-0 bg-black bg-opacity-50 dialog-overlay" aria-hidden="true"></div>
 
       <!-- Dialog Panel Wrapper -->
       <div class="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel class="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
+        <DialogPanel class="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12 dialog-panel">
           <AuthLogin />
         </DialogPanel>
       </div>
@@ -418,13 +419,27 @@ function handleFormSubmit(formData: any) {
 <style scoped>
 /* Ensure proper Leaflet controls z-index */
 :deep(.leaflet-control) {
-  z-index: 300;
+  z-index: 100;
 }
 :deep(.leaflet-pane) {
-  z-index: 200;
+  z-index: 50;
 }
 :deep(.leaflet-top),
 :deep(.leaflet-bottom) {
-  z-index: 300;
+  z-index: 100;
+}
+
+/* Ensure map container stays below modals */
+.map-container {
+  z-index: 1;
+}
+
+/* Ensure modals and dialogs stay on top */
+.dialog-overlay {
+  z-index: 1000;
+}
+
+.dialog-panel {
+  z-index: 1001;
 }
 </style>
