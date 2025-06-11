@@ -76,10 +76,10 @@ All fetcher methods return a consistent response structure:
 
 ```typescript
 interface FetcherResponse<T> {
-  data: T          // The response data (typed as T)
-  status: number   // HTTP status code
+  data: T // The response data (typed as T)
+  status: number // HTTP status code
   headers: Headers // Response headers
-  ok: boolean      // Whether the request was successful
+  ok: boolean // Whether the request was successful
 }
 ```
 

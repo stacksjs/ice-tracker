@@ -1,19 +1,6 @@
 export interface Attributes {
-  name: string
-  image: string
-  address: string
-  city: string
-  state: string
-  zip_code: string
-  image_url: string
-  title: string
-  content: string
-  rating: number
-  likes: number
-  comments: number
-  type: string
-  status: string
   token: string
+  name: string
   scopes: string
   revoked: boolean
   expires_at: Date | string
@@ -22,6 +9,12 @@ export interface Attributes {
   redirect: string
   personal_access_client: boolean
   password_client: boolean
+  title: string
+  description: string
+  address: string
+  latlng: string
+  info_source: string | string[]
+  were_detained: boolean
   email: string
   password: string
   plain_text_token: string
@@ -34,9 +27,10 @@ export interface Attributes {
   mac_address: string
   location: string
   terminal: string
+  status: string | string[]
   last_ping: number
   print_count: number
-  description: string
+  image_url: string
   is_active: boolean
   parent_category_id: string
   display_order: number
@@ -88,6 +82,7 @@ export interface Attributes {
   duration: number
   metadata: string
   variant: string
+  type: string
   options: string
   key: string
   template: string | string[]
@@ -100,6 +95,8 @@ export interface Attributes {
   queue_position: number
   seated_at: Date | string
   no_show_at: Date | string
+  rating: number
+  content: string
   is_verified_purchase: boolean
   is_approved: boolean
   is_featured: boolean
@@ -177,6 +174,7 @@ export interface Attributes {
   product_name: string
   product_sku: string
   product_image: string
+  image: string
   provider_id: string
   connection: string
   queue: string

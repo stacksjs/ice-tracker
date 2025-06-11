@@ -1,22 +1,14 @@
 import { route } from '@stacksjs/router'
 
-route.get('court-houses', 'CourtHouseIndexOrmAction')
+route.get('activities', 'storage/framework/actions/src/ActivityIndexOrmAction.ts')
 
-route.post('court-houses', 'CourtHouseStoreOrmAction')
+route.get('activities/{id}', 'storage/framework/actions/src/ActivityShowOrmAction.ts')
 
-route.get('court-houses/{id}', 'CourtHouseShowOrmAction')
+route.post('activities', 'storage/framework/actions/src/ActivityStoreOrmAction.ts')
 
-route.get('judges', 'JudgeIndexOrmAction')
+route.patch('activities/{id}', 'storage/framework/actions/src/ActivityUpdateOrmAction.ts')
 
-route.post('judges', 'JudgeStoreOrmAction')
-
-route.get('judges/{id}', 'JudgeShowOrmAction')
-
-route.get('judge-reviews', 'JudgeReviewIndexOrmAction')
-
-route.post('judge-reviews', 'JudgeReviewStoreOrmAction')
-
-route.get('judge-reviews/{id}', 'JudgeReviewShowOrmAction')
+route.delete('activities/{id}', 'storage/framework/actions/src/ActivityDestroyOrmAction.ts')
 
 route.get('users', 'UserIndexOrmAction')
 

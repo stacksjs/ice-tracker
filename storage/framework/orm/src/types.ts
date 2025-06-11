@@ -1,20 +1,17 @@
+import type { ActivitiesTable } from '../src/models/Activity'
 import type { AuthorsTable } from '../src/models/Author'
 import type { CartsTable } from '../src/models/Cart'
 import type { CartItemsTable } from '../src/models/CartItem'
 import type { CategoriesTable } from '../src/models/Category'
 import type { CouponsTable } from '../src/models/Coupon'
-import type { CourtHousesTable } from '../src/models/CourtHouse'
 import type { CustomersTable } from '../src/models/Customer'
 import type { DeliveryRoutesTable } from '../src/models/DeliveryRoute'
 import type { DigitalDeliveriesTable } from '../src/models/DigitalDelivery'
 import type { DriversTable } from '../src/models/Driver'
-import type { EmailSubscriptionsTable } from '../src/models/EmailSubscription'
 import type { ErrorsTable } from '../src/models/Error'
 import type { FailedJobsTable } from '../src/models/FailedJob'
 import type { GiftCardsTable } from '../src/models/GiftCard'
 import type { JobsTable } from '../src/models/Job'
-import type { JudgesTable } from '../src/models/Judge'
-import type { JudgeReviewsTable } from '../src/models/JudgeReview'
 import type { LicenseKeysTable } from '../src/models/LicenseKey'
 import type { LogsTable } from '../src/models/Log'
 import type { LoyaltyPointsTable } from '../src/models/LoyaltyPoint'
@@ -164,12 +161,9 @@ export interface QueryLogsTable {
   optimization_suggestions?: string
 }
 export interface Database {
-  court_houses: CourtHousesTable
-  judges: JudgesTable
-  judge_reviews: JudgeReviewsTable
   oauth_access_tokens: OauthAccessTokensTable
   oauth_clients: OauthClientsTable
-  email_subscriptions: EmailSubscriptionsTable
+  activities: ActivitiesTable
   users: UsersTable
   personal_access_tokens: PersonalAccessTokensTable
   print_devices: PrintDevicesTable
