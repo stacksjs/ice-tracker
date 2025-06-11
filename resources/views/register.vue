@@ -10,12 +10,20 @@ const { register } = useAuth()
 const name = ref('')
 const email = ref('')
 const password = ref('')
+const validationErrors = ref<{ field: string; message: string }[]>([])
 
 async function submitRegistration() {
   try {
-    await register({ name: name.value, email: email.value, password: password.value })
+    validationErrors.value = []
+    const { data, errors } = await register({ name: name.value, email: email.value, password: password.value })
+    
+    if (errors) {
+      validationErrors.value = errors
+      return
+    }
+
     notification('Registration successful!')
-    router.push('/map')
+    // router.push('/map')
   } catch (error) {
     console.error(error)
     notification('Registration failed. Please try again.')
@@ -42,6 +50,9 @@ useHead({
             <label for="name" class="block text-sm/6 font-medium text-gray-900">Full name</label>
             <div class="mt-2">
               <input v-model="name" type="text" name="name" id="name" autocomplete="name" required class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-gray-600 sm:text-sm/6">
+              <p v-if="validationErrors.find(e => e.field === 'name')" class="mt-1 text-sm text-red-600">
+                {{ validationErrors.find(e => e.field === 'name')?.message }}
+              </p>
             </div>
           </div>
 
@@ -49,6 +60,9 @@ useHead({
             <label for="email" class="block text-sm/6 font-medium text-gray-900">Email address</label>
             <div class="mt-2">
               <input v-model="email" type="email" name="email" id="email" autocomplete="email" required class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-gray-600 sm:text-sm/6">
+              <p v-if="validationErrors.find(e => e.field === 'email')" class="mt-1 text-sm text-red-600">
+                {{ validationErrors.find(e => e.field === 'email')?.message }}
+              </p>
             </div>
           </div>
 
@@ -56,6 +70,9 @@ useHead({
             <label for="password" class="block text-sm/6 font-medium text-gray-900">Password</label>
             <div class="mt-2">
               <input v-model="password" type="password" name="password" id="password" autocomplete="new-password" required class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-gray-600 sm:text-sm/6">
+              <p v-if="validationErrors.find(e => e.field === 'password')" class="mt-1 text-sm text-red-600">
+                {{ validationErrors.find(e => e.field === 'password')?.message }}
+              </p>
             </div>
           </div>
 
