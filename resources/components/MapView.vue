@@ -1,9 +1,7 @@
-/// <reference types="leaflet" />
 <script setup lang="ts">
 import { Dialog, DialogPanel } from '@stacksjs/dialog'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useGeolocation } from '@vueuse/core'
-import 'leaflet/dist/leaflet.css'
 import type { Activity } from '@/types/ice'
 import DialogForm from './DIalogForm.vue'
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Dialog, DialogPanel } from '@stacksjs/dialog'
-import { ref, watch } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
 
 
 const props = defineProps<{
@@ -12,15 +12,26 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'submit', 'startLocationSelection', 'useCurrentLocation'])
 
 // -- Form data
-const activityForm = ref({
+const activityForm = ref<{
+  title: string
+  description: string
+  address: string
+  latlng: string
+  infoSource: string
+  wereDetained: boolean | null
+  images: File[]
+}>({
   title: '',
   description: '',
   address: '',
   latlng: '',         // will store as "lat, lng" before submit
   infoSource: 'news', // default value
-  wereDetained: null as boolean | null,
-  images: [] as File[],
+  wereDetained: null,
+  images: [],
 })
+
+// Add preview URLs array
+const imagePreviews = ref<string[]>([])
 
 // Watch for changes in selectedLocation
 watch(() => props.selectedLocation, (newLocation) => {
@@ -38,8 +49,31 @@ function handleMediaUpload(event: Event) {
   const input = event.target as HTMLInputElement
   if (input.files?.length) {
     activityForm.value.images = Array.from(input.files)
+    
+    // Create preview URLs for images
+    imagePreviews.value = []
+    activityForm.value.images.forEach(file => {
+      if (file.type.startsWith('image/')) {
+        const url = window.URL.createObjectURL(file)
+        imagePreviews.value.push(url)
+      }
+    })
   }
 }
+
+// -- Remove image and its preview
+function removeImage(index: number) {
+  if (imagePreviews.value[index]) {
+    window.URL.revokeObjectURL(imagePreviews.value[index])
+    imagePreviews.value.splice(index, 1)
+    activityForm.value.images.splice(index, 1)
+  }
+}
+
+// Clean up preview URLs when component is unmounted
+onUnmounted(() => {
+  imagePreviews.value.forEach(url => window.URL.revokeObjectURL(url))
+})
 
 // -- Simple upvote
 function upvoteActivity() {
@@ -228,6 +262,26 @@ function submitActivity() {
                       <p class="pl-1">or drag and drop</p>
                     </div>
                     <p class="text-xs/5 text-gray-600">PNG, JPG, GIF up to 10MB</p>
+                  </div>
+                </div>
+                
+                <!-- Image Previews -->
+                <div v-if="imagePreviews.length > 0" class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                  <div v-for="(preview, index) in imagePreviews" :key="index" class="relative">
+                    <img 
+                      :src="preview" 
+                      class="h-24 w-24 object-cover rounded-lg"
+                      alt="Preview"
+                    />
+                    <button
+                      type="button"
+                      @click="removeImage(index)"
+                      class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
