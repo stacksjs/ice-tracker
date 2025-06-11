@@ -354,7 +354,9 @@ function displayActivityMarkers() {
     if (activity.latlng) {
       const [lat, lng] = activity.latlng.split(',').map(Number)
       if (isValidLatLng(lat, lng)) {
-        const marker = L.marker([lat, lng]).addTo(map.value!)
+        const marker = L.marker([lat, lng])
+          .bindPopup(`<div class="text-sm">${activity.title}</div>`)
+          .addTo(map.value!)
         activityMarkers.value.push(marker)
       }
     }
