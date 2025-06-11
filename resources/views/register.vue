@@ -15,7 +15,7 @@ async function submitRegistration() {
   try {
     await register({ name: name.value, email: email.value, password: password.value })
     notification('Registration successful!')
-    router.push('/paywall')
+    router.push('/map')
   } catch (error) {
     console.error(error)
     notification('Registration failed. Please try again.')

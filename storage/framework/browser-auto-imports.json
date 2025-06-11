@@ -277,6 +277,7 @@
     "useAsyncQueue": true,
     "useAsyncState": true,
     "useAttrs": true,
+    "useAuth": true,
     "useAverage": true,
     "useBase64": true,
     "useBattery": true,

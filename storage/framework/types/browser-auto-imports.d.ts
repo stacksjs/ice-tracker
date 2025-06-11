@@ -688,6 +688,7 @@ declare module 'vue' {
     readonly useAsyncQueue: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useAsyncQueue']>
     readonly useAsyncState: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useAsyncState']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
+    readonly useAuth: UnwrapRef<typeof import('../../../resources/functions/auth')['useAuth']>
     readonly useAverage: UnwrapRef<typeof import('../core/browser/src/utils/math')['useAverage']>
     readonly useBase64: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useBase64']>
     readonly useBattery: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useBattery']>
