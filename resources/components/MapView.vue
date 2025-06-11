@@ -357,7 +357,7 @@ function handleFormSubmit(formData: any) {
 <template>
   <div class="relative h-full bg-white">
     <!-- The Map Container -->
-    <div ref="mapContainer" class="w-full h-full"></div>
+    <!-- <div ref="mapContainer" class="w-full h-full"></div> -->
 
     <!-- Floating Button to open the Activity Dialog -->
     <button

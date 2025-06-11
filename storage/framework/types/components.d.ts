@@ -40,6 +40,7 @@ declare module 'vue' {
     DeployScript: typeof import('./../defaults/components/Dashboard/Deployments/DeployScript.vue')['default']
     DialogCode: typeof import('./../defaults/components/Docs/Demo/DialogCode.md')['default']
     DialogDemo: typeof import('./../defaults/components/Docs/Demo/DialogDemo.vue')['default']
+    DIalogForm: typeof import('./../../../resources/components/DIalogForm.vue')['default']
     DigitalDeliveryTable: typeof import('./../defaults/components/Dashboard/Commerce/Delivery/DigitalDeliveryTable.vue')['default']
     DNSForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/DNSForm.vue')['default']
     DocsPlayground: typeof import('./../defaults/components/Docs/Demo/DocsPlayground.vue')['default']
