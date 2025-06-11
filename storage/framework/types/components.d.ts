@@ -87,7 +87,6 @@ declare module 'vue' {
     LiveTerminalOutput: typeof import('./../defaults/components/Dashboard/Deployments/LiveTerminalOutput.vue')['default']
     LoadingCard: typeof import('./../defaults/components/Dashboard/Skeleton/LoadingCard.vue')['default']
     LoadingDetails: typeof import('./../defaults/components/Dashboard/Skeleton/LoadingDetails.vue')['default']
-    Login: typeof import('./../../../resources/components/Login.vue')['default']
     MapView: typeof import('./../../../resources/components/MapView.vue')['default']
     MobileSidebar: typeof import('./../defaults/components/Dashboard/MobileSidebar.vue')['default']
     Navbar: typeof import('./../defaults/components/Dashboard/Navbar.vue')['default']

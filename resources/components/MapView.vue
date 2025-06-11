@@ -365,66 +365,66 @@ function displayActivityMarkers() {
 </script>
 
 <template>
-  <div class="relative h-full bg-white">
-    <!-- The Map Container -->
-    <div ref="mapContainer" class="w-full h-full map-container"></div>
+    <div class="relative h-full bg-white">
+      <!-- The Map Container -->
+      <div ref="mapContainer" class="w-full h-full map-container"></div>
 
-    <!-- Floating Button to open the Activity Dialog -->
-    <button
-      @click="showActivityDialog = true"
-      class="absolute bottom-24 right-4 bg-teal-600 text-white rounded-full p-4 shadow-lg z-[400]"
-    >
-      <div i-hugeicons-add-01 class="text-2xl" />
-    </button>
+      <!-- Floating Button to open the Activity Dialog -->
+      <button
+        @click="showActivityDialog = true"
+        class="absolute bottom-24 right-4 bg-teal-600 text-white rounded-full p-4 shadow-lg z-[400]"
+      >
+        <div i-hugeicons-add-01 class="text-2xl" />
+      </button>
 
-    <!-- Location Selection Mode Notification -->
-    <div
-      v-if="isSelectingLocation"
-      class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white rounded-lg p-4 shadow-lg max-w-sm w-full mx-4 z-[400]"
-    >
-      <div class="flex items-center justify-between">
-        <div>
-          <h3 class="text-sm font-medium">Click anywhere on the map to select the location</h3>
-          <p class="text-xs text-gray-500 mt-1">The form will reappear after selection.</p>
+      <!-- Location Selection Mode Notification -->
+      <div
+        v-if="isSelectingLocation"
+        class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white rounded-lg p-4 shadow-lg max-w-sm w-full mx-4 z-[400]"
+      >
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-medium">Click anywhere on the map to select the location</h3>
+            <p class="text-xs text-gray-500 mt-1">The form will reappear after selection.</p>
+          </div>
+          <button
+            @click="isSelectingLocation = false; showActivityDialog = true"
+            class="ml-4 p-2 text-gray-400 hover:text-gray-600"
+          >
+            <div i-carbon-close class="text-xl" />
+          </button>
         </div>
-        <button
-          @click="isSelectingLocation = false; showActivityDialog = true"
-          class="ml-4 p-2 text-gray-400 hover:text-gray-600"
-        >
-          <div i-carbon-close class="text-xl" />
-        </button>
       </div>
+
+      <!-- Activity Form Dialog -->
+      <DialogForm
+        :show="showActivityDialog"
+        :selected-location="selectedLocation"
+        :coords="coords"
+        @close="showActivityDialog = false"
+        @submit="submitActivity"
+        @start-location-selection="startLocationSelection"
+        @use-current-location="useCurrentLocation"
+      />
+
+      <!-- Dialog for Login (shown after submit) -->
+      <Dialog
+        v-if="showLoginDialog"
+        :modelValue="showLoginDialog"
+        @close="showLoginDialog = false"
+        class="relative z-[600]"
+      >
+        <!-- Overlay -->
+        <div class="fixed inset-0 bg-black bg-opacity-50 dialog-overlay" aria-hidden="true"></div>
+
+        <!-- Dialog Panel Wrapper -->
+        <div class="fixed inset-0 flex items-center justify-center p-4">
+          <DialogPanel class="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12 dialog-panel">
+            <AuthLogin />
+          </DialogPanel>
+        </div>
+      </Dialog>
     </div>
-
-    <!-- Activity Form Dialog -->
-    <DialogForm
-      :show="showActivityDialog"
-      :selected-location="selectedLocation"
-      :coords="coords"
-      @close="showActivityDialog = false"
-      @submit="submitActivity"
-      @start-location-selection="startLocationSelection"
-      @use-current-location="useCurrentLocation"
-    />
-
-    <!-- Dialog for Login (shown after submit) -->
-    <Dialog
-      v-if="showLoginDialog"
-      :modelValue="showLoginDialog"
-      @close="showLoginDialog = false"
-      class="relative z-[600]"
-    >
-      <!-- Overlay -->
-      <div class="fixed inset-0 bg-black bg-opacity-50 dialog-overlay" aria-hidden="true"></div>
-
-      <!-- Dialog Panel Wrapper -->
-      <div class="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel class="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12 dialog-panel">
-          <AuthLogin />
-        </DialogPanel>
-      </div>
-    </Dialog>
-  </div>
 </template>
 
 <style scoped>
