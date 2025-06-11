@@ -38,7 +38,12 @@ const activities = ref<Activity[]>([
     description: 'Two cars collided at intersection',
     location: [51.505, -0.09],
     date: '2024-03-20',
-    severity: 'moderate'
+    severity: 'moderate',
+    address: '',
+    infoSource: 'news',
+    wereDetained: false,
+    latlng: '51.505, -0.09',
+    images: []
   },
   {
     id: 2,
@@ -46,7 +51,12 @@ const activities = ref<Activity[]>([
     description: 'Cyclist hit by opening car door',
     location: [51.51, -0.1],
     date: '2024-03-19',
-    severity: 'minor'
+    severity: 'minor',
+    address: '',
+    infoSource: 'news',
+    wereDetained: false,
+    latlng: '51.51, -0.1',
+    images: []
   },
 ])
 
@@ -58,7 +68,11 @@ function handleReport(report: Partial<Activity>) {
     location: report.location || [0, 0],
     date: new Date().toISOString().split('T')[0] || '',
     severity: report.severity || 'minor',
-    images: report.images
+    images: report.images,
+    address: report.address || '',
+    infoSource: report.infoSource || 'news',
+    wereDetained: report.wereDetained || false,
+    latlng: report.latlng || ''
   }
   
 

@@ -37,7 +37,7 @@ const activityForm = ref({
   title: '',
   description: '',
   address: '',
-  latlng: '',         // will store as "lat, lng" before submit
+  latLng: '',         // will store as "lat, lng" before submit
   infoSource: 'news', // default value
   wereDetained: null as boolean | null,
   images: [] as File[],
@@ -263,7 +263,7 @@ function useCurrentLocation() {
 }
 
 // -- Submit the "activity"
-function submitActivity() {
+function submitActivity(activityForm: Ref<Activity>) {
   // Basic validation
   if (!activityForm.value.latlng && !activityForm.value.address) {
     alert('Please select a location on the map or enter an address.')
@@ -271,18 +271,18 @@ function submitActivity() {
   }
 
   // Example FormData usage (front-end only, no actual API call)
-  const formData = new FormData()
-  formData.append('title', activityForm.value.title)
-  formData.append('description', activityForm.value.description)
-  formData.append('address', activityForm.value.address)
-  formData.append('latlng', activityForm.value.latlng)
-  formData.append('infoSource', activityForm.value.infoSource)
-  formData.append('wereDetained', String(activityForm.value.wereDetained ?? 'null'))
+  // const formData = new FormData()
+  // formData.append('title', activityForm.value.title)
+  // formData.append('description', activityForm.value.description)
+  // formData.append('address', activityForm.value.address)
+  // formData.append('latlng', activityForm.value.latlng)
+  // formData.append('infoSource', activityForm.value.infoSource)
+  // formData.append('wereDetained', String(activityForm.value.wereDetained ?? 'null'))
 
   // Attach files
-  activityForm.value.images.forEach((file, index) => {
-    formData.append(`file${index}`, file)
-  })
+  // activityForm.value.images.forEach((file, index) => {
+  //   formData.append(`file${index}`, file)
+  // })
 
   // Emit event with activity data
   emit('report', {
@@ -296,8 +296,11 @@ function submitActivity() {
     description: '',
     address: '',
     latlng: '',
+    location: [0, 0],
+    date: new Date().toISOString(),
+    severity: 'minor',
     infoSource: 'news',
-    wereDetained: null,
+    wereDetained: false,
     images: [],
   }
   selectedLocation.value = null
@@ -311,7 +314,8 @@ function submitActivity() {
   isSelectingLocation.value = false
 
   // ----> Show login on submit
-  showLoginDialog.value = true
+  // showLoginDialog.value = true
+  showActivityDialog.value = false
 }
 
 // -- Handling a long-press on the map
@@ -345,12 +349,6 @@ function upvoteActivity() {
   }
 }
 
-// -- Handle form submission
-function handleFormSubmit(formData: any) {
-  emit('report', formData)
-  // showLoginDialog.value = true
-  showActivityDialog.value = false
-}
 </script>
 
 <template>
@@ -391,7 +389,7 @@ function handleFormSubmit(formData: any) {
       :selected-location="selectedLocation"
       :coords="coords"
       @close="showActivityDialog = false"
-      @submit="handleFormSubmit"
+      @submit="submitActivity"
       @start-location-selection="startLocationSelection"
       @use-current-location="useCurrentLocation"
     />
