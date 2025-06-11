@@ -1,9 +1,8 @@
+/// <reference types="leaflet" />
 <script setup lang="ts">
 import { Dialog, DialogPanel } from '@stacksjs/dialog'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useGeolocation } from '@vueuse/core'
-import type { Map as LeafletMap, LatLng, Marker } from 'leaflet'
-import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { Activity } from '@/types/ice'
 import DialogForm from './DIalogForm.vue'
@@ -17,11 +16,11 @@ const props = defineProps<{
 }>()
 
 const activities = ref<Activity[]>(props.activities)
-const activityMarkers = ref<Marker[]>([])
+const activityMarkers = ref<any[]>([])
 
 // -- Template refs
 const mapContainer = ref<HTMLElement | null>(null)
-const map = ref<LeafletMap | null>(null)
+const map = ref<any | null>(null)
 
 // -- Dialog visibility
 const showActivityDialog = ref(false)
@@ -30,7 +29,7 @@ const isSelectingLocation = ref(false)
 
 // -- Location + Marker
 const selectedLocation = ref<[number, number] | null>(null)
-const currentMarker = ref<Marker | null>(null)
+const currentMarker = ref<any | null>(null)
 
 // -- Geolocation
 const { coords } = useGeolocation()
@@ -52,7 +51,7 @@ const liked = ref(false)
 
 // -- For detecting a "long press"
 const pressTimer = ref<number | null>(null)
-const pressPosition = ref<LatLng | null>(null)
+const pressPosition = ref<any | null>(null)
 
 // -- Cleanup function for map instance
 const cleanupMap = () => {
@@ -81,7 +80,7 @@ function isValidLatLng(lat: number, lng: number): boolean {
 }
 
 // -- Map/Mouse events
-function initMapEvents(mapInstance: LeafletMap) {
+function initMapEvents(mapInstance: any) {
   // Handle mousedown for long press
   mapInstance.on('mousedown', (e) => {
     pressPosition.value = e.latlng
@@ -130,7 +129,7 @@ function initMapEvents(mapInstance: LeafletMap) {
 }
 
 // -- Touch events for long press
-function initTouchEvents(container: HTMLElement, mapInstance: LeafletMap) {
+function initTouchEvents(container: HTMLElement, mapInstance: any) {
   let touchStartTime = 0
   let touchStartPosition: Touch | null = null
 
