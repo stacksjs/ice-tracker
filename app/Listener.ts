@@ -8,7 +8,7 @@ export async function handleEvents() {
   for (const key in events) {
     if (Object.hasOwn(events, key)) {
       const eventKey = key
-      const eventListeners = events[key]
+      const eventListeners = events[key as keyof typeof events]
 
       for (const eventListener of eventListeners) {
         const modulePath = eventListener

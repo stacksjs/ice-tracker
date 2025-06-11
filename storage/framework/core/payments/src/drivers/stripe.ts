@@ -1,4 +1,3 @@
-import { config } from '@stacksjs/config'
 import Stripe from 'stripe'
 
 const apiKey = 'dsdsd'
