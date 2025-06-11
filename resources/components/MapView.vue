@@ -37,7 +37,7 @@ const activityForm = ref({
   title: '',
   description: '',
   address: '',
-  latLng: '',         // will store as "lat, lng" before submit
+  latlng: '',         // will store as "lat, lng" before submit
   infoSource: 'news', // default value
   wereDetained: null as boolean | null,
   images: [] as File[],
@@ -263,59 +263,43 @@ function useCurrentLocation() {
 }
 
 // -- Submit the "activity"
-function submitActivity(activityForm: Ref<Activity>) {
+function submitActivity(activityForm: Activity) {
+  console.log(activityForm)
   // Basic validation
-  if (!activityForm.value.latlng && !activityForm.value.address) {
+  if (!activityForm.latlng && !activityForm.address) {
     alert('Please select a location on the map or enter an address.')
     return
   }
 
-  // Example FormData usage (front-end only, no actual API call)
-  // const formData = new FormData()
-  // formData.append('title', activityForm.value.title)
-  // formData.append('description', activityForm.value.description)
-  // formData.append('address', activityForm.value.address)
-  // formData.append('latlng', activityForm.value.latlng)
-  // formData.append('infoSource', activityForm.value.infoSource)
-  // formData.append('wereDetained', String(activityForm.value.wereDetained ?? 'null'))
-
-  // Attach files
-  // activityForm.value.images.forEach((file, index) => {
-  //   formData.append(`file${index}`, file)
-  // })
-
   // Emit event with activity data
   emit('report', {
-    ...activityForm.value,
-    images: activityForm.value.images,
+    ...activityForm,
+    images: activityForm.images,
   })
 
-  // Reset form
-  activityForm.value = {
+  // Reset form while preserving location data
+  const currentLocation = selectedLocation.value
+  activityForm = {
     title: '',
     description: '',
     address: '',
-    latlng: '',
-    location: [0, 0],
+    latlng: currentLocation ? `${currentLocation[0]}, ${currentLocation[1]}` : '',
+    location: currentLocation || [0, 0],
     date: new Date().toISOString(),
     severity: 'minor',
     infoSource: 'news',
     wereDetained: false,
     images: [],
   }
-  selectedLocation.value = null
 
-  if (currentMarker.value && map.value) {
+  // Only clear the marker if we're not keeping the location
+  if (!currentLocation && currentMarker.value && map.value) {
     currentMarker.value.remove()
     currentMarker.value = null
   }
 
   showActivityDialog.value = false
   isSelectingLocation.value = false
-
-  // ----> Show login on submit
-  // showLoginDialog.value = true
-  showActivityDialog.value = false
 }
 
 // -- Handling a long-press on the map

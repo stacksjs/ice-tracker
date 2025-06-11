@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Dialog, DialogPanel } from '@stacksjs/dialog'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 
 const props = defineProps<{
@@ -21,6 +21,13 @@ const activityForm = ref({
   wereDetained: null as boolean | null,
   images: [] as File[],
 })
+
+// Watch for changes in selectedLocation
+watch(() => props.selectedLocation, (newLocation) => {
+  if (newLocation) {
+    activityForm.value.latlng = `${newLocation[0]}, ${newLocation[1]}`
+  }
+}, { immediate: true })
 
 // -- Like/Upvote state
 const likeCount = ref(0)
@@ -44,6 +51,7 @@ function upvoteActivity() {
 
 // -- Submit the "activity"
 function submitActivity() {
+  console.log(activityForm.value)
   // Basic validation
   if (!activityForm.value.latlng && !activityForm.value.address) {
     alert('Please select a location on the map or enter an address.')
@@ -152,7 +160,7 @@ function submitActivity() {
               </div>
 
               <div class="sm:col-span-3">
-                <label class="block text-sm/6 font-medium text-gray-900">Info Source</label>
+                <label class="block text-sm/6 font-medium text-gray-900 text-left">Info Source</label>
                 <div class="mt-2">
                   <select
                     v-model="activityForm.infoSource"
