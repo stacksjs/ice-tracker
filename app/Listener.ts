@@ -1,5 +1,7 @@
+import { handleError } from '@stacksjs/error-handling'
 import { listen } from '@stacksjs/events'
 import { path as p } from '@stacksjs/path'
+
 import events from './Events'
 
 export async function handleEvents() {
@@ -16,7 +18,7 @@ export async function handleEvents() {
         }
         else {
           try {
-            const actionModule = await import(p.projectPath(`Actions/${modulePath}.ts`))
+            const actionModule = await import(p.appPath(`Actions/${modulePath}.ts`))
 
             listen(eventKey, e => actionModule.default.handle(e))
           }
