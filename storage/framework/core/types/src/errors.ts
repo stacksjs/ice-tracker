@@ -26,7 +26,7 @@ export interface ErrorOptions {
     'activeUrl': string
     'alpha': string
     'alphaNumeric': string
-    'min(': string
+    'min': string
     'maxLength': string
     'fixedLength': string
     'confirmed': string
@@ -53,7 +53,6 @@ export interface ErrorOptions {
 
     // number
     'number': string
-    'min': string
     'max': string
     'range': string
     'positive': string
@@ -86,13 +85,13 @@ export interface ErrorOptions {
 
     // record
     'record': string
-    'record.min(': string
+    'record.min': string
     'record.maxLength': string
     'record.fixedLength': string
 
     // array
     'array': string
-    'array.min(': string
+    'array.min': string
     'array.maxLength': string
     'array.fixedLength': string
     'notEmpty': string
