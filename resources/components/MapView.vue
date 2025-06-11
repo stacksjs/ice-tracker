@@ -16,6 +16,9 @@ const props = defineProps<{
   onReport?: (report: Partial<Activity>) => void
 }>()
 
+const activities = ref<Activity[]>(props.activities)
+const activityMarkers = ref<Marker[]>([])
+
 // -- Template refs
 const mapContainer = ref<HTMLElement | null>(null)
 const map = ref<LeafletMap | null>(null)
@@ -54,6 +57,10 @@ const pressPosition = ref<LatLng | null>(null)
 // -- Cleanup function for map instance
 const cleanupMap = () => {
   if (map.value) {
+    // Remove all activity markers
+    activityMarkers.value.forEach(marker => marker.remove())
+    activityMarkers.value = []
+    
     map.value.remove()
     map.value = null
   }
@@ -228,6 +235,9 @@ onMounted(() => {
     // Initialize events
     initMapEvents(mapInstance)
     initTouchEvents(mapContainer.value, mapInstance)
+    
+    // Display activity markers
+    displayActivityMarkers()
 
   } catch (error) {
     console.error('Error initializing map:', error)
@@ -264,7 +274,6 @@ function useCurrentLocation() {
 
 // -- Submit the "activity"
 function submitActivity(activityForm: Activity) {
-  console.log(activityForm)
   // Basic validation
   if (!activityForm.latlng && !activityForm.address) {
     alert('Please select a location on the map or enter an address.')
@@ -331,6 +340,26 @@ function upvoteActivity() {
     likeCount.value += 1
     liked.value = true
   }
+}
+
+// -- Function to display activity markers
+function displayActivityMarkers() {
+  if (!map.value) return
+  
+  // Clear existing markers
+  activityMarkers.value.forEach(marker => marker.remove())
+  activityMarkers.value = []
+  
+  // Add new markers for each activity
+  activities.value.forEach(activity => {
+    if (activity.latlng) {
+      const [lat, lng] = activity.latlng.split(',').map(Number)
+      if (isValidLatLng(lat, lng)) {
+        const marker = L.marker([lat, lng]).addTo(map.value!)
+        activityMarkers.value.push(marker)
+      }
+    }
+  })
 }
 
 </script>

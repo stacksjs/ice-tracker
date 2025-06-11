@@ -36,26 +36,26 @@ const activities = ref<Activity[]>([
     id: 1,
     title: 'Car collision',
     description: 'Two cars collided at intersection',
-    location: [51.505, -0.09],
+    location: [34.0522, -118.2437], // Downtown LA
     date: '2024-03-20',
     severity: 'moderate',
     address: '',
     infoSource: 'news',
     wereDetained: false,
-    latlng: '51.505, -0.09',
+    latlng: '34.0522, -118.2437',
     images: []
   },
   {
     id: 2,
     title: 'Bicycle accident',
     description: 'Cyclist hit by opening car door',
-    location: [51.51, -0.1],
+    location: [34.0625, -118.2381], // Echo Park
     date: '2024-03-19',
     severity: 'minor',
     address: '',
     infoSource: 'news',
     wereDetained: false,
-    latlng: '51.51, -0.1',
+    latlng: '34.0625, -118.2381',
     images: []
   },
 ])
