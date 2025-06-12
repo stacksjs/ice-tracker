@@ -1,7 +1,6 @@
-import { config } from '@stacksjs/config'
 import Stripe from 'stripe'
 
-const apiKey = config.services.stripe?.secretKey || 'abcd'
+const apiKey = 'abcd'
 
 const client = new Stripe(apiKey, {
   apiVersion: '2025-02-24.acacia',

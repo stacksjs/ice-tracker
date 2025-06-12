@@ -3,6 +3,8 @@ import { initializeDbConfig } from '../../database/src/utils'
 import { defaults } from './defaults'
 import { overrides } from './overrides'
 
+export const test = 'test'
+
 // merged defaults and overrides
 export const config: StacksOptions = {
   ...defaults,
