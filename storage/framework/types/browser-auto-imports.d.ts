@@ -554,7 +554,6 @@ declare module 'vue' {
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly injectHead: UnwrapRef<typeof import('@unhead/vue')['injectHead']>
     readonly injectLocal: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['injectLocal']>
-    readonly isDark: UnwrapRef<typeof import('../../../resources/functions/dark')['isDark']>
     readonly isDefined: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['isDefined']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
@@ -612,7 +611,6 @@ declare module 'vue' {
     readonly or: UnwrapRef<typeof import('../core/browser/src/utils/math')['or']>
     readonly parse: UnwrapRef<typeof import('../core/datetime/dist/index.js')['parse']>
     readonly pausableWatch: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['pausableWatch']>
-    readonly preferredDark: UnwrapRef<typeof import('../../../resources/functions/dark')['preferredDark']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
     readonly provideLocal: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['provideLocal']>
     readonly publishableKey: UnwrapRef<typeof import('../core/browser/src/utils/billable')['publishableKey']>
@@ -661,7 +659,6 @@ declare module 'vue' {
     readonly toRefs: UnwrapRef<typeof import('vue')['toRefs']>
     readonly toString: UnwrapRef<typeof import('../core/browser/src/utils/base')['toString']>
     readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
-    readonly toggleDark: UnwrapRef<typeof import('../../../resources/functions/dark')['toggleDark']>
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
     readonly tryOnBeforeMount: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['tryOnBeforeMount']>
     readonly tryOnBeforeUnmount: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['tryOnBeforeUnmount']>

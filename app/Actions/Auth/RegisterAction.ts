@@ -33,7 +33,6 @@ export default new Action({
 
     const result = await register({ email, password, name })
 
-    console.log('result', result)
     if (result) {
       const user = await Auth.getUserFromToken(result.token)
 
