@@ -27,6 +27,7 @@ route.post('/ai/summary', 'Actions/AI/SummaryAction')
 route.post('/register', 'Actions/Auth/RegisterAction')
 route.post('/login', 'Actions/Auth/LoginAction')
 route.post('/logout', 'Actions/Auth/LogoutAction')
+route.get('/me', 'Actions/Auth/FetchUserAction').middleware('auth')
 
 // route.action('/example') // equivalent to `route.get('/example', 'ExampleAction')`
 // route.action('Dashboard/GetProjects')

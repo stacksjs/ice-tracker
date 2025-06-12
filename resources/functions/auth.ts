@@ -13,9 +13,64 @@ interface Response<T> {
   data: T
 }
 
+interface UserData {
+  id: number
+  email: string
+  name: string
+}
+
+interface MeResponse {
+  user: UserData
+}
+
 const baseUrl = 'http://localhost:3008'
 
 export function useAuth() {
+  const user = ref<UserData | null>(null)
+  const isAuthenticated = ref(false)
+
+  async function fetchUser() {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        isAuthenticated.value = false
+        user.value = null
+        return null
+      }
+
+      const response = await fetch(`${baseUrl}/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        localStorage.removeItem('token')
+        isAuthenticated.value = false
+        user.value = null
+        return null
+      }
+
+      const data = await response.json() as MeResponse
+      user.value = data.user
+      isAuthenticated.value = true
+      return data.user
+    }
+    catch (error) {
+      console.error('Error fetching user:', error)
+      localStorage.removeItem('token')
+      isAuthenticated.value = false
+      user.value = null
+      return null
+    }
+  }
+
+  // Check auth status on mount
+  onMounted(() => {
+    fetchUser()
+  })
+
   async function register<T>(user: User): Promise<Response<T>> {
     const url = `${baseUrl}/register`
     const response = await fetch(url, {
@@ -47,7 +102,9 @@ export function useAuth() {
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
-      const data = await response.json()
+      const data = await response.json() as { token: string }
+      localStorage.setItem('token', data.token)
+      await fetchUser() // Fetch user data after successful login
       return data
     }
     catch (error) {
@@ -56,8 +113,35 @@ export function useAuth() {
     }
   }
 
+  async function logout() {
+    try {
+      const token = localStorage.getItem('token')
+      if (token) {
+        await fetch(`${baseUrl}/logout`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        })
+      }
+    }
+    catch (error) {
+      console.error('Error during logout:', error)
+    }
+    finally {
+      localStorage.removeItem('token')
+      user.value = null
+      isAuthenticated.value = false
+    }
+  }
+
   return {
+    user,
+    isAuthenticated,
     register,
     login,
+    logout,
+    fetchUser,
   }
 }
