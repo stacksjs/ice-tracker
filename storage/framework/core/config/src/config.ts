@@ -5,7 +5,7 @@ import { overrides } from './overrides'
 // merged defaults and overrides
 export const config: StacksOptions = {
   ...defaults,
-  ...overrides,
+  // ...overrides,
 }
 
 export function getConfig(): StacksOptions {

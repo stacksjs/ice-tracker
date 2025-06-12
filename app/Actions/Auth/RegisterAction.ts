@@ -12,7 +12,6 @@ export default new Action({
     const email = request.get('email')
     const password = request.get('password')
     const name = request.get('name')
-    const passwordConfirmation = request.get('password_confirmation')
 
     await request.validate({
       email: {
@@ -22,7 +21,6 @@ export default new Action({
       password: {
         rule: schema.password()
           .min(8)
-          .matches(passwordConfirmation)
           .hasUppercase()
           .hasLowercase()
           .hasNumbers(),
