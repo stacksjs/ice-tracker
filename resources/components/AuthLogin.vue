@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Toaster, notification } from '@stacksjs/notification'
+import { useAuth } from '../functions/auth'
 
 const props = defineProps({
   showLogo: {
@@ -35,6 +36,7 @@ const props = defineProps({
 })
 
 const router = useRouter()
+const { login } = useAuth()
 
 // Reactive state for form inputs and messages
 const email = ref('')
@@ -42,39 +44,23 @@ const password = ref('')
 const validationErrors = ref<Record<string, { message: string }[]>>({})
 
 // Method to handle email and password login
-async function login() {
+async function handleLogin() {
   try {
     validationErrors.value = {}
-    const body = {
-      email: email.value,
+    const response = await login({ 
+      email: email.value, 
       password: password.value,
-    }
-
-    const url = 'http://localhost:3008/api/login'
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(body),
+      name: '' // Required by interface but not used in login
     })
 
-    const data: any = await response.json()
-
-    if (!response.ok) {
-      if (data.errors) {
-        validationErrors.value = data.errors
-        return
-      }
+    if (response instanceof Error) {
       notification('Login failed. Please check your credentials.')
+      return
     }
-    else {
-      localStorage.setItem('token', data.token)
-      notification('Login successful!')
-      router.push({ path: '/dashboard' })
-    }
+
+    localStorage.setItem('token', response.token)
+    notification('Login successful!')
+    router.push({ path: '/dashboard' })
   }
   catch (error) {
     console.error(error)
@@ -146,7 +132,7 @@ useHead({
           </div>
 
           <div>
-            <button @click="login" type="submit" class="flex w-full justify-center rounded-md bg-gray-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600">
+            <button @click="handleLogin" type="submit" class="flex w-full justify-center rounded-md bg-gray-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600">
               Sign in
             </button>
           </div>
