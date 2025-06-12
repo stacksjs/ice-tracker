@@ -4,37 +4,6 @@ import { useRouter } from 'vue-router'
 import { Toaster, notification } from '@stacksjs/notification'
 import { useAuth } from '../functions/auth'
 
-const props = defineProps({
-  showLogo: {
-    type: Boolean,
-    default: true
-  },
-  headingText: {
-    type: String,
-    default: 'Sign in to your account'
-  },
-  showSocialLogin: {
-    type: Boolean,
-    default: true
-  },
-  showRememberMe: {
-    type: Boolean,
-    default: true
-  },
-  showForgotPassword: {
-    type: Boolean,
-    default: true
-  },
-  showSignup: {
-    type: Boolean,
-    default: true
-  },
-  signupText: {
-    type: String,
-    default: 'Start a 14 day free trial'
-  }
-})
-
 const router = useRouter()
 const { login } = useAuth()
 
@@ -58,9 +27,11 @@ async function handleLogin() {
       return
     }
 
-    localStorage.setItem('token', response.token)
-    notification('Login successful!')
-    router.push({ path: '/dashboard' })
+    if ('data' in response && 'token' in response.data) {
+      localStorage.setItem('token', response.data.token)
+      notification('Login successful!')
+      router.push({ path: '/map' })
+    }
   }
   catch (error) {
     console.error(error)
