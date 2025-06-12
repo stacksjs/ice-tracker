@@ -24,7 +24,7 @@ import type {
   UiConfig,
 } from '@stacksjs/types'
 import { createLocalTunnel } from '@stacksjs/tunnel'
-import { config } from '.'
+import { config } from './config'
 
 export type LocalUrlType =
   | 'frontend'

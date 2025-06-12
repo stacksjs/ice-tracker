@@ -3,49 +3,169 @@ import { initializeDbConfig } from '../../database/src/utils'
 import { defaults } from './defaults'
 import { overrides } from './overrides'
 
-export const test = 'test'
-
 // merged defaults and overrides
-export const config: StacksOptions = {
-  ...defaults,
-  ...overrides,
-}
-
-// Initialize the database config to avoid circular dependencies
-initializeDbConfig(config)
+let configData: StacksOptions | null = null
 
 export function getConfig(): StacksOptions {
-  return config
+  if (!configData) {
+    configData = {
+      ...defaults,
+      ...overrides,
+    }
+    // Initialize the database config to avoid circular dependencies
+    initializeDbConfig(configData)
+  }
+  return configData
 }
 
-export const ai: StacksOptions['ai'] = config.ai
-export const analytics: StacksOptions['analytics'] = config.analytics
-export const app: StacksOptions['app'] = config.app
-export const auth: StacksOptions['auth'] = config.auth
-export const realtime: StacksOptions['realtime'] = config.realtime
-export const cache: StacksOptions['cache'] = config.cache
-export const cloud: StacksOptions['cloud'] = config.cloud
-export const cli: StacksOptions['cli'] = config.cli
-export const database: StacksOptions['database'] = config.database
-export const dns: StacksOptions['dns'] = config.dns
-export const docs: StacksOptions['docs'] = config.docs
-export const email: StacksOptions['email'] = config.email
-export const errors: StacksOptions['errors'] = config.errors
-export const git: StacksOptions['git'] = config.git
-export const hashing: StacksOptions['hashing'] = config.hashing
-export const library: StacksOptions['library'] = config.library
-export const logging: StacksOptions['logging'] = config.logging
-export const notification: StacksOptions['notification'] = config.notification
-export const payment: StacksOptions['payment'] = config.payment
-export const ports: StacksOptions['ports'] = config.ports
-export const queue: StacksOptions['queue'] = config.queue
-export const security: StacksOptions['security'] = config.security
-export const saas: StacksOptions['saas'] = config.saas
-export const searchEngine: StacksOptions['searchEngine'] = config.searchEngine
-export const services: StacksOptions['services'] = config.services
-export const storage: StacksOptions['storage'] = config.storage
-export const team: StacksOptions['team'] = config.team
-export const ui: StacksOptions['ui'] = config.ui
+export function getAi(): StacksOptions['ai'] {
+  return getConfig().ai
+}
+
+export function getAnalytics(): StacksOptions['analytics'] {
+  return getConfig().analytics
+}
+
+export function getApp(): StacksOptions['app'] {
+  return getConfig().app
+}
+
+export function getAuth(): StacksOptions['auth'] {
+  return getConfig().auth
+}
+
+export function getRealtime(): StacksOptions['realtime'] {
+  return getConfig().realtime
+}
+
+export function getCache(): StacksOptions['cache'] {
+  return getConfig().cache
+}
+
+export function getCloud(): StacksOptions['cloud'] {
+  return getConfig().cloud
+}
+
+export function getCli(): StacksOptions['cli'] {
+  return getConfig().cli
+}
+
+export function getDatabase(): StacksOptions['database'] {
+  return getConfig().database
+}
+
+export function getDns(): StacksOptions['dns'] {
+  return getConfig().dns
+}
+
+export function getDocs(): StacksOptions['docs'] {
+  return getConfig().docs
+}
+
+export function getEmail(): StacksOptions['email'] {
+  return getConfig().email
+}
+
+export function getErrors(): StacksOptions['errors'] {
+  return getConfig().errors
+}
+
+export function getGit(): StacksOptions['git'] {
+  return getConfig().git
+}
+
+export function getHashing(): StacksOptions['hashing'] {
+  return getConfig().hashing
+}
+
+export function getLibrary(): StacksOptions['library'] {
+  return getConfig().library
+}
+
+export function getLogging(): StacksOptions['logging'] {
+  return getConfig().logging
+}
+
+export function getNotification(): StacksOptions['notification'] {
+  return getConfig().notification
+}
+
+export function getPayment(): StacksOptions['payment'] {
+  return getConfig().payment
+}
+
+export function getPorts(): StacksOptions['ports'] {
+  return getConfig().ports
+}
+
+export function getQueue(): StacksOptions['queue'] {
+  return getConfig().queue
+}
+
+export function getSecurity(): StacksOptions['security'] {
+  return getConfig().security
+}
+
+export function getSaas(): StacksOptions['saas'] {
+  return getConfig().saas
+}
+
+export function getSearchEngine(): StacksOptions['searchEngine'] {
+  return getConfig().searchEngine
+}
+
+export function getServices(): StacksOptions['services'] {
+  return getConfig().services
+}
+
+export function getStorage(): StacksOptions['storage'] {
+  return getConfig().storage
+}
+
+export function getTeam(): StacksOptions['team'] {
+  return getConfig().team
+}
+
+export function getUi(): StacksOptions['ui'] {
+  return getConfig().ui
+}
+
+// Create a proxy object that maintains the same interface
+export const config: StacksOptions = new Proxy({} as StacksOptions, {
+  get(target, prop: keyof StacksOptions) {
+    switch (prop) {
+      case 'ai': return getAi()
+      case 'analytics': return getAnalytics()
+      case 'app': return getApp()
+      case 'auth': return getAuth()
+      case 'realtime': return getRealtime()
+      case 'cache': return getCache()
+      case 'cloud': return getCloud()
+      case 'cli': return getCli()
+      case 'database': return getDatabase()
+      case 'dns': return getDns()
+      case 'docs': return getDocs()
+      case 'email': return getEmail()
+      case 'errors': return getErrors()
+      case 'git': return getGit()
+      case 'hashing': return getHashing()
+      case 'library': return getLibrary()
+      case 'logging': return getLogging()
+      case 'notification': return getNotification()
+      case 'payment': return getPayment()
+      case 'ports': return getPorts()
+      case 'queue': return getQueue()
+      case 'security': return getSecurity()
+      case 'saas': return getSaas()
+      case 'searchEngine': return getSearchEngine()
+      case 'services': return getServices()
+      case 'storage': return getStorage()
+      case 'team': return getTeam()
+      case 'ui': return getUi()
+      default: return undefined
+    }
+  },
+})
 
 export * from './helpers'
 export { defaults, overrides }
@@ -53,6 +173,7 @@ export { defaults, overrides }
 type AppEnv = 'dev' | 'stage' | 'prod' | string
 
 export function determineAppEnv(): AppEnv {
+  const app = getApp()
   if (app.env === 'local' || app.env === 'development')
     return 'dev'
 

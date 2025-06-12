@@ -1,6 +1,6 @@
 import Stripe from 'stripe'
 
-const apiKey = 'abcd'
+const apiKey = 'abd'
 
 const client = new Stripe(apiKey, {
   apiVersion: '2025-02-24.acacia',
