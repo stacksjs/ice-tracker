@@ -4,7 +4,7 @@ import { Auth } from './authentication'
 
 export type AuthUser = UserJsonResponse
 
-let currentUser: UserModel | undefined
+let currentUser: UserModelType | undefined
 
 export async function getCurrentUser(): Promise<UserModel | undefined> {
   if (currentUser)

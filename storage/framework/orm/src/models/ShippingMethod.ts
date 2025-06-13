@@ -1,7 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { NewShippingMethod, ShippingMethodJsonResponse, ShippingMethodsTable, ShippingMethodUpdate } from '../types/ShippingMethodType'
-import type { ShippingZoneModel } from './ShippingZone'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'

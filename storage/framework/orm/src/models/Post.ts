@@ -1,7 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { CategorizableTable, CommentablesTable, Operator, TaggableTable } from '@stacksjs/orm'
 import type { NewPost, PostJsonResponse, PostsTable, PostUpdate } from '../types/PostType'
-import type { AuthorModel } from './Author'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'

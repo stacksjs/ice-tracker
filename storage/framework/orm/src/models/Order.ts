@@ -1,11 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { NewOrder, OrderJsonResponse, OrdersTable, OrderUpdate } from '../types/OrderType'
-import type { CouponModel } from './Coupon'
-import type { CustomerModel } from './Customer'
-import type { LicenseKeyModel } from './LicenseKey'
-import type { OrderItemModel } from './OrderItem'
-import type { PaymentModel } from './Payment'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 

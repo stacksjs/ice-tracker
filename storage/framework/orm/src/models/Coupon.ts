@@ -1,8 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { CouponJsonResponse, CouponsTable, CouponUpdate, NewCoupon } from '../types/CouponType'
-import type { OrderModel } from './Order'
-import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'

@@ -1,21 +1,21 @@
-import type { SubscriptionsTable, UserModel } from '@stacksjs/orm'
+import type { SubscriptionsTable } from '@stacksjs/orm'
 import type Stripe from 'stripe'
 import { db } from '@stacksjs/database'
 
 import { manageCustomer, managePrice, stripe } from '..'
 
 export interface SubscriptionManager {
-  create: (user: UserModel, type: string, lookupKey: string, params: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
-  update: (user: UserModel, type: string, lookupKey: string, params: Partial<Stripe.SubscriptionUpdateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
+  create: (user: UserModelType, type: string, lookupKey: string, params: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
+  update: (user: UserModelType, type: string, lookupKey: string, params: Partial<Stripe.SubscriptionUpdateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
   cancel: (subscriptionId: string, params?: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
-  retrieve: (user: UserModel, subscriptionId: string) => Promise<Stripe.Response<Stripe.Subscription>>
-  isValid: (user: UserModel, type: string) => Promise<boolean>
-  isIncomplete: (user: UserModel, type: string) => Promise<boolean>
+  retrieve: (user: UserModelType, subscriptionId: string) => Promise<Stripe.Response<Stripe.Subscription>>
+  isValid: (user: UserModelType, type: string) => Promise<boolean>
+  isIncomplete: (user: UserModelType, type: string) => Promise<boolean>
 }
 
 export const manageSubscription: SubscriptionManager = (() => {
   async function create(
-    user: UserModel,
+    user: UserModelType,
     type: string,
     lookupKey: string,
     params: Partial<Stripe.SubscriptionCreateParams>,
@@ -57,7 +57,7 @@ export const manageSubscription: SubscriptionManager = (() => {
   }
 
   async function update(
-    user: UserModel,
+    user: UserModelType,
     type: string,
     lookupKey: string,
   ): Promise<Stripe.Response<Stripe.Subscription>> {
@@ -114,7 +114,7 @@ export const manageSubscription: SubscriptionManager = (() => {
     return updatedSubscription
   }
 
-  async function retrieve(user: UserModel, subscriptionId: string): Promise<Stripe.Response<Stripe.Subscription>> {
+  async function retrieve(user: UserModelType, subscriptionId: string): Promise<Stripe.Response<Stripe.Subscription>> {
     if (!user.hasStripeId()) {
       throw new Error('Customer does not exist in Stripe')
     }
@@ -136,7 +136,7 @@ export const manageSubscription: SubscriptionManager = (() => {
     return subscription.provider_status === 'trialing'
   }
 
-  async function isIncomplete(user: UserModel, type: string): Promise<boolean> {
+  async function isIncomplete(user: UserModelType, type: string): Promise<boolean> {
     const subscription = await db.selectFrom('subscriptions').where('type', '=', type).selectAll().executeTakeFirst()
 
     if (!subscription)
@@ -145,7 +145,7 @@ export const manageSubscription: SubscriptionManager = (() => {
     return subscription.provider_status === 'incomplete'
   }
 
-  async function isValid(user: UserModel, type: string): Promise<boolean> {
+  async function isValid(user: UserModelType, type: string): Promise<boolean> {
     const subscription = await db.selectFrom('subscriptions').where('user_id', '=', user.id).where('type', '=', type).selectAll().executeTakeFirst()
 
     if (!subscription)
@@ -157,7 +157,7 @@ export const manageSubscription: SubscriptionManager = (() => {
     return active || trial
   }
 
-  async function storeSubscription(user: UserModel, type: string, lookupKey: string, options: Stripe.Subscription): Promise<SubscriptionsTable | undefined> {
+  async function storeSubscription(user: UserModelType, type: string, lookupKey: string, options: Stripe.Subscription): Promise<SubscriptionsTable | undefined> {
     const data = removeNullValues({
       user_id: user.id,
       type,

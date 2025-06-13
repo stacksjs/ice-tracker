@@ -1,8 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { NewOauthClient, OauthClientJsonResponse, OauthClientsTable, OauthClientUpdate } from '../types/OauthClientType'
-import type { OauthAccessTokenModel } from './OauthAccessToken'
-import type { UserModel } from './User'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'

@@ -1,4 +1,4 @@
-import type { OauthClientJsonResponse, UserModel } from '@stacksjs/orm'
+import type { OauthClientJsonResponse, UserModelType } from '@stacksjs/orm'
 import type { AuthToken } from './token'
 import { randomBytes } from 'node:crypto'
 import { config } from '@stacksjs/config'
@@ -17,7 +17,7 @@ interface Credentials {
 }
 
 export class Auth {
-  private static authUser: UserModel | undefined = undefined
+  private static authUser: UserModelType | undefined = undefined
   private static clientSecret: string | undefined = undefined
 
   private static async getClientSecret(): Promise<string> {
@@ -80,7 +80,7 @@ export class Auth {
     return false
   }
 
-  public static async createToken(user: UserModel, name: string = config.auth.defaultTokenName || 'auth-token'): Promise<AuthToken> {
+  public static async createToken(user: UserModelType, name: string = config.auth.defaultTokenName || 'auth-token'): Promise<AuthToken> {
     const client = await this.getPersonalAccessClient()
     const clientSecret = await this.getClientSecret()
 

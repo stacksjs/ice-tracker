@@ -1,8 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { CartItemJsonResponse, CartItemsTable, CartItemUpdate, NewCartItem } from '../types/CartItemType'
-import type { CartModel } from './Cart'
-import type { ProductItemModel } from './ProductItem'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'

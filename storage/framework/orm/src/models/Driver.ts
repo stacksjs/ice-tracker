@@ -1,8 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { DriverJsonResponse, DriversTable, DriverUpdate, NewDriver } from '../types/DriverType'
-import type { DeliveryRouteModel } from './DeliveryRoute'
-import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'

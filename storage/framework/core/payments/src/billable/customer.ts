@@ -1,22 +1,21 @@
-import type { UserModel } from '@stacksjs/orm'
 import type { StripeCustomerOptions } from '@stacksjs/types'
 import type Stripe from 'stripe'
 import { stripe } from '..'
 
 export interface ManageCustomer {
-  stripeId: (user: UserModel) => string
-  hasStripeId: (user: UserModel) => boolean
-  createStripeCustomer: (user: UserModel, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
-  updateStripeCustomer: (user: UserModel, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
-  createOrGetStripeUser: (user: UserModel, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
-  retrieveStripeUser: (user: UserModel) => Promise<Stripe.Response<Stripe.Customer> | undefined>
-  createOrUpdateStripeUser: (user: UserModel, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
-  deleteStripeUser: (user: UserModel) => Promise<Stripe.Response<Stripe.DeletedCustomer>>
-  syncStripeCustomerDetails: (user: UserModel, options: StripeCustomerOptions) => Promise<Stripe.Response<Stripe.Customer>>
+  stripeId: (user: UserModelType) => string
+  hasStripeId: (user: UserModelType) => boolean
+  createStripeCustomer: (user: UserModelType, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
+  updateStripeCustomer: (user: UserModelType, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
+  createOrGetStripeUser: (user: UserModelType, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
+  retrieveStripeUser: (user: UserModelType) => Promise<Stripe.Response<Stripe.Customer> | undefined>
+  createOrUpdateStripeUser: (user: UserModelType, options: Stripe.CustomerCreateParams) => Promise<Stripe.Response<Stripe.Customer>>
+  deleteStripeUser: (user: UserModelType) => Promise<Stripe.Response<Stripe.DeletedCustomer>>
+  syncStripeCustomerDetails: (user: UserModelType, options: StripeCustomerOptions) => Promise<Stripe.Response<Stripe.Customer>>
 }
 
 export const manageCustomer: ManageCustomer = (() => {
-  function stripeId(user: UserModel): string {
+  function stripeId(user: UserModelType): string {
     return user.stripe_id || ''
   }
 
@@ -44,11 +43,11 @@ export const manageCustomer: ManageCustomer = (() => {
     return metadata
   }
 
-  function hasStripeId(user: UserModel): boolean {
+  function hasStripeId(user: UserModelType): boolean {
     return Boolean(user.stripe_id)
   }
 
-  async function createStripeCustomer(user: UserModel, options: Stripe.CustomerCreateParams = {}): Promise<Stripe.Response<Stripe.Customer>> {
+  async function createStripeCustomer(user: UserModelType, options: Stripe.CustomerCreateParams = {}): Promise<Stripe.Response<Stripe.Customer>> {
     if (hasStripeId(user)) {
       throw new Error('Customer already created')
     }
@@ -68,13 +67,13 @@ export const manageCustomer: ManageCustomer = (() => {
     return customer
   }
 
-  async function updateStripeCustomer(user: UserModel, options: Stripe.CustomerCreateParams = {}): Promise<Stripe.Response<Stripe.Customer>> {
+  async function updateStripeCustomer(user: UserModelType, options: Stripe.CustomerCreateParams = {}): Promise<Stripe.Response<Stripe.Customer>> {
     const customer = await stripe.customers.update(user.stripe_id || '', options)
 
     return customer
   }
 
-  async function deleteStripeUser(user: UserModel): Promise<Stripe.Response<Stripe.DeletedCustomer>> {
+  async function deleteStripeUser(user: UserModelType): Promise<Stripe.Response<Stripe.DeletedCustomer>> {
     if (!hasStripeId(user)) {
       throw new Error('User does not have a Stripe ID')
     }
@@ -95,7 +94,7 @@ export const manageCustomer: ManageCustomer = (() => {
     }
   }
 
-  async function createOrGetStripeUser(user: UserModel, options: Stripe.CustomerCreateParams = {}): Promise<Stripe.Response<Stripe.Customer>> {
+  async function createOrGetStripeUser(user: UserModelType, options: Stripe.CustomerCreateParams = {}): Promise<Stripe.Response<Stripe.Customer>> {
     if (!hasStripeId(user)) {
       return await createStripeCustomer(user, options)
     }
@@ -116,7 +115,7 @@ export const manageCustomer: ManageCustomer = (() => {
     }
   }
 
-  async function retrieveStripeUser(user: UserModel): Promise<Stripe.Response<Stripe.Customer> | undefined> {
+  async function retrieveStripeUser(user: UserModelType): Promise<Stripe.Response<Stripe.Customer> | undefined> {
     if (!hasStripeId(user)) {
       return undefined
     }
@@ -138,7 +137,7 @@ export const manageCustomer: ManageCustomer = (() => {
     }
   }
 
-  async function createOrUpdateStripeUser(user: UserModel, options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
+  async function createOrUpdateStripeUser(user: UserModelType, options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
     if (!hasStripeId(user)) {
       return await createStripeCustomer(user, options)
     }
@@ -160,7 +159,7 @@ export const manageCustomer: ManageCustomer = (() => {
     }
   }
 
-  async function syncStripeCustomerDetails(user: UserModel, options: StripeCustomerOptions): Promise<Stripe.Response<Stripe.Customer>> {
+  async function syncStripeCustomerDetails(user: UserModelType, options: StripeCustomerOptions): Promise<Stripe.Response<Stripe.Customer>> {
     return await updateStripeCustomer(user, {
       name: stripeName(user),
       email: stripeEmail(user),
@@ -170,11 +169,11 @@ export const manageCustomer: ManageCustomer = (() => {
     })
   }
 
-  function stripeName(user: UserModel): string {
+  function stripeName(user: UserModelType): string {
     return user.name || ''
   }
 
-  function stripeEmail(user: UserModel): string {
+  function stripeEmail(user: UserModelType): string {
     return user.email || ''
   }
 
