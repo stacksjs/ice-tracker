@@ -35,65 +35,7 @@ export interface ManufacturerJsonResponse extends Omit<Selectable<ManufacturerRe
 export type NewManufacturer = Insertable<ManufacturerWrite>
 export type ManufacturerUpdate = Updateable<ManufacturerWrite>
 
-export interface IManufacturerModelStatic {
-  with: (relations: string[]) => IManufacturerModel
-  select: (params: (keyof ManufacturerJsonResponse)[] | RawBuilder<string> | string) => IManufacturerModel
-  find: (id: number) => Promise<IManufacturerModel | undefined>
-  first: () => Promise<IManufacturerModel | undefined>
-  last: () => Promise<IManufacturerModel | undefined>
-  firstOrFail: () => Promise<IManufacturerModel | undefined>
-  all: () => Promise<IManufacturerModel[]>
-  findOrFail: (id: number) => Promise<IManufacturerModel | undefined>
-  findMany: (ids: number[]) => Promise<IManufacturerModel[]>
-  latest: (column?: keyof ManufacturersTable) => Promise<IManufacturerModel | undefined>
-  oldest: (column?: keyof ManufacturersTable) => Promise<IManufacturerModel | undefined>
-  skip: (count: number) => IManufacturerModel
-  take: (count: number) => IManufacturerModel
-  where: <V = string>(column: keyof ManufacturersTable, ...args: [V] | [Operator, V]) => IManufacturerModel
-  orWhere: (...conditions: [string, any][]) => IManufacturerModel
-  whereNotIn: <V = number>(column: keyof ManufacturersTable, values: V[]) => IManufacturerModel
-  whereBetween: <V = number>(column: keyof ManufacturersTable, range: [V, V]) => IManufacturerModel
-  whereRef: (column: keyof ManufacturersTable, ...args: string[]) => IManufacturerModel
-  when: (condition: boolean, callback: (query: IManufacturerModel) => IManufacturerModel) => IManufacturerModel
-  whereNull: (column: keyof ManufacturersTable) => IManufacturerModel
-  whereNotNull: (column: keyof ManufacturersTable) => IManufacturerModel
-  whereLike: (column: keyof ManufacturersTable, value: string) => IManufacturerModel
-  orderBy: (column: keyof ManufacturersTable, order: 'asc' | 'desc') => IManufacturerModel
-  orderByAsc: (column: keyof ManufacturersTable) => IManufacturerModel
-  orderByDesc: (column: keyof ManufacturersTable) => IManufacturerModel
-  groupBy: (column: keyof ManufacturersTable) => IManufacturerModel
-  having: <V = string>(column: keyof ManufacturersTable, operator: Operator, value: V) => IManufacturerModel
-  inRandomOrder: () => IManufacturerModel
-  whereColumn: (first: keyof ManufacturersTable, operator: Operator, second: keyof ManufacturersTable) => IManufacturerModel
-  max: (field: keyof ManufacturersTable) => Promise<number>
-  min: (field: keyof ManufacturersTable) => Promise<number>
-  avg: (field: keyof ManufacturersTable) => Promise<number>
-  sum: (field: keyof ManufacturersTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<IManufacturerModel[]>
-  pluck: <K extends keyof IManufacturerModel>(field: K) => Promise<IManufacturerModel[K][]>
-  chunk: (size: number, callback: (models: IManufacturerModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IManufacturerModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newManufacturer: NewManufacturer) => Promise<IManufacturerModel>
-  firstOrCreate: (search: Partial<ManufacturersTable>, values?: NewManufacturer) => Promise<IManufacturerModel>
-  updateOrCreate: (search: Partial<ManufacturersTable>, values?: NewManufacturer) => Promise<IManufacturerModel>
-  createMany: (newManufacturer: NewManufacturer[]) => Promise<void>
-  forceCreate: (newManufacturer: NewManufacturer) => Promise<IManufacturerModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof ManufacturersTable, values: V[]) => IManufacturerModel
-  distinct: (column: keyof ManufacturerJsonResponse) => IManufacturerModel
-  join: (table: string, firstCol: string, secondCol: string) => IManufacturerModel
-}
-
-export interface IManufacturerModel {
+export interface ManufacturerModelType {
   // Properties
   readonly id: number
   get manufacturer(): string
@@ -110,16 +52,70 @@ export interface IManufacturerModel {
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => ManufacturerModelType
+  select: (params: (keyof ManufacturerJsonResponse)[] | RawBuilder<string> | string) => ManufacturerModelType
+  find: (id: number) => Promise<ManufacturerModelType | undefined>
+  first: () => Promise<ManufacturerModelType | undefined>
+  last: () => Promise<ManufacturerModelType | undefined>
+  firstOrFail: () => Promise<ManufacturerModelType | undefined>
+  all: () => Promise<ManufacturerModelType[]>
+  findOrFail: (id: number) => Promise<ManufacturerModelType | undefined>
+  findMany: (ids: number[]) => Promise<ManufacturerModelType[]>
+  latest: (column?: keyof ManufacturersTable) => Promise<ManufacturerModelType | undefined>
+  oldest: (column?: keyof ManufacturersTable) => Promise<ManufacturerModelType | undefined>
+  skip: (count: number) => ManufacturerModelType
+  take: (count: number) => ManufacturerModelType
+  where: <V = string>(column: keyof ManufacturersTable, ...args: [V] | [Operator, V]) => ManufacturerModelType
+  orWhere: (...conditions: [string, any][]) => ManufacturerModelType
+  whereNotIn: <V = number>(column: keyof ManufacturersTable, values: V[]) => ManufacturerModelType
+  whereBetween: <V = number>(column: keyof ManufacturersTable, range: [V, V]) => ManufacturerModelType
+  whereRef: (column: keyof ManufacturersTable, ...args: string[]) => ManufacturerModelType
+  when: (condition: boolean, callback: (query: ManufacturerModelType) => ManufacturerModelType) => ManufacturerModelType
+  whereNull: (column: keyof ManufacturersTable) => ManufacturerModelType
+  whereNotNull: (column: keyof ManufacturersTable) => ManufacturerModelType
+  whereLike: (column: keyof ManufacturersTable, value: string) => ManufacturerModelType
+  orderBy: (column: keyof ManufacturersTable, order: 'asc' | 'desc') => ManufacturerModelType
+  orderByAsc: (column: keyof ManufacturersTable) => ManufacturerModelType
+  orderByDesc: (column: keyof ManufacturersTable) => ManufacturerModelType
+  groupBy: (column: keyof ManufacturersTable) => ManufacturerModelType
+  having: <V = string>(column: keyof ManufacturersTable, operator: Operator, value: V) => ManufacturerModelType
+  inRandomOrder: () => ManufacturerModelType
+  whereColumn: (first: keyof ManufacturersTable, operator: Operator, second: keyof ManufacturersTable) => ManufacturerModelType
+  max: (field: keyof ManufacturersTable) => Promise<number>
+  min: (field: keyof ManufacturersTable) => Promise<number>
+  avg: (field: keyof ManufacturersTable) => Promise<number>
+  sum: (field: keyof ManufacturersTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<ManufacturerModelType[]>
+  pluck: <K extends keyof ManufacturerModelType>(field: K) => Promise<ManufacturerModelType[K][]>
+  chunk: (size: number, callback: (models: ManufacturerModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: ManufacturerModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newManufacturer: NewManufacturer) => Promise<ManufacturerModelType>
+  firstOrCreate: (search: Partial<ManufacturersTable>, values?: NewManufacturer) => Promise<ManufacturerModelType>
+  updateOrCreate: (search: Partial<ManufacturersTable>, values?: NewManufacturer) => Promise<ManufacturerModelType>
+  createMany: (newManufacturer: NewManufacturer[]) => Promise<void>
+  forceCreate: (newManufacturer: NewManufacturer) => Promise<ManufacturerModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof ManufacturersTable, values: V[]) => ManufacturerModelType
+  distinct: (column: keyof ManufacturerJsonResponse) => ManufacturerModelType
+  join: (table: string, firstCol: string, secondCol: string) => ManufacturerModelType
+
   // Instance methods
-  createInstance: (data: ManufacturerJsonResponse) => IManufacturerModel
-  create: (newManufacturer: NewManufacturer) => Promise<IManufacturerModel>
-  update: (newManufacturer: ManufacturerUpdate) => Promise<IManufacturerModel | undefined>
-  forceUpdate: (newManufacturer: ManufacturerUpdate) => Promise<IManufacturerModel | undefined>
-  save: () => Promise<IManufacturerModel>
+  createInstance: (data: ManufacturerJsonResponse) => ManufacturerModelType
+  update: (newManufacturer: ManufacturerUpdate) => Promise<ManufacturerModelType | undefined>
+  forceUpdate: (newManufacturer: ManufacturerUpdate) => Promise<ManufacturerModelType | undefined>
+  save: () => Promise<ManufacturerModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<ManufacturerJsonResponse>
   toJSON: () => ManufacturerJsonResponse
-  parseResult: (model: IManufacturerModel) => IManufacturerModel
+  parseResult: (model: ManufacturerModelType) => ManufacturerModelType
 }
-
-export type ManufacturerModelType = IManufacturerModel & IManufacturerModelStatic

@@ -44,65 +44,7 @@ export interface WaitlistRestaurantJsonResponse extends Omit<Selectable<Waitlist
 export type NewWaitlistRestaurant = Insertable<WaitlistRestaurantWrite>
 export type WaitlistRestaurantUpdate = Updateable<WaitlistRestaurantWrite>
 
-export interface IWaitlistRestaurantModelStatic {
-  with: (relations: string[]) => IWaitlistRestaurantModel
-  select: (params: (keyof WaitlistRestaurantJsonResponse)[] | RawBuilder<string> | string) => IWaitlistRestaurantModel
-  find: (id: number) => Promise<IWaitlistRestaurantModel | undefined>
-  first: () => Promise<IWaitlistRestaurantModel | undefined>
-  last: () => Promise<IWaitlistRestaurantModel | undefined>
-  firstOrFail: () => Promise<IWaitlistRestaurantModel | undefined>
-  all: () => Promise<IWaitlistRestaurantModel[]>
-  findOrFail: (id: number) => Promise<IWaitlistRestaurantModel | undefined>
-  findMany: (ids: number[]) => Promise<IWaitlistRestaurantModel[]>
-  latest: (column?: keyof WaitlistRestaurantsTable) => Promise<IWaitlistRestaurantModel | undefined>
-  oldest: (column?: keyof WaitlistRestaurantsTable) => Promise<IWaitlistRestaurantModel | undefined>
-  skip: (count: number) => IWaitlistRestaurantModel
-  take: (count: number) => IWaitlistRestaurantModel
-  where: <V = string>(column: keyof WaitlistRestaurantsTable, ...args: [V] | [Operator, V]) => IWaitlistRestaurantModel
-  orWhere: (...conditions: [string, any][]) => IWaitlistRestaurantModel
-  whereNotIn: <V = number>(column: keyof WaitlistRestaurantsTable, values: V[]) => IWaitlistRestaurantModel
-  whereBetween: <V = number>(column: keyof WaitlistRestaurantsTable, range: [V, V]) => IWaitlistRestaurantModel
-  whereRef: (column: keyof WaitlistRestaurantsTable, ...args: string[]) => IWaitlistRestaurantModel
-  when: (condition: boolean, callback: (query: IWaitlistRestaurantModel) => IWaitlistRestaurantModel) => IWaitlistRestaurantModel
-  whereNull: (column: keyof WaitlistRestaurantsTable) => IWaitlistRestaurantModel
-  whereNotNull: (column: keyof WaitlistRestaurantsTable) => IWaitlistRestaurantModel
-  whereLike: (column: keyof WaitlistRestaurantsTable, value: string) => IWaitlistRestaurantModel
-  orderBy: (column: keyof WaitlistRestaurantsTable, order: 'asc' | 'desc') => IWaitlistRestaurantModel
-  orderByAsc: (column: keyof WaitlistRestaurantsTable) => IWaitlistRestaurantModel
-  orderByDesc: (column: keyof WaitlistRestaurantsTable) => IWaitlistRestaurantModel
-  groupBy: (column: keyof WaitlistRestaurantsTable) => IWaitlistRestaurantModel
-  having: <V = string>(column: keyof WaitlistRestaurantsTable, operator: Operator, value: V) => IWaitlistRestaurantModel
-  inRandomOrder: () => IWaitlistRestaurantModel
-  whereColumn: (first: keyof WaitlistRestaurantsTable, operator: Operator, second: keyof WaitlistRestaurantsTable) => IWaitlistRestaurantModel
-  max: (field: keyof WaitlistRestaurantsTable) => Promise<number>
-  min: (field: keyof WaitlistRestaurantsTable) => Promise<number>
-  avg: (field: keyof WaitlistRestaurantsTable) => Promise<number>
-  sum: (field: keyof WaitlistRestaurantsTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<IWaitlistRestaurantModel[]>
-  pluck: <K extends keyof IWaitlistRestaurantModel>(field: K) => Promise<IWaitlistRestaurantModel[K][]>
-  chunk: (size: number, callback: (models: IWaitlistRestaurantModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IWaitlistRestaurantModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newWaitlistRestaurant: NewWaitlistRestaurant) => Promise<IWaitlistRestaurantModel>
-  firstOrCreate: (search: Partial<WaitlistRestaurantsTable>, values?: NewWaitlistRestaurant) => Promise<IWaitlistRestaurantModel>
-  updateOrCreate: (search: Partial<WaitlistRestaurantsTable>, values?: NewWaitlistRestaurant) => Promise<IWaitlistRestaurantModel>
-  createMany: (newWaitlistRestaurant: NewWaitlistRestaurant[]) => Promise<void>
-  forceCreate: (newWaitlistRestaurant: NewWaitlistRestaurant) => Promise<IWaitlistRestaurantModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof WaitlistRestaurantsTable, values: V[]) => IWaitlistRestaurantModel
-  distinct: (column: keyof WaitlistRestaurantJsonResponse) => IWaitlistRestaurantModel
-  join: (table: string, firstCol: string, secondCol: string) => IWaitlistRestaurantModel
-}
-
-export interface IWaitlistRestaurantModel {
+export interface WaitlistRestaurantModelType {
   // Properties
   readonly id: number
   get name(): string
@@ -111,42 +53,96 @@ export interface IWaitlistRestaurantModel {
   set email(value: string)
   get phone(): string | undefined
   set phone(value: string)
-  get party_size(): number
-  set party_size(value: number)
-  get check_in_time(): Date | string
-  set check_in_time(value: Date | string)
-  get table_preference(): string | string[]
-  set table_preference(value: string | string[])
+  get partySize(): number
+  set partySize(value: number)
+  get checkInTime(): Date | string
+  set checkInTime(value: Date | string)
+  get tablePreference(): string | string[]
+  set tablePreference(value: string | string[])
   get status(): string | string[]
   set status(value: string | string[])
-  get quoted_wait_time(): number
-  set quoted_wait_time(value: number)
-  get actual_wait_time(): number | undefined
-  set actual_wait_time(value: number)
-  get queue_position(): number | undefined
-  set queue_position(value: number)
-  get seated_at(): Date | string | undefined
-  set seated_at(value: Date | string)
-  get no_show_at(): Date | string | undefined
-  set no_show_at(value: Date | string)
-  get cancelled_at(): Date | string | undefined
-  set cancelled_at(value: Date | string)
+  get quotedWaitTime(): number
+  set quotedWaitTime(value: number)
+  get actualWaitTime(): number | undefined
+  set actualWaitTime(value: number)
+  get queuePosition(): number | undefined
+  set queuePosition(value: number)
+  get seatedAt(): Date | string | undefined
+  set seatedAt(value: Date | string)
+  get noShowAt(): Date | string | undefined
+  set noShowAt(value: Date | string)
+  get cancelledAt(): Date | string | undefined
+  set cancelledAt(value: Date | string)
   get uuid(): string | undefined
   set uuid(value: string)
   get created_at(): string | undefined
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => WaitlistRestaurantModelType
+  select: (params: (keyof WaitlistRestaurantJsonResponse)[] | RawBuilder<string> | string) => WaitlistRestaurantModelType
+  find: (id: number) => Promise<WaitlistRestaurantModelType | undefined>
+  first: () => Promise<WaitlistRestaurantModelType | undefined>
+  last: () => Promise<WaitlistRestaurantModelType | undefined>
+  firstOrFail: () => Promise<WaitlistRestaurantModelType | undefined>
+  all: () => Promise<WaitlistRestaurantModelType[]>
+  findOrFail: (id: number) => Promise<WaitlistRestaurantModelType | undefined>
+  findMany: (ids: number[]) => Promise<WaitlistRestaurantModelType[]>
+  latest: (column?: keyof WaitlistRestaurantsTable) => Promise<WaitlistRestaurantModelType | undefined>
+  oldest: (column?: keyof WaitlistRestaurantsTable) => Promise<WaitlistRestaurantModelType | undefined>
+  skip: (count: number) => WaitlistRestaurantModelType
+  take: (count: number) => WaitlistRestaurantModelType
+  where: <V = string>(column: keyof WaitlistRestaurantsTable, ...args: [V] | [Operator, V]) => WaitlistRestaurantModelType
+  orWhere: (...conditions: [string, any][]) => WaitlistRestaurantModelType
+  whereNotIn: <V = number>(column: keyof WaitlistRestaurantsTable, values: V[]) => WaitlistRestaurantModelType
+  whereBetween: <V = number>(column: keyof WaitlistRestaurantsTable, range: [V, V]) => WaitlistRestaurantModelType
+  whereRef: (column: keyof WaitlistRestaurantsTable, ...args: string[]) => WaitlistRestaurantModelType
+  when: (condition: boolean, callback: (query: WaitlistRestaurantModelType) => WaitlistRestaurantModelType) => WaitlistRestaurantModelType
+  whereNull: (column: keyof WaitlistRestaurantsTable) => WaitlistRestaurantModelType
+  whereNotNull: (column: keyof WaitlistRestaurantsTable) => WaitlistRestaurantModelType
+  whereLike: (column: keyof WaitlistRestaurantsTable, value: string) => WaitlistRestaurantModelType
+  orderBy: (column: keyof WaitlistRestaurantsTable, order: 'asc' | 'desc') => WaitlistRestaurantModelType
+  orderByAsc: (column: keyof WaitlistRestaurantsTable) => WaitlistRestaurantModelType
+  orderByDesc: (column: keyof WaitlistRestaurantsTable) => WaitlistRestaurantModelType
+  groupBy: (column: keyof WaitlistRestaurantsTable) => WaitlistRestaurantModelType
+  having: <V = string>(column: keyof WaitlistRestaurantsTable, operator: Operator, value: V) => WaitlistRestaurantModelType
+  inRandomOrder: () => WaitlistRestaurantModelType
+  whereColumn: (first: keyof WaitlistRestaurantsTable, operator: Operator, second: keyof WaitlistRestaurantsTable) => WaitlistRestaurantModelType
+  max: (field: keyof WaitlistRestaurantsTable) => Promise<number>
+  min: (field: keyof WaitlistRestaurantsTable) => Promise<number>
+  avg: (field: keyof WaitlistRestaurantsTable) => Promise<number>
+  sum: (field: keyof WaitlistRestaurantsTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<WaitlistRestaurantModelType[]>
+  pluck: <K extends keyof WaitlistRestaurantModelType>(field: K) => Promise<WaitlistRestaurantModelType[K][]>
+  chunk: (size: number, callback: (models: WaitlistRestaurantModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: WaitlistRestaurantModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newWaitlistRestaurant: NewWaitlistRestaurant) => Promise<WaitlistRestaurantModelType>
+  firstOrCreate: (search: Partial<WaitlistRestaurantsTable>, values?: NewWaitlistRestaurant) => Promise<WaitlistRestaurantModelType>
+  updateOrCreate: (search: Partial<WaitlistRestaurantsTable>, values?: NewWaitlistRestaurant) => Promise<WaitlistRestaurantModelType>
+  createMany: (newWaitlistRestaurant: NewWaitlistRestaurant[]) => Promise<void>
+  forceCreate: (newWaitlistRestaurant: NewWaitlistRestaurant) => Promise<WaitlistRestaurantModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof WaitlistRestaurantsTable, values: V[]) => WaitlistRestaurantModelType
+  distinct: (column: keyof WaitlistRestaurantJsonResponse) => WaitlistRestaurantModelType
+  join: (table: string, firstCol: string, secondCol: string) => WaitlistRestaurantModelType
+
   // Instance methods
-  createInstance: (data: WaitlistRestaurantJsonResponse) => IWaitlistRestaurantModel
-  create: (newWaitlistRestaurant: NewWaitlistRestaurant) => Promise<IWaitlistRestaurantModel>
-  update: (newWaitlistRestaurant: WaitlistRestaurantUpdate) => Promise<IWaitlistRestaurantModel | undefined>
-  forceUpdate: (newWaitlistRestaurant: WaitlistRestaurantUpdate) => Promise<IWaitlistRestaurantModel | undefined>
-  save: () => Promise<IWaitlistRestaurantModel>
+  createInstance: (data: WaitlistRestaurantJsonResponse) => WaitlistRestaurantModelType
+  update: (newWaitlistRestaurant: WaitlistRestaurantUpdate) => Promise<WaitlistRestaurantModelType | undefined>
+  forceUpdate: (newWaitlistRestaurant: WaitlistRestaurantUpdate) => Promise<WaitlistRestaurantModelType | undefined>
+  save: () => Promise<WaitlistRestaurantModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<WaitlistRestaurantJsonResponse>
   toJSON: () => WaitlistRestaurantJsonResponse
-  parseResult: (model: IWaitlistRestaurantModel) => IWaitlistRestaurantModel
+  parseResult: (model: WaitlistRestaurantModelType) => WaitlistRestaurantModelType
 }
-
-export type WaitlistRestaurantModelType = IWaitlistRestaurantModel & IWaitlistRestaurantModelStatic

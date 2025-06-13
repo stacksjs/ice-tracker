@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { DigitalDeliveriesTable, DigitalDeliveryJsonResponse, DigitalDeliveryModelType, DigitalDeliveryUpdate, NewDigitalDelivery } from '../types/DigitalDeliveryType'
+import type { DigitalDeliveriesTable, DigitalDeliveryJsonResponse, DigitalDeliveryUpdate, NewDigitalDelivery } from '../types/DigitalDeliveryType'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -9,7 +9,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalDeliveriesTable, DigitalDeliveryJsonResponse> implements DigitalDeliveryModelType {
+export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalDeliveriesTable, DigitalDeliveryJsonResponse> {
   private readonly hidden: Array<keyof DigitalDeliveryJsonResponse> = []
   private readonly fillable: Array<keyof DigitalDeliveryJsonResponse> = ['name', 'description', 'download_limit', 'expiry_days', 'requires_login', 'automatic_delivery', 'status', 'uuid']
   private readonly guarded: Array<keyof DigitalDeliveryJsonResponse> = []

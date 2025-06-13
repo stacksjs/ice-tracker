@@ -7,6 +7,7 @@ export interface WebsocketsTable {
   socket: string
   details: string
   time: number
+  uuid?: string
   created_at?: string
   updated_at?: string
 }
@@ -34,65 +35,7 @@ export interface WebsocketJsonResponse extends Omit<Selectable<WebsocketRead>, '
 export type NewWebsocket = Insertable<WebsocketWrite>
 export type WebsocketUpdate = Updateable<WebsocketWrite>
 
-export interface IWebsocketModelStatic {
-  with: (relations: string[]) => IWebsocketModel
-  select: (params: (keyof WebsocketJsonResponse)[] | RawBuilder<string> | string) => IWebsocketModel
-  find: (id: number) => Promise<IWebsocketModel | undefined>
-  first: () => Promise<IWebsocketModel | undefined>
-  last: () => Promise<IWebsocketModel | undefined>
-  firstOrFail: () => Promise<IWebsocketModel | undefined>
-  all: () => Promise<IWebsocketModel[]>
-  findOrFail: (id: number) => Promise<IWebsocketModel | undefined>
-  findMany: (ids: number[]) => Promise<IWebsocketModel[]>
-  latest: (column?: keyof WebsocketsTable) => Promise<IWebsocketModel | undefined>
-  oldest: (column?: keyof WebsocketsTable) => Promise<IWebsocketModel | undefined>
-  skip: (count: number) => IWebsocketModel
-  take: (count: number) => IWebsocketModel
-  where: <V = string>(column: keyof WebsocketsTable, ...args: [V] | [Operator, V]) => IWebsocketModel
-  orWhere: (...conditions: [string, any][]) => IWebsocketModel
-  whereNotIn: <V = number>(column: keyof WebsocketsTable, values: V[]) => IWebsocketModel
-  whereBetween: <V = number>(column: keyof WebsocketsTable, range: [V, V]) => IWebsocketModel
-  whereRef: (column: keyof WebsocketsTable, ...args: string[]) => IWebsocketModel
-  when: (condition: boolean, callback: (query: IWebsocketModel) => IWebsocketModel) => IWebsocketModel
-  whereNull: (column: keyof WebsocketsTable) => IWebsocketModel
-  whereNotNull: (column: keyof WebsocketsTable) => IWebsocketModel
-  whereLike: (column: keyof WebsocketsTable, value: string) => IWebsocketModel
-  orderBy: (column: keyof WebsocketsTable, order: 'asc' | 'desc') => IWebsocketModel
-  orderByAsc: (column: keyof WebsocketsTable) => IWebsocketModel
-  orderByDesc: (column: keyof WebsocketsTable) => IWebsocketModel
-  groupBy: (column: keyof WebsocketsTable) => IWebsocketModel
-  having: <V = string>(column: keyof WebsocketsTable, operator: Operator, value: V) => IWebsocketModel
-  inRandomOrder: () => IWebsocketModel
-  whereColumn: (first: keyof WebsocketsTable, operator: Operator, second: keyof WebsocketsTable) => IWebsocketModel
-  max: (field: keyof WebsocketsTable) => Promise<number>
-  min: (field: keyof WebsocketsTable) => Promise<number>
-  avg: (field: keyof WebsocketsTable) => Promise<number>
-  sum: (field: keyof WebsocketsTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<IWebsocketModel[]>
-  pluck: <K extends keyof IWebsocketModel>(field: K) => Promise<IWebsocketModel[K][]>
-  chunk: (size: number, callback: (models: IWebsocketModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IWebsocketModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newWebsocket: NewWebsocket) => Promise<IWebsocketModel>
-  firstOrCreate: (search: Partial<WebsocketsTable>, values?: NewWebsocket) => Promise<IWebsocketModel>
-  updateOrCreate: (search: Partial<WebsocketsTable>, values?: NewWebsocket) => Promise<IWebsocketModel>
-  createMany: (newWebsocket: NewWebsocket[]) => Promise<void>
-  forceCreate: (newWebsocket: NewWebsocket) => Promise<IWebsocketModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof WebsocketsTable, values: V[]) => IWebsocketModel
-  distinct: (column: keyof WebsocketJsonResponse) => IWebsocketModel
-  join: (table: string, firstCol: string, secondCol: string) => IWebsocketModel
-}
-
-export interface IWebsocketModel {
+export interface WebsocketModelType {
   // Properties
   readonly id: number
   get type(): string | string[]
@@ -103,20 +46,76 @@ export interface IWebsocketModel {
   set details(value: string)
   get time(): number
   set time(value: number)
+  get uuid(): string | undefined
+  set uuid(value: string)
   get created_at(): string | undefined
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => WebsocketModelType
+  select: (params: (keyof WebsocketJsonResponse)[] | RawBuilder<string> | string) => WebsocketModelType
+  find: (id: number) => Promise<WebsocketModelType | undefined>
+  first: () => Promise<WebsocketModelType | undefined>
+  last: () => Promise<WebsocketModelType | undefined>
+  firstOrFail: () => Promise<WebsocketModelType | undefined>
+  all: () => Promise<WebsocketModelType[]>
+  findOrFail: (id: number) => Promise<WebsocketModelType | undefined>
+  findMany: (ids: number[]) => Promise<WebsocketModelType[]>
+  latest: (column?: keyof WebsocketsTable) => Promise<WebsocketModelType | undefined>
+  oldest: (column?: keyof WebsocketsTable) => Promise<WebsocketModelType | undefined>
+  skip: (count: number) => WebsocketModelType
+  take: (count: number) => WebsocketModelType
+  where: <V = string>(column: keyof WebsocketsTable, ...args: [V] | [Operator, V]) => WebsocketModelType
+  orWhere: (...conditions: [string, any][]) => WebsocketModelType
+  whereNotIn: <V = number>(column: keyof WebsocketsTable, values: V[]) => WebsocketModelType
+  whereBetween: <V = number>(column: keyof WebsocketsTable, range: [V, V]) => WebsocketModelType
+  whereRef: (column: keyof WebsocketsTable, ...args: string[]) => WebsocketModelType
+  when: (condition: boolean, callback: (query: WebsocketModelType) => WebsocketModelType) => WebsocketModelType
+  whereNull: (column: keyof WebsocketsTable) => WebsocketModelType
+  whereNotNull: (column: keyof WebsocketsTable) => WebsocketModelType
+  whereLike: (column: keyof WebsocketsTable, value: string) => WebsocketModelType
+  orderBy: (column: keyof WebsocketsTable, order: 'asc' | 'desc') => WebsocketModelType
+  orderByAsc: (column: keyof WebsocketsTable) => WebsocketModelType
+  orderByDesc: (column: keyof WebsocketsTable) => WebsocketModelType
+  groupBy: (column: keyof WebsocketsTable) => WebsocketModelType
+  having: <V = string>(column: keyof WebsocketsTable, operator: Operator, value: V) => WebsocketModelType
+  inRandomOrder: () => WebsocketModelType
+  whereColumn: (first: keyof WebsocketsTable, operator: Operator, second: keyof WebsocketsTable) => WebsocketModelType
+  max: (field: keyof WebsocketsTable) => Promise<number>
+  min: (field: keyof WebsocketsTable) => Promise<number>
+  avg: (field: keyof WebsocketsTable) => Promise<number>
+  sum: (field: keyof WebsocketsTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<WebsocketModelType[]>
+  pluck: <K extends keyof WebsocketModelType>(field: K) => Promise<WebsocketModelType[K][]>
+  chunk: (size: number, callback: (models: WebsocketModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: WebsocketModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newWebsocket: NewWebsocket) => Promise<WebsocketModelType>
+  firstOrCreate: (search: Partial<WebsocketsTable>, values?: NewWebsocket) => Promise<WebsocketModelType>
+  updateOrCreate: (search: Partial<WebsocketsTable>, values?: NewWebsocket) => Promise<WebsocketModelType>
+  createMany: (newWebsocket: NewWebsocket[]) => Promise<void>
+  forceCreate: (newWebsocket: NewWebsocket) => Promise<WebsocketModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof WebsocketsTable, values: V[]) => WebsocketModelType
+  distinct: (column: keyof WebsocketJsonResponse) => WebsocketModelType
+  join: (table: string, firstCol: string, secondCol: string) => WebsocketModelType
+
   // Instance methods
-  createInstance: (data: WebsocketJsonResponse) => IWebsocketModel
-  create: (newWebsocket: NewWebsocket) => Promise<IWebsocketModel>
-  update: (newWebsocket: WebsocketUpdate) => Promise<IWebsocketModel | undefined>
-  forceUpdate: (newWebsocket: WebsocketUpdate) => Promise<IWebsocketModel | undefined>
-  save: () => Promise<IWebsocketModel>
+  createInstance: (data: WebsocketJsonResponse) => WebsocketModelType
+  update: (newWebsocket: WebsocketUpdate) => Promise<WebsocketModelType | undefined>
+  forceUpdate: (newWebsocket: WebsocketUpdate) => Promise<WebsocketModelType | undefined>
+  save: () => Promise<WebsocketModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<WebsocketJsonResponse>
   toJSON: () => WebsocketJsonResponse
-  parseResult: (model: IWebsocketModel) => IWebsocketModel
+  parseResult: (model: WebsocketModelType) => WebsocketModelType
 }
-
-export type WebsocketModelType = IWebsocketModel & IWebsocketModelStatic

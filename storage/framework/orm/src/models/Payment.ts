@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { NewPayment, PaymentJsonResponse, PaymentModelType, PaymentsTable, PaymentUpdate } from '../types/PaymentType'
+import type { NewPayment, PaymentJsonResponse, PaymentsTable, PaymentUpdate } from '../types/PaymentType'
 import type { CustomerModel } from './Customer'
 import type { OrderModel } from './Order'
 import { randomUUIDv7 } from 'bun'
@@ -11,7 +11,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable, PaymentJsonResponse> implements PaymentModelType {
+export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable, PaymentJsonResponse> {
   private readonly hidden: Array<keyof PaymentJsonResponse> = []
   private readonly fillable: Array<keyof PaymentJsonResponse> = ['amount', 'method', 'status', 'currency', 'reference_number', 'card_last_four', 'card_brand', 'billing_email', 'transaction_id', 'payment_provider', 'refund_amount', 'notes', 'uuid', 'customer_id', 'order_id']
   private readonly guarded: Array<keyof PaymentJsonResponse> = []

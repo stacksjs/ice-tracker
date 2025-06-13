@@ -1,13 +1,13 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { ActivitiesTable, ActivityJsonResponse, ActivityModelType, ActivityUpdate, NewActivity } from '../types/ActivityType'
+import type { ActivitiesTable, ActivityJsonResponse, ActivityUpdate, NewActivity } from '../types/ActivityType'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class ActivityModel extends BaseOrm<ActivityModel, ActivitiesTable, ActivityJsonResponse> implements ActivityModelType {
+export class ActivityModel extends BaseOrm<ActivityModel, ActivitiesTable, ActivityJsonResponse> {
   private readonly hidden: Array<keyof ActivityJsonResponse> = []
   private readonly fillable: Array<keyof ActivityJsonResponse> = ['title', 'description', 'address', 'latlng', 'info_source', 'were_detained', 'uuid']
   private readonly guarded: Array<keyof ActivityJsonResponse> = []

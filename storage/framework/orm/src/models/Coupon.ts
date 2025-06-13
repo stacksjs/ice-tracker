@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CouponJsonResponse, CouponModelType, CouponsTable, CouponUpdate, NewCoupon } from '../types/CouponType'
+import type { CouponJsonResponse, CouponsTable, CouponUpdate, NewCoupon } from '../types/CouponType'
 import type { OrderModel } from './Order'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
@@ -11,7 +11,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonResponse> implements CouponModelType {
+export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonResponse> {
   private readonly hidden: Array<keyof CouponJsonResponse> = []
   private readonly fillable: Array<keyof CouponJsonResponse> = ['code', 'description', 'discount_type', 'discount_value', 'min_order_amount', 'max_discount_amount', 'free_product_id', 'is_active', 'usage_limit', 'usage_count', 'start_date', 'end_date', 'applicable_products', 'applicable_categories', 'uuid', 'product_id']
   private readonly guarded: Array<keyof CouponJsonResponse> = []

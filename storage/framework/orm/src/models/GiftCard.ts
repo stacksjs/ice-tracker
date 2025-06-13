@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { GiftCardJsonResponse, GiftCardModelType, GiftCardsTable, GiftCardUpdate, NewGiftCard } from '../types/GiftCardType'
+import type { GiftCardJsonResponse, GiftCardsTable, GiftCardUpdate, NewGiftCard } from '../types/GiftCardType'
 import type { CustomerModel } from './Customer'
 import type { OrderModel } from './Order'
 import { randomUUIDv7 } from 'bun'
@@ -11,7 +11,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCardJsonResponse> implements GiftCardModelType {
+export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCardJsonResponse> {
   private readonly hidden: Array<keyof GiftCardJsonResponse> = []
   private readonly fillable: Array<keyof GiftCardJsonResponse> = ['code', 'initial_balance', 'current_balance', 'currency', 'status', 'purchaser_id', 'recipient_email', 'recipient_name', 'personal_message', 'is_digital', 'is_reloadable', 'is_active', 'expiry_date', 'last_used_date', 'template_id', 'uuid', 'customer_id']
   private readonly guarded: Array<keyof GiftCardJsonResponse> = []

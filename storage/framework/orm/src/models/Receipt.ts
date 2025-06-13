@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { NewReceipt, ReceiptJsonResponse, ReceiptModelType, ReceiptsTable, ReceiptUpdate } from '../types/ReceiptType'
+import type { NewReceipt, ReceiptJsonResponse, ReceiptsTable, ReceiptUpdate } from '../types/ReceiptType'
 import type { PrintDeviceModel } from './PrintDevice'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -10,7 +10,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJsonResponse> implements ReceiptModelType {
+export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJsonResponse> {
   private readonly hidden: Array<keyof ReceiptJsonResponse> = []
   private readonly fillable: Array<keyof ReceiptJsonResponse> = ['printer', 'document', 'timestamp', 'status', 'size', 'pages', 'duration', 'metadata', 'uuid', 'print_device_id']
   private readonly guarded: Array<keyof ReceiptJsonResponse> = []

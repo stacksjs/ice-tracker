@@ -42,46 +42,77 @@ export interface OrderJsonResponse extends Omit<Selectable<OrderRead>, 'password
 export type NewOrder = Insertable<OrderWrite>
 export type OrderUpdate = Updateable<OrderWrite>
 
-export interface IOrderModelStatic {
-  with: (relations: string[]) => IOrderModel
-  select: (params: (keyof OrderJsonResponse)[] | RawBuilder<string> | string) => IOrderModel
-  find: (id: number) => Promise<IOrderModel | undefined>
-  first: () => Promise<IOrderModel | undefined>
-  last: () => Promise<IOrderModel | undefined>
-  firstOrFail: () => Promise<IOrderModel | undefined>
-  all: () => Promise<IOrderModel[]>
-  findOrFail: (id: number) => Promise<IOrderModel | undefined>
-  findMany: (ids: number[]) => Promise<IOrderModel[]>
-  latest: (column?: keyof OrdersTable) => Promise<IOrderModel | undefined>
-  oldest: (column?: keyof OrdersTable) => Promise<IOrderModel | undefined>
-  skip: (count: number) => IOrderModel
-  take: (count: number) => IOrderModel
-  where: <V = string>(column: keyof OrdersTable, ...args: [V] | [Operator, V]) => IOrderModel
-  orWhere: (...conditions: [string, any][]) => IOrderModel
-  whereNotIn: <V = number>(column: keyof OrdersTable, values: V[]) => IOrderModel
-  whereBetween: <V = number>(column: keyof OrdersTable, range: [V, V]) => IOrderModel
-  whereRef: (column: keyof OrdersTable, ...args: string[]) => IOrderModel
-  when: (condition: boolean, callback: (query: IOrderModel) => IOrderModel) => IOrderModel
-  whereNull: (column: keyof OrdersTable) => IOrderModel
-  whereNotNull: (column: keyof OrdersTable) => IOrderModel
-  whereLike: (column: keyof OrdersTable, value: string) => IOrderModel
-  orderBy: (column: keyof OrdersTable, order: 'asc' | 'desc') => IOrderModel
-  orderByAsc: (column: keyof OrdersTable) => IOrderModel
-  orderByDesc: (column: keyof OrdersTable) => IOrderModel
-  groupBy: (column: keyof OrdersTable) => IOrderModel
-  having: <V = string>(column: keyof OrdersTable, operator: Operator, value: V) => IOrderModel
-  inRandomOrder: () => IOrderModel
-  whereColumn: (first: keyof OrdersTable, operator: Operator, second: keyof OrdersTable) => IOrderModel
+export interface OrderModelType {
+  // Properties
+  readonly id: number
+  get status(): string
+  set status(value: string)
+  get totalAmount(): number
+  set totalAmount(value: number)
+  get taxAmount(): number | undefined
+  set taxAmount(value: number)
+  get discountAmount(): number | undefined
+  set discountAmount(value: number)
+  get deliveryFee(): number | undefined
+  set deliveryFee(value: number)
+  get tipAmount(): number | undefined
+  set tipAmount(value: number)
+  get orderType(): string
+  set orderType(value: string)
+  get deliveryAddress(): string | undefined
+  set deliveryAddress(value: string)
+  get specialInstructions(): string | undefined
+  set specialInstructions(value: string)
+  get estimatedDeliveryTime(): string | undefined
+  set estimatedDeliveryTime(value: string)
+  get appliedCouponId(): string | undefined
+  set appliedCouponId(value: string)
+  get uuid(): string | undefined
+  set uuid(value: string)
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
+  // Static methods
+  with: (relations: string[]) => OrderModelType
+  select: (params: (keyof OrderJsonResponse)[] | RawBuilder<string> | string) => OrderModelType
+  find: (id: number) => Promise<OrderModelType | undefined>
+  first: () => Promise<OrderModelType | undefined>
+  last: () => Promise<OrderModelType | undefined>
+  firstOrFail: () => Promise<OrderModelType | undefined>
+  all: () => Promise<OrderModelType[]>
+  findOrFail: (id: number) => Promise<OrderModelType | undefined>
+  findMany: (ids: number[]) => Promise<OrderModelType[]>
+  latest: (column?: keyof OrdersTable) => Promise<OrderModelType | undefined>
+  oldest: (column?: keyof OrdersTable) => Promise<OrderModelType | undefined>
+  skip: (count: number) => OrderModelType
+  take: (count: number) => OrderModelType
+  where: <V = string>(column: keyof OrdersTable, ...args: [V] | [Operator, V]) => OrderModelType
+  orWhere: (...conditions: [string, any][]) => OrderModelType
+  whereNotIn: <V = number>(column: keyof OrdersTable, values: V[]) => OrderModelType
+  whereBetween: <V = number>(column: keyof OrdersTable, range: [V, V]) => OrderModelType
+  whereRef: (column: keyof OrdersTable, ...args: string[]) => OrderModelType
+  when: (condition: boolean, callback: (query: OrderModelType) => OrderModelType) => OrderModelType
+  whereNull: (column: keyof OrdersTable) => OrderModelType
+  whereNotNull: (column: keyof OrdersTable) => OrderModelType
+  whereLike: (column: keyof OrdersTable, value: string) => OrderModelType
+  orderBy: (column: keyof OrdersTable, order: 'asc' | 'desc') => OrderModelType
+  orderByAsc: (column: keyof OrdersTable) => OrderModelType
+  orderByDesc: (column: keyof OrdersTable) => OrderModelType
+  groupBy: (column: keyof OrdersTable) => OrderModelType
+  having: <V = string>(column: keyof OrdersTable, operator: Operator, value: V) => OrderModelType
+  inRandomOrder: () => OrderModelType
+  whereColumn: (first: keyof OrdersTable, operator: Operator, second: keyof OrdersTable) => OrderModelType
   max: (field: keyof OrdersTable) => Promise<number>
   min: (field: keyof OrdersTable) => Promise<number>
   avg: (field: keyof OrdersTable) => Promise<number>
   sum: (field: keyof OrdersTable) => Promise<number>
   count: () => Promise<number>
-  get: () => Promise<IOrderModel[]>
-  pluck: <K extends keyof IOrderModel>(field: K) => Promise<IOrderModel[K][]>
-  chunk: (size: number, callback: (models: IOrderModel[]) => Promise<void>) => Promise<void>
+  get: () => Promise<OrderModelType[]>
+  pluck: <K extends keyof OrderModelType>(field: K) => Promise<OrderModelType[K][]>
+  chunk: (size: number, callback: (models: OrderModelType[]) => Promise<void>) => Promise<void>
   paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IOrderModel[]
+    data: OrderModelType[]
     paging: {
       total_records: number
       page: number
@@ -89,58 +120,23 @@ export interface IOrderModelStatic {
     }
     next_cursor: number | null
   }>
-  create: (newOrder: NewOrder) => Promise<IOrderModel>
-  firstOrCreate: (search: Partial<OrdersTable>, values?: NewOrder) => Promise<IOrderModel>
-  updateOrCreate: (search: Partial<OrdersTable>, values?: NewOrder) => Promise<IOrderModel>
+  create: (newOrder: NewOrder) => Promise<OrderModelType>
+  firstOrCreate: (search: Partial<OrdersTable>, values?: NewOrder) => Promise<OrderModelType>
+  updateOrCreate: (search: Partial<OrdersTable>, values?: NewOrder) => Promise<OrderModelType>
   createMany: (newOrder: NewOrder[]) => Promise<void>
-  forceCreate: (newOrder: NewOrder) => Promise<IOrderModel>
+  forceCreate: (newOrder: NewOrder) => Promise<OrderModelType>
   remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof OrdersTable, values: V[]) => IOrderModel
-  distinct: (column: keyof OrderJsonResponse) => IOrderModel
-  join: (table: string, firstCol: string, secondCol: string) => IOrderModel
-}
-
-export interface IOrderModel {
-  // Properties
-  readonly id: number
-  get status(): string
-  set status(value: string)
-  get total_amount(): number
-  set total_amount(value: number)
-  get tax_amount(): number | undefined
-  set tax_amount(value: number)
-  get discount_amount(): number | undefined
-  set discount_amount(value: number)
-  get delivery_fee(): number | undefined
-  set delivery_fee(value: number)
-  get tip_amount(): number | undefined
-  set tip_amount(value: number)
-  get order_type(): string
-  set order_type(value: string)
-  get delivery_address(): string | undefined
-  set delivery_address(value: string)
-  get special_instructions(): string | undefined
-  set special_instructions(value: string)
-  get estimated_delivery_time(): string | undefined
-  set estimated_delivery_time(value: string)
-  get applied_coupon_id(): string | undefined
-  set applied_coupon_id(value: string)
-  get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
+  whereIn: <V = number>(column: keyof OrdersTable, values: V[]) => OrderModelType
+  distinct: (column: keyof OrderJsonResponse) => OrderModelType
+  join: (table: string, firstCol: string, secondCol: string) => OrderModelType
 
   // Instance methods
-  createInstance: (data: OrderJsonResponse) => IOrderModel
-  create: (newOrder: NewOrder) => Promise<IOrderModel>
-  update: (newOrder: OrderUpdate) => Promise<IOrderModel | undefined>
-  forceUpdate: (newOrder: OrderUpdate) => Promise<IOrderModel | undefined>
-  save: () => Promise<IOrderModel>
+  createInstance: (data: OrderJsonResponse) => OrderModelType
+  update: (newOrder: OrderUpdate) => Promise<OrderModelType | undefined>
+  forceUpdate: (newOrder: OrderUpdate) => Promise<OrderModelType | undefined>
+  save: () => Promise<OrderModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<OrderJsonResponse>
   toJSON: () => OrderJsonResponse
-  parseResult: (model: IOrderModel) => IOrderModel
+  parseResult: (model: OrderModelType) => OrderModelType
 }
-
-export type OrderModelType = IOrderModel & IOrderModelStatic

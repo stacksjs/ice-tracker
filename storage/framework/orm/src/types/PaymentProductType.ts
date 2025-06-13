@@ -38,65 +38,7 @@ export interface PaymentProductJsonResponse extends Omit<Selectable<PaymentProdu
 export type NewPaymentProduct = Insertable<PaymentProductWrite>
 export type PaymentProductUpdate = Updateable<PaymentProductWrite>
 
-export interface IPaymentProductModelStatic {
-  with: (relations: string[]) => IPaymentProductModel
-  select: (params: (keyof PaymentProductJsonResponse)[] | RawBuilder<string> | string) => IPaymentProductModel
-  find: (id: number) => Promise<IPaymentProductModel | undefined>
-  first: () => Promise<IPaymentProductModel | undefined>
-  last: () => Promise<IPaymentProductModel | undefined>
-  firstOrFail: () => Promise<IPaymentProductModel | undefined>
-  all: () => Promise<IPaymentProductModel[]>
-  findOrFail: (id: number) => Promise<IPaymentProductModel | undefined>
-  findMany: (ids: number[]) => Promise<IPaymentProductModel[]>
-  latest: (column?: keyof PaymentProductsTable) => Promise<IPaymentProductModel | undefined>
-  oldest: (column?: keyof PaymentProductsTable) => Promise<IPaymentProductModel | undefined>
-  skip: (count: number) => IPaymentProductModel
-  take: (count: number) => IPaymentProductModel
-  where: <V = string>(column: keyof PaymentProductsTable, ...args: [V] | [Operator, V]) => IPaymentProductModel
-  orWhere: (...conditions: [string, any][]) => IPaymentProductModel
-  whereNotIn: <V = number>(column: keyof PaymentProductsTable, values: V[]) => IPaymentProductModel
-  whereBetween: <V = number>(column: keyof PaymentProductsTable, range: [V, V]) => IPaymentProductModel
-  whereRef: (column: keyof PaymentProductsTable, ...args: string[]) => IPaymentProductModel
-  when: (condition: boolean, callback: (query: IPaymentProductModel) => IPaymentProductModel) => IPaymentProductModel
-  whereNull: (column: keyof PaymentProductsTable) => IPaymentProductModel
-  whereNotNull: (column: keyof PaymentProductsTable) => IPaymentProductModel
-  whereLike: (column: keyof PaymentProductsTable, value: string) => IPaymentProductModel
-  orderBy: (column: keyof PaymentProductsTable, order: 'asc' | 'desc') => IPaymentProductModel
-  orderByAsc: (column: keyof PaymentProductsTable) => IPaymentProductModel
-  orderByDesc: (column: keyof PaymentProductsTable) => IPaymentProductModel
-  groupBy: (column: keyof PaymentProductsTable) => IPaymentProductModel
-  having: <V = string>(column: keyof PaymentProductsTable, operator: Operator, value: V) => IPaymentProductModel
-  inRandomOrder: () => IPaymentProductModel
-  whereColumn: (first: keyof PaymentProductsTable, operator: Operator, second: keyof PaymentProductsTable) => IPaymentProductModel
-  max: (field: keyof PaymentProductsTable) => Promise<number>
-  min: (field: keyof PaymentProductsTable) => Promise<number>
-  avg: (field: keyof PaymentProductsTable) => Promise<number>
-  sum: (field: keyof PaymentProductsTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<IPaymentProductModel[]>
-  pluck: <K extends keyof IPaymentProductModel>(field: K) => Promise<IPaymentProductModel[K][]>
-  chunk: (size: number, callback: (models: IPaymentProductModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IPaymentProductModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newPaymentProduct: NewPaymentProduct) => Promise<IPaymentProductModel>
-  firstOrCreate: (search: Partial<PaymentProductsTable>, values?: NewPaymentProduct) => Promise<IPaymentProductModel>
-  updateOrCreate: (search: Partial<PaymentProductsTable>, values?: NewPaymentProduct) => Promise<IPaymentProductModel>
-  createMany: (newPaymentProduct: NewPaymentProduct[]) => Promise<void>
-  forceCreate: (newPaymentProduct: NewPaymentProduct) => Promise<IPaymentProductModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof PaymentProductsTable, values: V[]) => IPaymentProductModel
-  distinct: (column: keyof PaymentProductJsonResponse) => IPaymentProductModel
-  join: (table: string, firstCol: string, secondCol: string) => IPaymentProductModel
-}
-
-export interface IPaymentProductModel {
+export interface PaymentProductModelType {
   // Properties
   readonly id: number
   get name(): string
@@ -105,30 +47,84 @@ export interface IPaymentProductModel {
   set description(value: number)
   get key(): number
   set key(value: number)
-  get unit_price(): number | undefined
-  set unit_price(value: number)
+  get unitPrice(): number | undefined
+  set unitPrice(value: number)
   get status(): string | undefined
   set status(value: string)
   get image(): string | undefined
   set image(value: string)
-  get provider_id(): string | undefined
-  set provider_id(value: string)
+  get providerId(): string | undefined
+  set providerId(value: string)
   get uuid(): string | undefined
   set uuid(value: string)
   get created_at(): string | undefined
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => PaymentProductModelType
+  select: (params: (keyof PaymentProductJsonResponse)[] | RawBuilder<string> | string) => PaymentProductModelType
+  find: (id: number) => Promise<PaymentProductModelType | undefined>
+  first: () => Promise<PaymentProductModelType | undefined>
+  last: () => Promise<PaymentProductModelType | undefined>
+  firstOrFail: () => Promise<PaymentProductModelType | undefined>
+  all: () => Promise<PaymentProductModelType[]>
+  findOrFail: (id: number) => Promise<PaymentProductModelType | undefined>
+  findMany: (ids: number[]) => Promise<PaymentProductModelType[]>
+  latest: (column?: keyof PaymentProductsTable) => Promise<PaymentProductModelType | undefined>
+  oldest: (column?: keyof PaymentProductsTable) => Promise<PaymentProductModelType | undefined>
+  skip: (count: number) => PaymentProductModelType
+  take: (count: number) => PaymentProductModelType
+  where: <V = string>(column: keyof PaymentProductsTable, ...args: [V] | [Operator, V]) => PaymentProductModelType
+  orWhere: (...conditions: [string, any][]) => PaymentProductModelType
+  whereNotIn: <V = number>(column: keyof PaymentProductsTable, values: V[]) => PaymentProductModelType
+  whereBetween: <V = number>(column: keyof PaymentProductsTable, range: [V, V]) => PaymentProductModelType
+  whereRef: (column: keyof PaymentProductsTable, ...args: string[]) => PaymentProductModelType
+  when: (condition: boolean, callback: (query: PaymentProductModelType) => PaymentProductModelType) => PaymentProductModelType
+  whereNull: (column: keyof PaymentProductsTable) => PaymentProductModelType
+  whereNotNull: (column: keyof PaymentProductsTable) => PaymentProductModelType
+  whereLike: (column: keyof PaymentProductsTable, value: string) => PaymentProductModelType
+  orderBy: (column: keyof PaymentProductsTable, order: 'asc' | 'desc') => PaymentProductModelType
+  orderByAsc: (column: keyof PaymentProductsTable) => PaymentProductModelType
+  orderByDesc: (column: keyof PaymentProductsTable) => PaymentProductModelType
+  groupBy: (column: keyof PaymentProductsTable) => PaymentProductModelType
+  having: <V = string>(column: keyof PaymentProductsTable, operator: Operator, value: V) => PaymentProductModelType
+  inRandomOrder: () => PaymentProductModelType
+  whereColumn: (first: keyof PaymentProductsTable, operator: Operator, second: keyof PaymentProductsTable) => PaymentProductModelType
+  max: (field: keyof PaymentProductsTable) => Promise<number>
+  min: (field: keyof PaymentProductsTable) => Promise<number>
+  avg: (field: keyof PaymentProductsTable) => Promise<number>
+  sum: (field: keyof PaymentProductsTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<PaymentProductModelType[]>
+  pluck: <K extends keyof PaymentProductModelType>(field: K) => Promise<PaymentProductModelType[K][]>
+  chunk: (size: number, callback: (models: PaymentProductModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: PaymentProductModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newPaymentProduct: NewPaymentProduct) => Promise<PaymentProductModelType>
+  firstOrCreate: (search: Partial<PaymentProductsTable>, values?: NewPaymentProduct) => Promise<PaymentProductModelType>
+  updateOrCreate: (search: Partial<PaymentProductsTable>, values?: NewPaymentProduct) => Promise<PaymentProductModelType>
+  createMany: (newPaymentProduct: NewPaymentProduct[]) => Promise<void>
+  forceCreate: (newPaymentProduct: NewPaymentProduct) => Promise<PaymentProductModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof PaymentProductsTable, values: V[]) => PaymentProductModelType
+  distinct: (column: keyof PaymentProductJsonResponse) => PaymentProductModelType
+  join: (table: string, firstCol: string, secondCol: string) => PaymentProductModelType
+
   // Instance methods
-  createInstance: (data: PaymentProductJsonResponse) => IPaymentProductModel
-  create: (newPaymentProduct: NewPaymentProduct) => Promise<IPaymentProductModel>
-  update: (newPaymentProduct: PaymentProductUpdate) => Promise<IPaymentProductModel | undefined>
-  forceUpdate: (newPaymentProduct: PaymentProductUpdate) => Promise<IPaymentProductModel | undefined>
-  save: () => Promise<IPaymentProductModel>
+  createInstance: (data: PaymentProductJsonResponse) => PaymentProductModelType
+  update: (newPaymentProduct: PaymentProductUpdate) => Promise<PaymentProductModelType | undefined>
+  forceUpdate: (newPaymentProduct: PaymentProductUpdate) => Promise<PaymentProductModelType | undefined>
+  save: () => Promise<PaymentProductModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<PaymentProductJsonResponse>
   toJSON: () => PaymentProductJsonResponse
-  parseResult: (model: IPaymentProductModel) => IPaymentProductModel
+  parseResult: (model: PaymentProductModelType) => PaymentProductModelType
 }
-
-export type PaymentProductModelType = IPaymentProductModel & IPaymentProductModelStatic

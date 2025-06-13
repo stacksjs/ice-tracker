@@ -1,13 +1,13 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { FailedJobJsonResponse, FailedJobModelType, FailedJobsTable, FailedJobUpdate, NewFailedJob } from '../types/FailedJobType'
+import type { FailedJobJsonResponse, FailedJobsTable, FailedJobUpdate, NewFailedJob } from '../types/FailedJobType'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, FailedJobJsonResponse> implements FailedJobModelType {
+export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, FailedJobJsonResponse> {
   private readonly hidden: Array<keyof FailedJobJsonResponse> = []
   private readonly fillable: Array<keyof FailedJobJsonResponse> = ['connection', 'queue', 'payload', 'exception', 'failed_at', 'uuid']
   private readonly guarded: Array<keyof FailedJobJsonResponse> = []

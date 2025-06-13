@@ -36,73 +36,15 @@ export interface DriverJsonResponse extends Omit<Selectable<DriverRead>, 'passwo
 export type NewDriver = Insertable<DriverWrite>
 export type DriverUpdate = Updateable<DriverWrite>
 
-export interface IDriverModelStatic {
-  with: (relations: string[]) => IDriverModel
-  select: (params: (keyof DriverJsonResponse)[] | RawBuilder<string> | string) => IDriverModel
-  find: (id: number) => Promise<IDriverModel | undefined>
-  first: () => Promise<IDriverModel | undefined>
-  last: () => Promise<IDriverModel | undefined>
-  firstOrFail: () => Promise<IDriverModel | undefined>
-  all: () => Promise<IDriverModel[]>
-  findOrFail: (id: number) => Promise<IDriverModel | undefined>
-  findMany: (ids: number[]) => Promise<IDriverModel[]>
-  latest: (column?: keyof DriversTable) => Promise<IDriverModel | undefined>
-  oldest: (column?: keyof DriversTable) => Promise<IDriverModel | undefined>
-  skip: (count: number) => IDriverModel
-  take: (count: number) => IDriverModel
-  where: <V = string>(column: keyof DriversTable, ...args: [V] | [Operator, V]) => IDriverModel
-  orWhere: (...conditions: [string, any][]) => IDriverModel
-  whereNotIn: <V = number>(column: keyof DriversTable, values: V[]) => IDriverModel
-  whereBetween: <V = number>(column: keyof DriversTable, range: [V, V]) => IDriverModel
-  whereRef: (column: keyof DriversTable, ...args: string[]) => IDriverModel
-  when: (condition: boolean, callback: (query: IDriverModel) => IDriverModel) => IDriverModel
-  whereNull: (column: keyof DriversTable) => IDriverModel
-  whereNotNull: (column: keyof DriversTable) => IDriverModel
-  whereLike: (column: keyof DriversTable, value: string) => IDriverModel
-  orderBy: (column: keyof DriversTable, order: 'asc' | 'desc') => IDriverModel
-  orderByAsc: (column: keyof DriversTable) => IDriverModel
-  orderByDesc: (column: keyof DriversTable) => IDriverModel
-  groupBy: (column: keyof DriversTable) => IDriverModel
-  having: <V = string>(column: keyof DriversTable, operator: Operator, value: V) => IDriverModel
-  inRandomOrder: () => IDriverModel
-  whereColumn: (first: keyof DriversTable, operator: Operator, second: keyof DriversTable) => IDriverModel
-  max: (field: keyof DriversTable) => Promise<number>
-  min: (field: keyof DriversTable) => Promise<number>
-  avg: (field: keyof DriversTable) => Promise<number>
-  sum: (field: keyof DriversTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<IDriverModel[]>
-  pluck: <K extends keyof IDriverModel>(field: K) => Promise<IDriverModel[K][]>
-  chunk: (size: number, callback: (models: IDriverModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IDriverModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newDriver: NewDriver) => Promise<IDriverModel>
-  firstOrCreate: (search: Partial<DriversTable>, values?: NewDriver) => Promise<IDriverModel>
-  updateOrCreate: (search: Partial<DriversTable>, values?: NewDriver) => Promise<IDriverModel>
-  createMany: (newDriver: NewDriver[]) => Promise<void>
-  forceCreate: (newDriver: NewDriver) => Promise<IDriverModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof DriversTable, values: V[]) => IDriverModel
-  distinct: (column: keyof DriverJsonResponse) => IDriverModel
-  join: (table: string, firstCol: string, secondCol: string) => IDriverModel
-}
-
-export interface IDriverModel {
+export interface DriverModelType {
   // Properties
   readonly id: number
   get name(): string
   set name(value: string)
   get phone(): string
   set phone(value: string)
-  get vehicle_number(): string
-  set vehicle_number(value: string)
+  get vehicleNumber(): string
+  set vehicleNumber(value: string)
   get license(): string
   set license(value: string)
   get status(): string | string[] | undefined
@@ -113,16 +55,70 @@ export interface IDriverModel {
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => DriverModelType
+  select: (params: (keyof DriverJsonResponse)[] | RawBuilder<string> | string) => DriverModelType
+  find: (id: number) => Promise<DriverModelType | undefined>
+  first: () => Promise<DriverModelType | undefined>
+  last: () => Promise<DriverModelType | undefined>
+  firstOrFail: () => Promise<DriverModelType | undefined>
+  all: () => Promise<DriverModelType[]>
+  findOrFail: (id: number) => Promise<DriverModelType | undefined>
+  findMany: (ids: number[]) => Promise<DriverModelType[]>
+  latest: (column?: keyof DriversTable) => Promise<DriverModelType | undefined>
+  oldest: (column?: keyof DriversTable) => Promise<DriverModelType | undefined>
+  skip: (count: number) => DriverModelType
+  take: (count: number) => DriverModelType
+  where: <V = string>(column: keyof DriversTable, ...args: [V] | [Operator, V]) => DriverModelType
+  orWhere: (...conditions: [string, any][]) => DriverModelType
+  whereNotIn: <V = number>(column: keyof DriversTable, values: V[]) => DriverModelType
+  whereBetween: <V = number>(column: keyof DriversTable, range: [V, V]) => DriverModelType
+  whereRef: (column: keyof DriversTable, ...args: string[]) => DriverModelType
+  when: (condition: boolean, callback: (query: DriverModelType) => DriverModelType) => DriverModelType
+  whereNull: (column: keyof DriversTable) => DriverModelType
+  whereNotNull: (column: keyof DriversTable) => DriverModelType
+  whereLike: (column: keyof DriversTable, value: string) => DriverModelType
+  orderBy: (column: keyof DriversTable, order: 'asc' | 'desc') => DriverModelType
+  orderByAsc: (column: keyof DriversTable) => DriverModelType
+  orderByDesc: (column: keyof DriversTable) => DriverModelType
+  groupBy: (column: keyof DriversTable) => DriverModelType
+  having: <V = string>(column: keyof DriversTable, operator: Operator, value: V) => DriverModelType
+  inRandomOrder: () => DriverModelType
+  whereColumn: (first: keyof DriversTable, operator: Operator, second: keyof DriversTable) => DriverModelType
+  max: (field: keyof DriversTable) => Promise<number>
+  min: (field: keyof DriversTable) => Promise<number>
+  avg: (field: keyof DriversTable) => Promise<number>
+  sum: (field: keyof DriversTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<DriverModelType[]>
+  pluck: <K extends keyof DriverModelType>(field: K) => Promise<DriverModelType[K][]>
+  chunk: (size: number, callback: (models: DriverModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: DriverModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newDriver: NewDriver) => Promise<DriverModelType>
+  firstOrCreate: (search: Partial<DriversTable>, values?: NewDriver) => Promise<DriverModelType>
+  updateOrCreate: (search: Partial<DriversTable>, values?: NewDriver) => Promise<DriverModelType>
+  createMany: (newDriver: NewDriver[]) => Promise<void>
+  forceCreate: (newDriver: NewDriver) => Promise<DriverModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof DriversTable, values: V[]) => DriverModelType
+  distinct: (column: keyof DriverJsonResponse) => DriverModelType
+  join: (table: string, firstCol: string, secondCol: string) => DriverModelType
+
   // Instance methods
-  createInstance: (data: DriverJsonResponse) => IDriverModel
-  create: (newDriver: NewDriver) => Promise<IDriverModel>
-  update: (newDriver: DriverUpdate) => Promise<IDriverModel | undefined>
-  forceUpdate: (newDriver: DriverUpdate) => Promise<IDriverModel | undefined>
-  save: () => Promise<IDriverModel>
+  createInstance: (data: DriverJsonResponse) => DriverModelType
+  update: (newDriver: DriverUpdate) => Promise<DriverModelType | undefined>
+  forceUpdate: (newDriver: DriverUpdate) => Promise<DriverModelType | undefined>
+  save: () => Promise<DriverModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<DriverJsonResponse>
   toJSON: () => DriverJsonResponse
-  parseResult: (model: IDriverModel) => IDriverModel
+  parseResult: (model: DriverModelType) => DriverModelType
 }
-
-export type DriverModelType = IDriverModel & IDriverModelStatic

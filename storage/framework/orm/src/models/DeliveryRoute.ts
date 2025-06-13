@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { DeliveryRouteJsonResponse, DeliveryRouteModelType, DeliveryRoutesTable, DeliveryRouteUpdate, NewDeliveryRoute } from '../types/DeliveryRouteType'
+import type { DeliveryRouteJsonResponse, DeliveryRoutesTable, DeliveryRouteUpdate, NewDeliveryRoute } from '../types/DeliveryRouteType'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -9,7 +9,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRoutesTable, DeliveryRouteJsonResponse> implements DeliveryRouteModelType {
+export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRoutesTable, DeliveryRouteJsonResponse> {
   private readonly hidden: Array<keyof DeliveryRouteJsonResponse> = []
   private readonly fillable: Array<keyof DeliveryRouteJsonResponse> = ['driver', 'vehicle', 'stops', 'delivery_time', 'total_distance', 'last_active', 'uuid', 'driver_id']
   private readonly guarded: Array<keyof DeliveryRouteJsonResponse> = []

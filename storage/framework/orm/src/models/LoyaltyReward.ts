@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { LoyaltyRewardJsonResponse, LoyaltyRewardModelType, LoyaltyRewardsTable, LoyaltyRewardUpdate, NewLoyaltyReward } from '../types/LoyaltyRewardType'
+import type { LoyaltyRewardJsonResponse, LoyaltyRewardsTable, LoyaltyRewardUpdate, NewLoyaltyReward } from '../types/LoyaltyRewardType'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -10,7 +10,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewardsTable, LoyaltyRewardJsonResponse> implements LoyaltyRewardModelType {
+export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewardsTable, LoyaltyRewardJsonResponse> {
   private readonly hidden: Array<keyof LoyaltyRewardJsonResponse> = []
   private readonly fillable: Array<keyof LoyaltyRewardJsonResponse> = ['name', 'description', 'points_required', 'reward_type', 'discount_percentage', 'free_product_id', 'is_active', 'expiry_days', 'image_url', 'uuid']
   private readonly guarded: Array<keyof LoyaltyRewardJsonResponse> = []

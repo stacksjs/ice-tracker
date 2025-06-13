@@ -36,65 +36,7 @@ export interface PageJsonResponse extends Omit<Selectable<PageRead>, 'password'>
 export type NewPage = Insertable<PageWrite>
 export type PageUpdate = Updateable<PageWrite>
 
-export interface IPageModelStatic {
-  with: (relations: string[]) => IPageModel
-  select: (params: (keyof PageJsonResponse)[] | RawBuilder<string> | string) => IPageModel
-  find: (id: number) => Promise<IPageModel | undefined>
-  first: () => Promise<IPageModel | undefined>
-  last: () => Promise<IPageModel | undefined>
-  firstOrFail: () => Promise<IPageModel | undefined>
-  all: () => Promise<IPageModel[]>
-  findOrFail: (id: number) => Promise<IPageModel | undefined>
-  findMany: (ids: number[]) => Promise<IPageModel[]>
-  latest: (column?: keyof PagesTable) => Promise<IPageModel | undefined>
-  oldest: (column?: keyof PagesTable) => Promise<IPageModel | undefined>
-  skip: (count: number) => IPageModel
-  take: (count: number) => IPageModel
-  where: <V = string>(column: keyof PagesTable, ...args: [V] | [Operator, V]) => IPageModel
-  orWhere: (...conditions: [string, any][]) => IPageModel
-  whereNotIn: <V = number>(column: keyof PagesTable, values: V[]) => IPageModel
-  whereBetween: <V = number>(column: keyof PagesTable, range: [V, V]) => IPageModel
-  whereRef: (column: keyof PagesTable, ...args: string[]) => IPageModel
-  when: (condition: boolean, callback: (query: IPageModel) => IPageModel) => IPageModel
-  whereNull: (column: keyof PagesTable) => IPageModel
-  whereNotNull: (column: keyof PagesTable) => IPageModel
-  whereLike: (column: keyof PagesTable, value: string) => IPageModel
-  orderBy: (column: keyof PagesTable, order: 'asc' | 'desc') => IPageModel
-  orderByAsc: (column: keyof PagesTable) => IPageModel
-  orderByDesc: (column: keyof PagesTable) => IPageModel
-  groupBy: (column: keyof PagesTable) => IPageModel
-  having: <V = string>(column: keyof PagesTable, operator: Operator, value: V) => IPageModel
-  inRandomOrder: () => IPageModel
-  whereColumn: (first: keyof PagesTable, operator: Operator, second: keyof PagesTable) => IPageModel
-  max: (field: keyof PagesTable) => Promise<number>
-  min: (field: keyof PagesTable) => Promise<number>
-  avg: (field: keyof PagesTable) => Promise<number>
-  sum: (field: keyof PagesTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<IPageModel[]>
-  pluck: <K extends keyof IPageModel>(field: K) => Promise<IPageModel[K][]>
-  chunk: (size: number, callback: (models: IPageModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IPageModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newPage: NewPage) => Promise<IPageModel>
-  firstOrCreate: (search: Partial<PagesTable>, values?: NewPage) => Promise<IPageModel>
-  updateOrCreate: (search: Partial<PagesTable>, values?: NewPage) => Promise<IPageModel>
-  createMany: (newPage: NewPage[]) => Promise<void>
-  forceCreate: (newPage: NewPage) => Promise<IPageModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof PagesTable, values: V[]) => IPageModel
-  distinct: (column: keyof PageJsonResponse) => IPageModel
-  join: (table: string, firstCol: string, secondCol: string) => IPageModel
-}
-
-export interface IPageModel {
+export interface PageModelType {
   // Properties
   readonly id: number
   get title(): string
@@ -103,8 +45,8 @@ export interface IPageModel {
   set template(value: string)
   get views(): number | undefined
   set views(value: number)
-  get published_at(): Date | string | undefined
-  set published_at(value: Date | string)
+  get publishedAt(): Date | string | undefined
+  set publishedAt(value: Date | string)
   get conversions(): number | undefined
   set conversions(value: number)
   get uuid(): string | undefined
@@ -113,16 +55,70 @@ export interface IPageModel {
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => PageModelType
+  select: (params: (keyof PageJsonResponse)[] | RawBuilder<string> | string) => PageModelType
+  find: (id: number) => Promise<PageModelType | undefined>
+  first: () => Promise<PageModelType | undefined>
+  last: () => Promise<PageModelType | undefined>
+  firstOrFail: () => Promise<PageModelType | undefined>
+  all: () => Promise<PageModelType[]>
+  findOrFail: (id: number) => Promise<PageModelType | undefined>
+  findMany: (ids: number[]) => Promise<PageModelType[]>
+  latest: (column?: keyof PagesTable) => Promise<PageModelType | undefined>
+  oldest: (column?: keyof PagesTable) => Promise<PageModelType | undefined>
+  skip: (count: number) => PageModelType
+  take: (count: number) => PageModelType
+  where: <V = string>(column: keyof PagesTable, ...args: [V] | [Operator, V]) => PageModelType
+  orWhere: (...conditions: [string, any][]) => PageModelType
+  whereNotIn: <V = number>(column: keyof PagesTable, values: V[]) => PageModelType
+  whereBetween: <V = number>(column: keyof PagesTable, range: [V, V]) => PageModelType
+  whereRef: (column: keyof PagesTable, ...args: string[]) => PageModelType
+  when: (condition: boolean, callback: (query: PageModelType) => PageModelType) => PageModelType
+  whereNull: (column: keyof PagesTable) => PageModelType
+  whereNotNull: (column: keyof PagesTable) => PageModelType
+  whereLike: (column: keyof PagesTable, value: string) => PageModelType
+  orderBy: (column: keyof PagesTable, order: 'asc' | 'desc') => PageModelType
+  orderByAsc: (column: keyof PagesTable) => PageModelType
+  orderByDesc: (column: keyof PagesTable) => PageModelType
+  groupBy: (column: keyof PagesTable) => PageModelType
+  having: <V = string>(column: keyof PagesTable, operator: Operator, value: V) => PageModelType
+  inRandomOrder: () => PageModelType
+  whereColumn: (first: keyof PagesTable, operator: Operator, second: keyof PagesTable) => PageModelType
+  max: (field: keyof PagesTable) => Promise<number>
+  min: (field: keyof PagesTable) => Promise<number>
+  avg: (field: keyof PagesTable) => Promise<number>
+  sum: (field: keyof PagesTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<PageModelType[]>
+  pluck: <K extends keyof PageModelType>(field: K) => Promise<PageModelType[K][]>
+  chunk: (size: number, callback: (models: PageModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: PageModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newPage: NewPage) => Promise<PageModelType>
+  firstOrCreate: (search: Partial<PagesTable>, values?: NewPage) => Promise<PageModelType>
+  updateOrCreate: (search: Partial<PagesTable>, values?: NewPage) => Promise<PageModelType>
+  createMany: (newPage: NewPage[]) => Promise<void>
+  forceCreate: (newPage: NewPage) => Promise<PageModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof PagesTable, values: V[]) => PageModelType
+  distinct: (column: keyof PageJsonResponse) => PageModelType
+  join: (table: string, firstCol: string, secondCol: string) => PageModelType
+
   // Instance methods
-  createInstance: (data: PageJsonResponse) => IPageModel
-  create: (newPage: NewPage) => Promise<IPageModel>
-  update: (newPage: PageUpdate) => Promise<IPageModel | undefined>
-  forceUpdate: (newPage: PageUpdate) => Promise<IPageModel | undefined>
-  save: () => Promise<IPageModel>
+  createInstance: (data: PageJsonResponse) => PageModelType
+  update: (newPage: PageUpdate) => Promise<PageModelType | undefined>
+  forceUpdate: (newPage: PageUpdate) => Promise<PageModelType | undefined>
+  save: () => Promise<PageModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<PageJsonResponse>
   toJSON: () => PageJsonResponse
-  parseResult: (model: IPageModel) => IPageModel
+  parseResult: (model: PageModelType) => PageModelType
 }
-
-export type PageModelType = IPageModel & IPageModelStatic

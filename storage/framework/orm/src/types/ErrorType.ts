@@ -8,6 +8,7 @@ export interface ErrorsTable {
   stack?: string
   status: number
   additional_info?: string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }
@@ -35,65 +36,7 @@ export interface ErrorJsonResponse extends Omit<Selectable<ErrorRead>, 'password
 export type NewError = Insertable<ErrorWrite>
 export type ErrorUpdate = Updateable<ErrorWrite>
 
-export interface IErrorModelStatic {
-  with: (relations: string[]) => IErrorModel
-  select: (params: (keyof ErrorJsonResponse)[] | RawBuilder<string> | string) => IErrorModel
-  find: (id: number) => Promise<IErrorModel | undefined>
-  first: () => Promise<IErrorModel | undefined>
-  last: () => Promise<IErrorModel | undefined>
-  firstOrFail: () => Promise<IErrorModel | undefined>
-  all: () => Promise<IErrorModel[]>
-  findOrFail: (id: number) => Promise<IErrorModel | undefined>
-  findMany: (ids: number[]) => Promise<IErrorModel[]>
-  latest: (column?: keyof ErrorsTable) => Promise<IErrorModel | undefined>
-  oldest: (column?: keyof ErrorsTable) => Promise<IErrorModel | undefined>
-  skip: (count: number) => IErrorModel
-  take: (count: number) => IErrorModel
-  where: <V = string>(column: keyof ErrorsTable, ...args: [V] | [Operator, V]) => IErrorModel
-  orWhere: (...conditions: [string, any][]) => IErrorModel
-  whereNotIn: <V = number>(column: keyof ErrorsTable, values: V[]) => IErrorModel
-  whereBetween: <V = number>(column: keyof ErrorsTable, range: [V, V]) => IErrorModel
-  whereRef: (column: keyof ErrorsTable, ...args: string[]) => IErrorModel
-  when: (condition: boolean, callback: (query: IErrorModel) => IErrorModel) => IErrorModel
-  whereNull: (column: keyof ErrorsTable) => IErrorModel
-  whereNotNull: (column: keyof ErrorsTable) => IErrorModel
-  whereLike: (column: keyof ErrorsTable, value: string) => IErrorModel
-  orderBy: (column: keyof ErrorsTable, order: 'asc' | 'desc') => IErrorModel
-  orderByAsc: (column: keyof ErrorsTable) => IErrorModel
-  orderByDesc: (column: keyof ErrorsTable) => IErrorModel
-  groupBy: (column: keyof ErrorsTable) => IErrorModel
-  having: <V = string>(column: keyof ErrorsTable, operator: Operator, value: V) => IErrorModel
-  inRandomOrder: () => IErrorModel
-  whereColumn: (first: keyof ErrorsTable, operator: Operator, second: keyof ErrorsTable) => IErrorModel
-  max: (field: keyof ErrorsTable) => Promise<number>
-  min: (field: keyof ErrorsTable) => Promise<number>
-  avg: (field: keyof ErrorsTable) => Promise<number>
-  sum: (field: keyof ErrorsTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<IErrorModel[]>
-  pluck: <K extends keyof IErrorModel>(field: K) => Promise<IErrorModel[K][]>
-  chunk: (size: number, callback: (models: IErrorModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IErrorModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newError: NewError) => Promise<IErrorModel>
-  firstOrCreate: (search: Partial<ErrorsTable>, values?: NewError) => Promise<IErrorModel>
-  updateOrCreate: (search: Partial<ErrorsTable>, values?: NewError) => Promise<IErrorModel>
-  createMany: (newError: NewError[]) => Promise<void>
-  forceCreate: (newError: NewError) => Promise<IErrorModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof ErrorsTable, values: V[]) => IErrorModel
-  distinct: (column: keyof ErrorJsonResponse) => IErrorModel
-  join: (table: string, firstCol: string, secondCol: string) => IErrorModel
-}
-
-export interface IErrorModel {
+export interface ErrorModelType {
   // Properties
   readonly id: number
   get type(): string
@@ -104,22 +47,78 @@ export interface IErrorModel {
   set stack(value: string)
   get status(): number
   set status(value: number)
-  get additional_info(): string | undefined
-  set additional_info(value: string)
+  get additionalInfo(): string | undefined
+  set additionalInfo(value: string)
+  get uuid(): string | undefined
+  set uuid(value: string)
   get created_at(): string | undefined
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => ErrorModelType
+  select: (params: (keyof ErrorJsonResponse)[] | RawBuilder<string> | string) => ErrorModelType
+  find: (id: number) => Promise<ErrorModelType | undefined>
+  first: () => Promise<ErrorModelType | undefined>
+  last: () => Promise<ErrorModelType | undefined>
+  firstOrFail: () => Promise<ErrorModelType | undefined>
+  all: () => Promise<ErrorModelType[]>
+  findOrFail: (id: number) => Promise<ErrorModelType | undefined>
+  findMany: (ids: number[]) => Promise<ErrorModelType[]>
+  latest: (column?: keyof ErrorsTable) => Promise<ErrorModelType | undefined>
+  oldest: (column?: keyof ErrorsTable) => Promise<ErrorModelType | undefined>
+  skip: (count: number) => ErrorModelType
+  take: (count: number) => ErrorModelType
+  where: <V = string>(column: keyof ErrorsTable, ...args: [V] | [Operator, V]) => ErrorModelType
+  orWhere: (...conditions: [string, any][]) => ErrorModelType
+  whereNotIn: <V = number>(column: keyof ErrorsTable, values: V[]) => ErrorModelType
+  whereBetween: <V = number>(column: keyof ErrorsTable, range: [V, V]) => ErrorModelType
+  whereRef: (column: keyof ErrorsTable, ...args: string[]) => ErrorModelType
+  when: (condition: boolean, callback: (query: ErrorModelType) => ErrorModelType) => ErrorModelType
+  whereNull: (column: keyof ErrorsTable) => ErrorModelType
+  whereNotNull: (column: keyof ErrorsTable) => ErrorModelType
+  whereLike: (column: keyof ErrorsTable, value: string) => ErrorModelType
+  orderBy: (column: keyof ErrorsTable, order: 'asc' | 'desc') => ErrorModelType
+  orderByAsc: (column: keyof ErrorsTable) => ErrorModelType
+  orderByDesc: (column: keyof ErrorsTable) => ErrorModelType
+  groupBy: (column: keyof ErrorsTable) => ErrorModelType
+  having: <V = string>(column: keyof ErrorsTable, operator: Operator, value: V) => ErrorModelType
+  inRandomOrder: () => ErrorModelType
+  whereColumn: (first: keyof ErrorsTable, operator: Operator, second: keyof ErrorsTable) => ErrorModelType
+  max: (field: keyof ErrorsTable) => Promise<number>
+  min: (field: keyof ErrorsTable) => Promise<number>
+  avg: (field: keyof ErrorsTable) => Promise<number>
+  sum: (field: keyof ErrorsTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<ErrorModelType[]>
+  pluck: <K extends keyof ErrorModelType>(field: K) => Promise<ErrorModelType[K][]>
+  chunk: (size: number, callback: (models: ErrorModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: ErrorModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newError: NewError) => Promise<ErrorModelType>
+  firstOrCreate: (search: Partial<ErrorsTable>, values?: NewError) => Promise<ErrorModelType>
+  updateOrCreate: (search: Partial<ErrorsTable>, values?: NewError) => Promise<ErrorModelType>
+  createMany: (newError: NewError[]) => Promise<void>
+  forceCreate: (newError: NewError) => Promise<ErrorModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof ErrorsTable, values: V[]) => ErrorModelType
+  distinct: (column: keyof ErrorJsonResponse) => ErrorModelType
+  join: (table: string, firstCol: string, secondCol: string) => ErrorModelType
+
   // Instance methods
-  createInstance: (data: ErrorJsonResponse) => IErrorModel
-  create: (newError: NewError) => Promise<IErrorModel>
-  update: (newError: ErrorUpdate) => Promise<IErrorModel | undefined>
-  forceUpdate: (newError: ErrorUpdate) => Promise<IErrorModel | undefined>
-  save: () => Promise<IErrorModel>
+  createInstance: (data: ErrorJsonResponse) => ErrorModelType
+  update: (newError: ErrorUpdate) => Promise<ErrorModelType | undefined>
+  forceUpdate: (newError: ErrorUpdate) => Promise<ErrorModelType | undefined>
+  save: () => Promise<ErrorModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<ErrorJsonResponse>
   toJSON: () => ErrorJsonResponse
-  parseResult: (model: IErrorModel) => IErrorModel
+  parseResult: (model: ErrorModelType) => ErrorModelType
 }
-
-export type ErrorModelType = IErrorModel & IErrorModelStatic

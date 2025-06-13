@@ -40,65 +40,7 @@ export interface ProductItemJsonResponse extends Omit<Selectable<ProductItemRead
 export type NewProductItem = Insertable<ProductItemWrite>
 export type ProductItemUpdate = Updateable<ProductItemWrite>
 
-export interface IProductItemModelStatic {
-  with: (relations: string[]) => IProductItemModel
-  select: (params: (keyof ProductItemJsonResponse)[] | RawBuilder<string> | string) => IProductItemModel
-  find: (id: number) => Promise<IProductItemModel | undefined>
-  first: () => Promise<IProductItemModel | undefined>
-  last: () => Promise<IProductItemModel | undefined>
-  firstOrFail: () => Promise<IProductItemModel | undefined>
-  all: () => Promise<IProductItemModel[]>
-  findOrFail: (id: number) => Promise<IProductItemModel | undefined>
-  findMany: (ids: number[]) => Promise<IProductItemModel[]>
-  latest: (column?: keyof ProductItemsTable) => Promise<IProductItemModel | undefined>
-  oldest: (column?: keyof ProductItemsTable) => Promise<IProductItemModel | undefined>
-  skip: (count: number) => IProductItemModel
-  take: (count: number) => IProductItemModel
-  where: <V = string>(column: keyof ProductItemsTable, ...args: [V] | [Operator, V]) => IProductItemModel
-  orWhere: (...conditions: [string, any][]) => IProductItemModel
-  whereNotIn: <V = number>(column: keyof ProductItemsTable, values: V[]) => IProductItemModel
-  whereBetween: <V = number>(column: keyof ProductItemsTable, range: [V, V]) => IProductItemModel
-  whereRef: (column: keyof ProductItemsTable, ...args: string[]) => IProductItemModel
-  when: (condition: boolean, callback: (query: IProductItemModel) => IProductItemModel) => IProductItemModel
-  whereNull: (column: keyof ProductItemsTable) => IProductItemModel
-  whereNotNull: (column: keyof ProductItemsTable) => IProductItemModel
-  whereLike: (column: keyof ProductItemsTable, value: string) => IProductItemModel
-  orderBy: (column: keyof ProductItemsTable, order: 'asc' | 'desc') => IProductItemModel
-  orderByAsc: (column: keyof ProductItemsTable) => IProductItemModel
-  orderByDesc: (column: keyof ProductItemsTable) => IProductItemModel
-  groupBy: (column: keyof ProductItemsTable) => IProductItemModel
-  having: <V = string>(column: keyof ProductItemsTable, operator: Operator, value: V) => IProductItemModel
-  inRandomOrder: () => IProductItemModel
-  whereColumn: (first: keyof ProductItemsTable, operator: Operator, second: keyof ProductItemsTable) => IProductItemModel
-  max: (field: keyof ProductItemsTable) => Promise<number>
-  min: (field: keyof ProductItemsTable) => Promise<number>
-  avg: (field: keyof ProductItemsTable) => Promise<number>
-  sum: (field: keyof ProductItemsTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<IProductItemModel[]>
-  pluck: <K extends keyof IProductItemModel>(field: K) => Promise<IProductItemModel[K][]>
-  chunk: (size: number, callback: (models: IProductItemModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IProductItemModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newProductItem: NewProductItem) => Promise<IProductItemModel>
-  firstOrCreate: (search: Partial<ProductItemsTable>, values?: NewProductItem) => Promise<IProductItemModel>
-  updateOrCreate: (search: Partial<ProductItemsTable>, values?: NewProductItem) => Promise<IProductItemModel>
-  createMany: (newProductItem: NewProductItem[]) => Promise<void>
-  forceCreate: (newProductItem: NewProductItem) => Promise<IProductItemModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof ProductItemsTable, values: V[]) => IProductItemModel
-  distinct: (column: keyof ProductItemJsonResponse) => IProductItemModel
-  join: (table: string, firstCol: string, secondCol: string) => IProductItemModel
-}
-
-export interface IProductItemModel {
+export interface ProductItemModelType {
   // Properties
   readonly id: number
   get name(): string
@@ -109,32 +51,86 @@ export interface IProductItemModel {
   set color(value: string)
   get price(): number
   set price(value: number)
-  get image_url(): string | undefined
-  set image_url(value: string)
-  get is_available(): boolean | undefined
-  set is_available(value: boolean)
-  get inventory_count(): number | undefined
-  set inventory_count(value: number)
+  get imageUrl(): string | undefined
+  set imageUrl(value: string)
+  get isAvailable(): boolean | undefined
+  set isAvailable(value: boolean)
+  get inventoryCount(): number | undefined
+  set inventoryCount(value: number)
   get sku(): string
   set sku(value: string)
-  get custom_options(): string | undefined
-  set custom_options(value: string)
+  get customOptions(): string | undefined
+  set customOptions(value: string)
   get uuid(): string | undefined
   set uuid(value: string)
   get created_at(): string | undefined
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => ProductItemModelType
+  select: (params: (keyof ProductItemJsonResponse)[] | RawBuilder<string> | string) => ProductItemModelType
+  find: (id: number) => Promise<ProductItemModelType | undefined>
+  first: () => Promise<ProductItemModelType | undefined>
+  last: () => Promise<ProductItemModelType | undefined>
+  firstOrFail: () => Promise<ProductItemModelType | undefined>
+  all: () => Promise<ProductItemModelType[]>
+  findOrFail: (id: number) => Promise<ProductItemModelType | undefined>
+  findMany: (ids: number[]) => Promise<ProductItemModelType[]>
+  latest: (column?: keyof ProductItemsTable) => Promise<ProductItemModelType | undefined>
+  oldest: (column?: keyof ProductItemsTable) => Promise<ProductItemModelType | undefined>
+  skip: (count: number) => ProductItemModelType
+  take: (count: number) => ProductItemModelType
+  where: <V = string>(column: keyof ProductItemsTable, ...args: [V] | [Operator, V]) => ProductItemModelType
+  orWhere: (...conditions: [string, any][]) => ProductItemModelType
+  whereNotIn: <V = number>(column: keyof ProductItemsTable, values: V[]) => ProductItemModelType
+  whereBetween: <V = number>(column: keyof ProductItemsTable, range: [V, V]) => ProductItemModelType
+  whereRef: (column: keyof ProductItemsTable, ...args: string[]) => ProductItemModelType
+  when: (condition: boolean, callback: (query: ProductItemModelType) => ProductItemModelType) => ProductItemModelType
+  whereNull: (column: keyof ProductItemsTable) => ProductItemModelType
+  whereNotNull: (column: keyof ProductItemsTable) => ProductItemModelType
+  whereLike: (column: keyof ProductItemsTable, value: string) => ProductItemModelType
+  orderBy: (column: keyof ProductItemsTable, order: 'asc' | 'desc') => ProductItemModelType
+  orderByAsc: (column: keyof ProductItemsTable) => ProductItemModelType
+  orderByDesc: (column: keyof ProductItemsTable) => ProductItemModelType
+  groupBy: (column: keyof ProductItemsTable) => ProductItemModelType
+  having: <V = string>(column: keyof ProductItemsTable, operator: Operator, value: V) => ProductItemModelType
+  inRandomOrder: () => ProductItemModelType
+  whereColumn: (first: keyof ProductItemsTable, operator: Operator, second: keyof ProductItemsTable) => ProductItemModelType
+  max: (field: keyof ProductItemsTable) => Promise<number>
+  min: (field: keyof ProductItemsTable) => Promise<number>
+  avg: (field: keyof ProductItemsTable) => Promise<number>
+  sum: (field: keyof ProductItemsTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<ProductItemModelType[]>
+  pluck: <K extends keyof ProductItemModelType>(field: K) => Promise<ProductItemModelType[K][]>
+  chunk: (size: number, callback: (models: ProductItemModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: ProductItemModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newProductItem: NewProductItem) => Promise<ProductItemModelType>
+  firstOrCreate: (search: Partial<ProductItemsTable>, values?: NewProductItem) => Promise<ProductItemModelType>
+  updateOrCreate: (search: Partial<ProductItemsTable>, values?: NewProductItem) => Promise<ProductItemModelType>
+  createMany: (newProductItem: NewProductItem[]) => Promise<void>
+  forceCreate: (newProductItem: NewProductItem) => Promise<ProductItemModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof ProductItemsTable, values: V[]) => ProductItemModelType
+  distinct: (column: keyof ProductItemJsonResponse) => ProductItemModelType
+  join: (table: string, firstCol: string, secondCol: string) => ProductItemModelType
+
   // Instance methods
-  createInstance: (data: ProductItemJsonResponse) => IProductItemModel
-  create: (newProductItem: NewProductItem) => Promise<IProductItemModel>
-  update: (newProductItem: ProductItemUpdate) => Promise<IProductItemModel | undefined>
-  forceUpdate: (newProductItem: ProductItemUpdate) => Promise<IProductItemModel | undefined>
-  save: () => Promise<IProductItemModel>
+  createInstance: (data: ProductItemJsonResponse) => ProductItemModelType
+  update: (newProductItem: ProductItemUpdate) => Promise<ProductItemModelType | undefined>
+  forceUpdate: (newProductItem: ProductItemUpdate) => Promise<ProductItemModelType | undefined>
+  save: () => Promise<ProductItemModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<ProductItemJsonResponse>
   toJSON: () => ProductItemJsonResponse
-  parseResult: (model: IProductItemModel) => IProductItemModel
+  parseResult: (model: ProductItemModelType) => ProductItemModelType
 }
-
-export type ProductItemModelType = IProductItemModel & IProductItemModelStatic

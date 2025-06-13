@@ -1,13 +1,13 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { NewRequest, RequestJsonResponse, RequestModelType, RequestsTable, RequestUpdate } from '../types/RequestType'
+import type { NewRequest, RequestJsonResponse, RequestsTable, RequestUpdate } from '../types/RequestType'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJsonResponse> implements RequestModelType {
+export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJsonResponse> {
   private readonly hidden: Array<keyof RequestJsonResponse> = []
   private readonly fillable: Array<keyof RequestJsonResponse> = ['method', 'path', 'status_code', 'duration_ms', 'ip_address', 'memory_usage', 'user_agent', 'error_message', 'uuid']
   private readonly guarded: Array<keyof RequestJsonResponse> = []

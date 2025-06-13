@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { NewSubscription, SubscriptionJsonResponse, SubscriptionModelType, SubscriptionsTable, SubscriptionUpdate } from '../types/SubscriptionType'
+import type { NewSubscription, SubscriptionJsonResponse, SubscriptionsTable, SubscriptionUpdate } from '../types/SubscriptionType'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -9,7 +9,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsTable, SubscriptionJsonResponse> implements SubscriptionModelType {
+export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsTable, SubscriptionJsonResponse> {
   private readonly hidden: Array<keyof SubscriptionJsonResponse> = []
   private readonly fillable: Array<keyof SubscriptionJsonResponse> = ['type', 'plan', 'provider_id', 'provider_status', 'unit_price', 'provider_type', 'provider_price_id', 'quantity', 'trial_ends_at', 'ends_at', 'last_used_at', 'uuid']
   private readonly guarded: Array<keyof SubscriptionJsonResponse> = []

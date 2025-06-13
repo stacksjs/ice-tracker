@@ -1,13 +1,13 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { ErrorJsonResponse, ErrorModelType, ErrorsTable, ErrorUpdate, NewError } from '../types/ErrorType'
+import type { ErrorJsonResponse, ErrorsTable, ErrorUpdate, NewError } from '../types/ErrorType'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonResponse> implements ErrorModelType {
+export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonResponse> {
   private readonly hidden: Array<keyof ErrorJsonResponse> = []
   private readonly fillable: Array<keyof ErrorJsonResponse> = ['type', 'message', 'stack', 'status', 'additional_info', 'uuid']
   private readonly guarded: Array<keyof ErrorJsonResponse> = []

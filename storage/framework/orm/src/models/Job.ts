@@ -1,13 +1,13 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { JobJsonResponse, JobModelType, JobsTable, JobUpdate, NewJob } from '../types/JobType'
+import type { JobJsonResponse, JobsTable, JobUpdate, NewJob } from '../types/JobType'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> implements JobModelType {
+export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
   private readonly hidden: Array<keyof JobJsonResponse> = []
   private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
   private readonly guarded: Array<keyof JobJsonResponse> = []

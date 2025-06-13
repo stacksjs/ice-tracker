@@ -8,6 +8,7 @@ export interface OauthAccessTokensTable {
   scopes?: string
   revoked: boolean
   expires_at?: Date | string
+  uuid?: string
   created_at?: string
   updated_at?: string
 }
@@ -35,65 +36,7 @@ export interface OauthAccessTokenJsonResponse extends Omit<Selectable<OauthAcces
 export type NewOauthAccessToken = Insertable<OauthAccessTokenWrite>
 export type OauthAccessTokenUpdate = Updateable<OauthAccessTokenWrite>
 
-export interface IOauthAccessTokenModelStatic {
-  with: (relations: string[]) => IOauthAccessTokenModel
-  select: (params: (keyof OauthAccessTokenJsonResponse)[] | RawBuilder<string> | string) => IOauthAccessTokenModel
-  find: (id: number) => Promise<IOauthAccessTokenModel | undefined>
-  first: () => Promise<IOauthAccessTokenModel | undefined>
-  last: () => Promise<IOauthAccessTokenModel | undefined>
-  firstOrFail: () => Promise<IOauthAccessTokenModel | undefined>
-  all: () => Promise<IOauthAccessTokenModel[]>
-  findOrFail: (id: number) => Promise<IOauthAccessTokenModel | undefined>
-  findMany: (ids: number[]) => Promise<IOauthAccessTokenModel[]>
-  latest: (column?: keyof OauthAccessTokensTable) => Promise<IOauthAccessTokenModel | undefined>
-  oldest: (column?: keyof OauthAccessTokensTable) => Promise<IOauthAccessTokenModel | undefined>
-  skip: (count: number) => IOauthAccessTokenModel
-  take: (count: number) => IOauthAccessTokenModel
-  where: <V = string>(column: keyof OauthAccessTokensTable, ...args: [V] | [Operator, V]) => IOauthAccessTokenModel
-  orWhere: (...conditions: [string, any][]) => IOauthAccessTokenModel
-  whereNotIn: <V = number>(column: keyof OauthAccessTokensTable, values: V[]) => IOauthAccessTokenModel
-  whereBetween: <V = number>(column: keyof OauthAccessTokensTable, range: [V, V]) => IOauthAccessTokenModel
-  whereRef: (column: keyof OauthAccessTokensTable, ...args: string[]) => IOauthAccessTokenModel
-  when: (condition: boolean, callback: (query: IOauthAccessTokenModel) => IOauthAccessTokenModel) => IOauthAccessTokenModel
-  whereNull: (column: keyof OauthAccessTokensTable) => IOauthAccessTokenModel
-  whereNotNull: (column: keyof OauthAccessTokensTable) => IOauthAccessTokenModel
-  whereLike: (column: keyof OauthAccessTokensTable, value: string) => IOauthAccessTokenModel
-  orderBy: (column: keyof OauthAccessTokensTable, order: 'asc' | 'desc') => IOauthAccessTokenModel
-  orderByAsc: (column: keyof OauthAccessTokensTable) => IOauthAccessTokenModel
-  orderByDesc: (column: keyof OauthAccessTokensTable) => IOauthAccessTokenModel
-  groupBy: (column: keyof OauthAccessTokensTable) => IOauthAccessTokenModel
-  having: <V = string>(column: keyof OauthAccessTokensTable, operator: Operator, value: V) => IOauthAccessTokenModel
-  inRandomOrder: () => IOauthAccessTokenModel
-  whereColumn: (first: keyof OauthAccessTokensTable, operator: Operator, second: keyof OauthAccessTokensTable) => IOauthAccessTokenModel
-  max: (field: keyof OauthAccessTokensTable) => Promise<number>
-  min: (field: keyof OauthAccessTokensTable) => Promise<number>
-  avg: (field: keyof OauthAccessTokensTable) => Promise<number>
-  sum: (field: keyof OauthAccessTokensTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<IOauthAccessTokenModel[]>
-  pluck: <K extends keyof IOauthAccessTokenModel>(field: K) => Promise<IOauthAccessTokenModel[K][]>
-  chunk: (size: number, callback: (models: IOauthAccessTokenModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IOauthAccessTokenModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newOauthAccessToken: NewOauthAccessToken) => Promise<IOauthAccessTokenModel>
-  firstOrCreate: (search: Partial<OauthAccessTokensTable>, values?: NewOauthAccessToken) => Promise<IOauthAccessTokenModel>
-  updateOrCreate: (search: Partial<OauthAccessTokensTable>, values?: NewOauthAccessToken) => Promise<IOauthAccessTokenModel>
-  createMany: (newOauthAccessToken: NewOauthAccessToken[]) => Promise<void>
-  forceCreate: (newOauthAccessToken: NewOauthAccessToken) => Promise<IOauthAccessTokenModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof OauthAccessTokensTable, values: V[]) => IOauthAccessTokenModel
-  distinct: (column: keyof OauthAccessTokenJsonResponse) => IOauthAccessTokenModel
-  join: (table: string, firstCol: string, secondCol: string) => IOauthAccessTokenModel
-}
-
-export interface IOauthAccessTokenModel {
+export interface OauthAccessTokenModelType {
   // Properties
   readonly id: number
   get token(): string
@@ -104,22 +47,78 @@ export interface IOauthAccessTokenModel {
   set scopes(value: string)
   get revoked(): boolean
   set revoked(value: boolean)
-  get expires_at(): Date | string | undefined
-  set expires_at(value: Date | string)
+  get expiresAt(): Date | string | undefined
+  set expiresAt(value: Date | string)
+  get uuid(): string | undefined
+  set uuid(value: string)
   get created_at(): string | undefined
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => OauthAccessTokenModelType
+  select: (params: (keyof OauthAccessTokenJsonResponse)[] | RawBuilder<string> | string) => OauthAccessTokenModelType
+  find: (id: number) => Promise<OauthAccessTokenModelType | undefined>
+  first: () => Promise<OauthAccessTokenModelType | undefined>
+  last: () => Promise<OauthAccessTokenModelType | undefined>
+  firstOrFail: () => Promise<OauthAccessTokenModelType | undefined>
+  all: () => Promise<OauthAccessTokenModelType[]>
+  findOrFail: (id: number) => Promise<OauthAccessTokenModelType | undefined>
+  findMany: (ids: number[]) => Promise<OauthAccessTokenModelType[]>
+  latest: (column?: keyof OauthAccessTokensTable) => Promise<OauthAccessTokenModelType | undefined>
+  oldest: (column?: keyof OauthAccessTokensTable) => Promise<OauthAccessTokenModelType | undefined>
+  skip: (count: number) => OauthAccessTokenModelType
+  take: (count: number) => OauthAccessTokenModelType
+  where: <V = string>(column: keyof OauthAccessTokensTable, ...args: [V] | [Operator, V]) => OauthAccessTokenModelType
+  orWhere: (...conditions: [string, any][]) => OauthAccessTokenModelType
+  whereNotIn: <V = number>(column: keyof OauthAccessTokensTable, values: V[]) => OauthAccessTokenModelType
+  whereBetween: <V = number>(column: keyof OauthAccessTokensTable, range: [V, V]) => OauthAccessTokenModelType
+  whereRef: (column: keyof OauthAccessTokensTable, ...args: string[]) => OauthAccessTokenModelType
+  when: (condition: boolean, callback: (query: OauthAccessTokenModelType) => OauthAccessTokenModelType) => OauthAccessTokenModelType
+  whereNull: (column: keyof OauthAccessTokensTable) => OauthAccessTokenModelType
+  whereNotNull: (column: keyof OauthAccessTokensTable) => OauthAccessTokenModelType
+  whereLike: (column: keyof OauthAccessTokensTable, value: string) => OauthAccessTokenModelType
+  orderBy: (column: keyof OauthAccessTokensTable, order: 'asc' | 'desc') => OauthAccessTokenModelType
+  orderByAsc: (column: keyof OauthAccessTokensTable) => OauthAccessTokenModelType
+  orderByDesc: (column: keyof OauthAccessTokensTable) => OauthAccessTokenModelType
+  groupBy: (column: keyof OauthAccessTokensTable) => OauthAccessTokenModelType
+  having: <V = string>(column: keyof OauthAccessTokensTable, operator: Operator, value: V) => OauthAccessTokenModelType
+  inRandomOrder: () => OauthAccessTokenModelType
+  whereColumn: (first: keyof OauthAccessTokensTable, operator: Operator, second: keyof OauthAccessTokensTable) => OauthAccessTokenModelType
+  max: (field: keyof OauthAccessTokensTable) => Promise<number>
+  min: (field: keyof OauthAccessTokensTable) => Promise<number>
+  avg: (field: keyof OauthAccessTokensTable) => Promise<number>
+  sum: (field: keyof OauthAccessTokensTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<OauthAccessTokenModelType[]>
+  pluck: <K extends keyof OauthAccessTokenModelType>(field: K) => Promise<OauthAccessTokenModelType[K][]>
+  chunk: (size: number, callback: (models: OauthAccessTokenModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: OauthAccessTokenModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newOauthAccessToken: NewOauthAccessToken) => Promise<OauthAccessTokenModelType>
+  firstOrCreate: (search: Partial<OauthAccessTokensTable>, values?: NewOauthAccessToken) => Promise<OauthAccessTokenModelType>
+  updateOrCreate: (search: Partial<OauthAccessTokensTable>, values?: NewOauthAccessToken) => Promise<OauthAccessTokenModelType>
+  createMany: (newOauthAccessToken: NewOauthAccessToken[]) => Promise<void>
+  forceCreate: (newOauthAccessToken: NewOauthAccessToken) => Promise<OauthAccessTokenModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof OauthAccessTokensTable, values: V[]) => OauthAccessTokenModelType
+  distinct: (column: keyof OauthAccessTokenJsonResponse) => OauthAccessTokenModelType
+  join: (table: string, firstCol: string, secondCol: string) => OauthAccessTokenModelType
+
   // Instance methods
-  createInstance: (data: OauthAccessTokenJsonResponse) => IOauthAccessTokenModel
-  create: (newOauthAccessToken: NewOauthAccessToken) => Promise<IOauthAccessTokenModel>
-  update: (newOauthAccessToken: OauthAccessTokenUpdate) => Promise<IOauthAccessTokenModel | undefined>
-  forceUpdate: (newOauthAccessToken: OauthAccessTokenUpdate) => Promise<IOauthAccessTokenModel | undefined>
-  save: () => Promise<IOauthAccessTokenModel>
+  createInstance: (data: OauthAccessTokenJsonResponse) => OauthAccessTokenModelType
+  update: (newOauthAccessToken: OauthAccessTokenUpdate) => Promise<OauthAccessTokenModelType | undefined>
+  forceUpdate: (newOauthAccessToken: OauthAccessTokenUpdate) => Promise<OauthAccessTokenModelType | undefined>
+  save: () => Promise<OauthAccessTokenModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<OauthAccessTokenJsonResponse>
   toJSON: () => OauthAccessTokenJsonResponse
-  parseResult: (model: IOauthAccessTokenModel) => IOauthAccessTokenModel
+  parseResult: (model: OauthAccessTokenModelType) => OauthAccessTokenModelType
 }
-
-export type OauthAccessTokenModelType = IOauthAccessTokenModel & IOauthAccessTokenModelStatic

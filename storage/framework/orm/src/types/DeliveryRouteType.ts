@@ -37,65 +37,7 @@ export interface DeliveryRouteJsonResponse extends Omit<Selectable<DeliveryRoute
 export type NewDeliveryRoute = Insertable<DeliveryRouteWrite>
 export type DeliveryRouteUpdate = Updateable<DeliveryRouteWrite>
 
-export interface IDeliveryRouteModelStatic {
-  with: (relations: string[]) => IDeliveryRouteModel
-  select: (params: (keyof DeliveryRouteJsonResponse)[] | RawBuilder<string> | string) => IDeliveryRouteModel
-  find: (id: number) => Promise<IDeliveryRouteModel | undefined>
-  first: () => Promise<IDeliveryRouteModel | undefined>
-  last: () => Promise<IDeliveryRouteModel | undefined>
-  firstOrFail: () => Promise<IDeliveryRouteModel | undefined>
-  all: () => Promise<IDeliveryRouteModel[]>
-  findOrFail: (id: number) => Promise<IDeliveryRouteModel | undefined>
-  findMany: (ids: number[]) => Promise<IDeliveryRouteModel[]>
-  latest: (column?: keyof DeliveryRoutesTable) => Promise<IDeliveryRouteModel | undefined>
-  oldest: (column?: keyof DeliveryRoutesTable) => Promise<IDeliveryRouteModel | undefined>
-  skip: (count: number) => IDeliveryRouteModel
-  take: (count: number) => IDeliveryRouteModel
-  where: <V = string>(column: keyof DeliveryRoutesTable, ...args: [V] | [Operator, V]) => IDeliveryRouteModel
-  orWhere: (...conditions: [string, any][]) => IDeliveryRouteModel
-  whereNotIn: <V = number>(column: keyof DeliveryRoutesTable, values: V[]) => IDeliveryRouteModel
-  whereBetween: <V = number>(column: keyof DeliveryRoutesTable, range: [V, V]) => IDeliveryRouteModel
-  whereRef: (column: keyof DeliveryRoutesTable, ...args: string[]) => IDeliveryRouteModel
-  when: (condition: boolean, callback: (query: IDeliveryRouteModel) => IDeliveryRouteModel) => IDeliveryRouteModel
-  whereNull: (column: keyof DeliveryRoutesTable) => IDeliveryRouteModel
-  whereNotNull: (column: keyof DeliveryRoutesTable) => IDeliveryRouteModel
-  whereLike: (column: keyof DeliveryRoutesTable, value: string) => IDeliveryRouteModel
-  orderBy: (column: keyof DeliveryRoutesTable, order: 'asc' | 'desc') => IDeliveryRouteModel
-  orderByAsc: (column: keyof DeliveryRoutesTable) => IDeliveryRouteModel
-  orderByDesc: (column: keyof DeliveryRoutesTable) => IDeliveryRouteModel
-  groupBy: (column: keyof DeliveryRoutesTable) => IDeliveryRouteModel
-  having: <V = string>(column: keyof DeliveryRoutesTable, operator: Operator, value: V) => IDeliveryRouteModel
-  inRandomOrder: () => IDeliveryRouteModel
-  whereColumn: (first: keyof DeliveryRoutesTable, operator: Operator, second: keyof DeliveryRoutesTable) => IDeliveryRouteModel
-  max: (field: keyof DeliveryRoutesTable) => Promise<number>
-  min: (field: keyof DeliveryRoutesTable) => Promise<number>
-  avg: (field: keyof DeliveryRoutesTable) => Promise<number>
-  sum: (field: keyof DeliveryRoutesTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<IDeliveryRouteModel[]>
-  pluck: <K extends keyof IDeliveryRouteModel>(field: K) => Promise<IDeliveryRouteModel[K][]>
-  chunk: (size: number, callback: (models: IDeliveryRouteModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IDeliveryRouteModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newDeliveryRoute: NewDeliveryRoute) => Promise<IDeliveryRouteModel>
-  firstOrCreate: (search: Partial<DeliveryRoutesTable>, values?: NewDeliveryRoute) => Promise<IDeliveryRouteModel>
-  updateOrCreate: (search: Partial<DeliveryRoutesTable>, values?: NewDeliveryRoute) => Promise<IDeliveryRouteModel>
-  createMany: (newDeliveryRoute: NewDeliveryRoute[]) => Promise<void>
-  forceCreate: (newDeliveryRoute: NewDeliveryRoute) => Promise<IDeliveryRouteModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof DeliveryRoutesTable, values: V[]) => IDeliveryRouteModel
-  distinct: (column: keyof DeliveryRouteJsonResponse) => IDeliveryRouteModel
-  join: (table: string, firstCol: string, secondCol: string) => IDeliveryRouteModel
-}
-
-export interface IDeliveryRouteModel {
+export interface DeliveryRouteModelType {
   // Properties
   readonly id: number
   get driver(): string
@@ -104,28 +46,82 @@ export interface IDeliveryRouteModel {
   set vehicle(value: string)
   get stops(): number
   set stops(value: number)
-  get delivery_time(): number
-  set delivery_time(value: number)
-  get total_distance(): number
-  set total_distance(value: number)
-  get last_active(): Date | string | undefined
-  set last_active(value: Date | string)
+  get deliveryTime(): number
+  set deliveryTime(value: number)
+  get totalDistance(): number
+  set totalDistance(value: number)
+  get lastActive(): Date | string | undefined
+  set lastActive(value: Date | string)
   get uuid(): string | undefined
   set uuid(value: string)
   get created_at(): string | undefined
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => DeliveryRouteModelType
+  select: (params: (keyof DeliveryRouteJsonResponse)[] | RawBuilder<string> | string) => DeliveryRouteModelType
+  find: (id: number) => Promise<DeliveryRouteModelType | undefined>
+  first: () => Promise<DeliveryRouteModelType | undefined>
+  last: () => Promise<DeliveryRouteModelType | undefined>
+  firstOrFail: () => Promise<DeliveryRouteModelType | undefined>
+  all: () => Promise<DeliveryRouteModelType[]>
+  findOrFail: (id: number) => Promise<DeliveryRouteModelType | undefined>
+  findMany: (ids: number[]) => Promise<DeliveryRouteModelType[]>
+  latest: (column?: keyof DeliveryRoutesTable) => Promise<DeliveryRouteModelType | undefined>
+  oldest: (column?: keyof DeliveryRoutesTable) => Promise<DeliveryRouteModelType | undefined>
+  skip: (count: number) => DeliveryRouteModelType
+  take: (count: number) => DeliveryRouteModelType
+  where: <V = string>(column: keyof DeliveryRoutesTable, ...args: [V] | [Operator, V]) => DeliveryRouteModelType
+  orWhere: (...conditions: [string, any][]) => DeliveryRouteModelType
+  whereNotIn: <V = number>(column: keyof DeliveryRoutesTable, values: V[]) => DeliveryRouteModelType
+  whereBetween: <V = number>(column: keyof DeliveryRoutesTable, range: [V, V]) => DeliveryRouteModelType
+  whereRef: (column: keyof DeliveryRoutesTable, ...args: string[]) => DeliveryRouteModelType
+  when: (condition: boolean, callback: (query: DeliveryRouteModelType) => DeliveryRouteModelType) => DeliveryRouteModelType
+  whereNull: (column: keyof DeliveryRoutesTable) => DeliveryRouteModelType
+  whereNotNull: (column: keyof DeliveryRoutesTable) => DeliveryRouteModelType
+  whereLike: (column: keyof DeliveryRoutesTable, value: string) => DeliveryRouteModelType
+  orderBy: (column: keyof DeliveryRoutesTable, order: 'asc' | 'desc') => DeliveryRouteModelType
+  orderByAsc: (column: keyof DeliveryRoutesTable) => DeliveryRouteModelType
+  orderByDesc: (column: keyof DeliveryRoutesTable) => DeliveryRouteModelType
+  groupBy: (column: keyof DeliveryRoutesTable) => DeliveryRouteModelType
+  having: <V = string>(column: keyof DeliveryRoutesTable, operator: Operator, value: V) => DeliveryRouteModelType
+  inRandomOrder: () => DeliveryRouteModelType
+  whereColumn: (first: keyof DeliveryRoutesTable, operator: Operator, second: keyof DeliveryRoutesTable) => DeliveryRouteModelType
+  max: (field: keyof DeliveryRoutesTable) => Promise<number>
+  min: (field: keyof DeliveryRoutesTable) => Promise<number>
+  avg: (field: keyof DeliveryRoutesTable) => Promise<number>
+  sum: (field: keyof DeliveryRoutesTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<DeliveryRouteModelType[]>
+  pluck: <K extends keyof DeliveryRouteModelType>(field: K) => Promise<DeliveryRouteModelType[K][]>
+  chunk: (size: number, callback: (models: DeliveryRouteModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: DeliveryRouteModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newDeliveryRoute: NewDeliveryRoute) => Promise<DeliveryRouteModelType>
+  firstOrCreate: (search: Partial<DeliveryRoutesTable>, values?: NewDeliveryRoute) => Promise<DeliveryRouteModelType>
+  updateOrCreate: (search: Partial<DeliveryRoutesTable>, values?: NewDeliveryRoute) => Promise<DeliveryRouteModelType>
+  createMany: (newDeliveryRoute: NewDeliveryRoute[]) => Promise<void>
+  forceCreate: (newDeliveryRoute: NewDeliveryRoute) => Promise<DeliveryRouteModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof DeliveryRoutesTable, values: V[]) => DeliveryRouteModelType
+  distinct: (column: keyof DeliveryRouteJsonResponse) => DeliveryRouteModelType
+  join: (table: string, firstCol: string, secondCol: string) => DeliveryRouteModelType
+
   // Instance methods
-  createInstance: (data: DeliveryRouteJsonResponse) => IDeliveryRouteModel
-  create: (newDeliveryRoute: NewDeliveryRoute) => Promise<IDeliveryRouteModel>
-  update: (newDeliveryRoute: DeliveryRouteUpdate) => Promise<IDeliveryRouteModel | undefined>
-  forceUpdate: (newDeliveryRoute: DeliveryRouteUpdate) => Promise<IDeliveryRouteModel | undefined>
-  save: () => Promise<IDeliveryRouteModel>
+  createInstance: (data: DeliveryRouteJsonResponse) => DeliveryRouteModelType
+  update: (newDeliveryRoute: DeliveryRouteUpdate) => Promise<DeliveryRouteModelType | undefined>
+  forceUpdate: (newDeliveryRoute: DeliveryRouteUpdate) => Promise<DeliveryRouteModelType | undefined>
+  save: () => Promise<DeliveryRouteModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<DeliveryRouteJsonResponse>
   toJSON: () => DeliveryRouteJsonResponse
-  parseResult: (model: IDeliveryRouteModel) => IDeliveryRouteModel
+  parseResult: (model: DeliveryRouteModelType) => DeliveryRouteModelType
 }
-
-export type DeliveryRouteModelType = IDeliveryRouteModel & IDeliveryRouteModelStatic

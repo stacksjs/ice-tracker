@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { NewProductUnit, ProductUnitJsonResponse, ProductUnitModelType, ProductUnitsTable, ProductUnitUpdate } from '../types/ProductUnitType'
+import type { NewProductUnit, ProductUnitJsonResponse, ProductUnitsTable, ProductUnitUpdate } from '../types/ProductUnitType'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -10,7 +10,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTable, ProductUnitJsonResponse> implements ProductUnitModelType {
+export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTable, ProductUnitJsonResponse> {
   private readonly hidden: Array<keyof ProductUnitJsonResponse> = []
   private readonly fillable: Array<keyof ProductUnitJsonResponse> = ['name', 'abbreviation', 'type', 'description', 'is_default', 'uuid', 'product_id']
   private readonly guarded: Array<keyof ProductUnitJsonResponse> = []

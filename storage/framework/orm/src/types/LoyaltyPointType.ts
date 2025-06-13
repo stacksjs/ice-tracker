@@ -38,46 +38,69 @@ export interface LoyaltyPointJsonResponse extends Omit<Selectable<LoyaltyPointRe
 export type NewLoyaltyPoint = Insertable<LoyaltyPointWrite>
 export type LoyaltyPointUpdate = Updateable<LoyaltyPointWrite>
 
-export interface ILoyaltyPointModelStatic {
-  with: (relations: string[]) => ILoyaltyPointModel
-  select: (params: (keyof LoyaltyPointJsonResponse)[] | RawBuilder<string> | string) => ILoyaltyPointModel
-  find: (id: number) => Promise<ILoyaltyPointModel | undefined>
-  first: () => Promise<ILoyaltyPointModel | undefined>
-  last: () => Promise<ILoyaltyPointModel | undefined>
-  firstOrFail: () => Promise<ILoyaltyPointModel | undefined>
-  all: () => Promise<ILoyaltyPointModel[]>
-  findOrFail: (id: number) => Promise<ILoyaltyPointModel | undefined>
-  findMany: (ids: number[]) => Promise<ILoyaltyPointModel[]>
-  latest: (column?: keyof LoyaltyPointsTable) => Promise<ILoyaltyPointModel | undefined>
-  oldest: (column?: keyof LoyaltyPointsTable) => Promise<ILoyaltyPointModel | undefined>
-  skip: (count: number) => ILoyaltyPointModel
-  take: (count: number) => ILoyaltyPointModel
-  where: <V = string>(column: keyof LoyaltyPointsTable, ...args: [V] | [Operator, V]) => ILoyaltyPointModel
-  orWhere: (...conditions: [string, any][]) => ILoyaltyPointModel
-  whereNotIn: <V = number>(column: keyof LoyaltyPointsTable, values: V[]) => ILoyaltyPointModel
-  whereBetween: <V = number>(column: keyof LoyaltyPointsTable, range: [V, V]) => ILoyaltyPointModel
-  whereRef: (column: keyof LoyaltyPointsTable, ...args: string[]) => ILoyaltyPointModel
-  when: (condition: boolean, callback: (query: ILoyaltyPointModel) => ILoyaltyPointModel) => ILoyaltyPointModel
-  whereNull: (column: keyof LoyaltyPointsTable) => ILoyaltyPointModel
-  whereNotNull: (column: keyof LoyaltyPointsTable) => ILoyaltyPointModel
-  whereLike: (column: keyof LoyaltyPointsTable, value: string) => ILoyaltyPointModel
-  orderBy: (column: keyof LoyaltyPointsTable, order: 'asc' | 'desc') => ILoyaltyPointModel
-  orderByAsc: (column: keyof LoyaltyPointsTable) => ILoyaltyPointModel
-  orderByDesc: (column: keyof LoyaltyPointsTable) => ILoyaltyPointModel
-  groupBy: (column: keyof LoyaltyPointsTable) => ILoyaltyPointModel
-  having: <V = string>(column: keyof LoyaltyPointsTable, operator: Operator, value: V) => ILoyaltyPointModel
-  inRandomOrder: () => ILoyaltyPointModel
-  whereColumn: (first: keyof LoyaltyPointsTable, operator: Operator, second: keyof LoyaltyPointsTable) => ILoyaltyPointModel
+export interface LoyaltyPointModelType {
+  // Properties
+  readonly id: number
+  get walletId(): string
+  set walletId(value: string)
+  get points(): number
+  set points(value: number)
+  get source(): string
+  set source(value: string)
+  get sourceReferenceId(): string | undefined
+  set sourceReferenceId(value: string)
+  get description(): string | undefined
+  set description(value: string)
+  get expiryDate(): Date | string | undefined
+  set expiryDate(value: Date | string)
+  get isUsed(): boolean | undefined
+  set isUsed(value: boolean)
+  get uuid(): string | undefined
+  set uuid(value: string)
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
+  // Static methods
+  with: (relations: string[]) => LoyaltyPointModelType
+  select: (params: (keyof LoyaltyPointJsonResponse)[] | RawBuilder<string> | string) => LoyaltyPointModelType
+  find: (id: number) => Promise<LoyaltyPointModelType | undefined>
+  first: () => Promise<LoyaltyPointModelType | undefined>
+  last: () => Promise<LoyaltyPointModelType | undefined>
+  firstOrFail: () => Promise<LoyaltyPointModelType | undefined>
+  all: () => Promise<LoyaltyPointModelType[]>
+  findOrFail: (id: number) => Promise<LoyaltyPointModelType | undefined>
+  findMany: (ids: number[]) => Promise<LoyaltyPointModelType[]>
+  latest: (column?: keyof LoyaltyPointsTable) => Promise<LoyaltyPointModelType | undefined>
+  oldest: (column?: keyof LoyaltyPointsTable) => Promise<LoyaltyPointModelType | undefined>
+  skip: (count: number) => LoyaltyPointModelType
+  take: (count: number) => LoyaltyPointModelType
+  where: <V = string>(column: keyof LoyaltyPointsTable, ...args: [V] | [Operator, V]) => LoyaltyPointModelType
+  orWhere: (...conditions: [string, any][]) => LoyaltyPointModelType
+  whereNotIn: <V = number>(column: keyof LoyaltyPointsTable, values: V[]) => LoyaltyPointModelType
+  whereBetween: <V = number>(column: keyof LoyaltyPointsTable, range: [V, V]) => LoyaltyPointModelType
+  whereRef: (column: keyof LoyaltyPointsTable, ...args: string[]) => LoyaltyPointModelType
+  when: (condition: boolean, callback: (query: LoyaltyPointModelType) => LoyaltyPointModelType) => LoyaltyPointModelType
+  whereNull: (column: keyof LoyaltyPointsTable) => LoyaltyPointModelType
+  whereNotNull: (column: keyof LoyaltyPointsTable) => LoyaltyPointModelType
+  whereLike: (column: keyof LoyaltyPointsTable, value: string) => LoyaltyPointModelType
+  orderBy: (column: keyof LoyaltyPointsTable, order: 'asc' | 'desc') => LoyaltyPointModelType
+  orderByAsc: (column: keyof LoyaltyPointsTable) => LoyaltyPointModelType
+  orderByDesc: (column: keyof LoyaltyPointsTable) => LoyaltyPointModelType
+  groupBy: (column: keyof LoyaltyPointsTable) => LoyaltyPointModelType
+  having: <V = string>(column: keyof LoyaltyPointsTable, operator: Operator, value: V) => LoyaltyPointModelType
+  inRandomOrder: () => LoyaltyPointModelType
+  whereColumn: (first: keyof LoyaltyPointsTable, operator: Operator, second: keyof LoyaltyPointsTable) => LoyaltyPointModelType
   max: (field: keyof LoyaltyPointsTable) => Promise<number>
   min: (field: keyof LoyaltyPointsTable) => Promise<number>
   avg: (field: keyof LoyaltyPointsTable) => Promise<number>
   sum: (field: keyof LoyaltyPointsTable) => Promise<number>
   count: () => Promise<number>
-  get: () => Promise<ILoyaltyPointModel[]>
-  pluck: <K extends keyof ILoyaltyPointModel>(field: K) => Promise<ILoyaltyPointModel[K][]>
-  chunk: (size: number, callback: (models: ILoyaltyPointModel[]) => Promise<void>) => Promise<void>
+  get: () => Promise<LoyaltyPointModelType[]>
+  pluck: <K extends keyof LoyaltyPointModelType>(field: K) => Promise<LoyaltyPointModelType[K][]>
+  chunk: (size: number, callback: (models: LoyaltyPointModelType[]) => Promise<void>) => Promise<void>
   paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: ILoyaltyPointModel[]
+    data: LoyaltyPointModelType[]
     paging: {
       total_records: number
       page: number
@@ -85,50 +108,23 @@ export interface ILoyaltyPointModelStatic {
     }
     next_cursor: number | null
   }>
-  create: (newLoyaltyPoint: NewLoyaltyPoint) => Promise<ILoyaltyPointModel>
-  firstOrCreate: (search: Partial<LoyaltyPointsTable>, values?: NewLoyaltyPoint) => Promise<ILoyaltyPointModel>
-  updateOrCreate: (search: Partial<LoyaltyPointsTable>, values?: NewLoyaltyPoint) => Promise<ILoyaltyPointModel>
+  create: (newLoyaltyPoint: NewLoyaltyPoint) => Promise<LoyaltyPointModelType>
+  firstOrCreate: (search: Partial<LoyaltyPointsTable>, values?: NewLoyaltyPoint) => Promise<LoyaltyPointModelType>
+  updateOrCreate: (search: Partial<LoyaltyPointsTable>, values?: NewLoyaltyPoint) => Promise<LoyaltyPointModelType>
   createMany: (newLoyaltyPoint: NewLoyaltyPoint[]) => Promise<void>
-  forceCreate: (newLoyaltyPoint: NewLoyaltyPoint) => Promise<ILoyaltyPointModel>
+  forceCreate: (newLoyaltyPoint: NewLoyaltyPoint) => Promise<LoyaltyPointModelType>
   remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof LoyaltyPointsTable, values: V[]) => ILoyaltyPointModel
-  distinct: (column: keyof LoyaltyPointJsonResponse) => ILoyaltyPointModel
-  join: (table: string, firstCol: string, secondCol: string) => ILoyaltyPointModel
-}
-
-export interface ILoyaltyPointModel {
-  // Properties
-  readonly id: number
-  get wallet_id(): string
-  set wallet_id(value: string)
-  get points(): number
-  set points(value: number)
-  get source(): string
-  set source(value: string)
-  get source_reference_id(): string | undefined
-  set source_reference_id(value: string)
-  get description(): string | undefined
-  set description(value: string)
-  get expiry_date(): Date | string | undefined
-  set expiry_date(value: Date | string)
-  get is_used(): boolean | undefined
-  set is_used(value: boolean)
-  get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
+  whereIn: <V = number>(column: keyof LoyaltyPointsTable, values: V[]) => LoyaltyPointModelType
+  distinct: (column: keyof LoyaltyPointJsonResponse) => LoyaltyPointModelType
+  join: (table: string, firstCol: string, secondCol: string) => LoyaltyPointModelType
 
   // Instance methods
-  createInstance: (data: LoyaltyPointJsonResponse) => ILoyaltyPointModel
-  create: (newLoyaltyPoint: NewLoyaltyPoint) => Promise<ILoyaltyPointModel>
-  update: (newLoyaltyPoint: LoyaltyPointUpdate) => Promise<ILoyaltyPointModel | undefined>
-  forceUpdate: (newLoyaltyPoint: LoyaltyPointUpdate) => Promise<ILoyaltyPointModel | undefined>
-  save: () => Promise<ILoyaltyPointModel>
+  createInstance: (data: LoyaltyPointJsonResponse) => LoyaltyPointModelType
+  update: (newLoyaltyPoint: LoyaltyPointUpdate) => Promise<LoyaltyPointModelType | undefined>
+  forceUpdate: (newLoyaltyPoint: LoyaltyPointUpdate) => Promise<LoyaltyPointModelType | undefined>
+  save: () => Promise<LoyaltyPointModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<LoyaltyPointJsonResponse>
   toJSON: () => LoyaltyPointJsonResponse
-  parseResult: (model: ILoyaltyPointModel) => ILoyaltyPointModel
+  parseResult: (model: LoyaltyPointModelType) => LoyaltyPointModelType
 }
-
-export type LoyaltyPointModelType = ILoyaltyPointModel & ILoyaltyPointModelStatic

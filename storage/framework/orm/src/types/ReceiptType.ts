@@ -39,65 +39,7 @@ export interface ReceiptJsonResponse extends Omit<Selectable<ReceiptRead>, 'pass
 export type NewReceipt = Insertable<ReceiptWrite>
 export type ReceiptUpdate = Updateable<ReceiptWrite>
 
-export interface IReceiptModelStatic {
-  with: (relations: string[]) => IReceiptModel
-  select: (params: (keyof ReceiptJsonResponse)[] | RawBuilder<string> | string) => IReceiptModel
-  find: (id: number) => Promise<IReceiptModel | undefined>
-  first: () => Promise<IReceiptModel | undefined>
-  last: () => Promise<IReceiptModel | undefined>
-  firstOrFail: () => Promise<IReceiptModel | undefined>
-  all: () => Promise<IReceiptModel[]>
-  findOrFail: (id: number) => Promise<IReceiptModel | undefined>
-  findMany: (ids: number[]) => Promise<IReceiptModel[]>
-  latest: (column?: keyof ReceiptsTable) => Promise<IReceiptModel | undefined>
-  oldest: (column?: keyof ReceiptsTable) => Promise<IReceiptModel | undefined>
-  skip: (count: number) => IReceiptModel
-  take: (count: number) => IReceiptModel
-  where: <V = string>(column: keyof ReceiptsTable, ...args: [V] | [Operator, V]) => IReceiptModel
-  orWhere: (...conditions: [string, any][]) => IReceiptModel
-  whereNotIn: <V = number>(column: keyof ReceiptsTable, values: V[]) => IReceiptModel
-  whereBetween: <V = number>(column: keyof ReceiptsTable, range: [V, V]) => IReceiptModel
-  whereRef: (column: keyof ReceiptsTable, ...args: string[]) => IReceiptModel
-  when: (condition: boolean, callback: (query: IReceiptModel) => IReceiptModel) => IReceiptModel
-  whereNull: (column: keyof ReceiptsTable) => IReceiptModel
-  whereNotNull: (column: keyof ReceiptsTable) => IReceiptModel
-  whereLike: (column: keyof ReceiptsTable, value: string) => IReceiptModel
-  orderBy: (column: keyof ReceiptsTable, order: 'asc' | 'desc') => IReceiptModel
-  orderByAsc: (column: keyof ReceiptsTable) => IReceiptModel
-  orderByDesc: (column: keyof ReceiptsTable) => IReceiptModel
-  groupBy: (column: keyof ReceiptsTable) => IReceiptModel
-  having: <V = string>(column: keyof ReceiptsTable, operator: Operator, value: V) => IReceiptModel
-  inRandomOrder: () => IReceiptModel
-  whereColumn: (first: keyof ReceiptsTable, operator: Operator, second: keyof ReceiptsTable) => IReceiptModel
-  max: (field: keyof ReceiptsTable) => Promise<number>
-  min: (field: keyof ReceiptsTable) => Promise<number>
-  avg: (field: keyof ReceiptsTable) => Promise<number>
-  sum: (field: keyof ReceiptsTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<IReceiptModel[]>
-  pluck: <K extends keyof IReceiptModel>(field: K) => Promise<IReceiptModel[K][]>
-  chunk: (size: number, callback: (models: IReceiptModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IReceiptModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newReceipt: NewReceipt) => Promise<IReceiptModel>
-  firstOrCreate: (search: Partial<ReceiptsTable>, values?: NewReceipt) => Promise<IReceiptModel>
-  updateOrCreate: (search: Partial<ReceiptsTable>, values?: NewReceipt) => Promise<IReceiptModel>
-  createMany: (newReceipt: NewReceipt[]) => Promise<void>
-  forceCreate: (newReceipt: NewReceipt) => Promise<IReceiptModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof ReceiptsTable, values: V[]) => IReceiptModel
-  distinct: (column: keyof ReceiptJsonResponse) => IReceiptModel
-  join: (table: string, firstCol: string, secondCol: string) => IReceiptModel
-}
-
-export interface IReceiptModel {
+export interface ReceiptModelType {
   // Properties
   readonly id: number
   get printer(): string
@@ -122,16 +64,70 @@ export interface IReceiptModel {
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => ReceiptModelType
+  select: (params: (keyof ReceiptJsonResponse)[] | RawBuilder<string> | string) => ReceiptModelType
+  find: (id: number) => Promise<ReceiptModelType | undefined>
+  first: () => Promise<ReceiptModelType | undefined>
+  last: () => Promise<ReceiptModelType | undefined>
+  firstOrFail: () => Promise<ReceiptModelType | undefined>
+  all: () => Promise<ReceiptModelType[]>
+  findOrFail: (id: number) => Promise<ReceiptModelType | undefined>
+  findMany: (ids: number[]) => Promise<ReceiptModelType[]>
+  latest: (column?: keyof ReceiptsTable) => Promise<ReceiptModelType | undefined>
+  oldest: (column?: keyof ReceiptsTable) => Promise<ReceiptModelType | undefined>
+  skip: (count: number) => ReceiptModelType
+  take: (count: number) => ReceiptModelType
+  where: <V = string>(column: keyof ReceiptsTable, ...args: [V] | [Operator, V]) => ReceiptModelType
+  orWhere: (...conditions: [string, any][]) => ReceiptModelType
+  whereNotIn: <V = number>(column: keyof ReceiptsTable, values: V[]) => ReceiptModelType
+  whereBetween: <V = number>(column: keyof ReceiptsTable, range: [V, V]) => ReceiptModelType
+  whereRef: (column: keyof ReceiptsTable, ...args: string[]) => ReceiptModelType
+  when: (condition: boolean, callback: (query: ReceiptModelType) => ReceiptModelType) => ReceiptModelType
+  whereNull: (column: keyof ReceiptsTable) => ReceiptModelType
+  whereNotNull: (column: keyof ReceiptsTable) => ReceiptModelType
+  whereLike: (column: keyof ReceiptsTable, value: string) => ReceiptModelType
+  orderBy: (column: keyof ReceiptsTable, order: 'asc' | 'desc') => ReceiptModelType
+  orderByAsc: (column: keyof ReceiptsTable) => ReceiptModelType
+  orderByDesc: (column: keyof ReceiptsTable) => ReceiptModelType
+  groupBy: (column: keyof ReceiptsTable) => ReceiptModelType
+  having: <V = string>(column: keyof ReceiptsTable, operator: Operator, value: V) => ReceiptModelType
+  inRandomOrder: () => ReceiptModelType
+  whereColumn: (first: keyof ReceiptsTable, operator: Operator, second: keyof ReceiptsTable) => ReceiptModelType
+  max: (field: keyof ReceiptsTable) => Promise<number>
+  min: (field: keyof ReceiptsTable) => Promise<number>
+  avg: (field: keyof ReceiptsTable) => Promise<number>
+  sum: (field: keyof ReceiptsTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<ReceiptModelType[]>
+  pluck: <K extends keyof ReceiptModelType>(field: K) => Promise<ReceiptModelType[K][]>
+  chunk: (size: number, callback: (models: ReceiptModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: ReceiptModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newReceipt: NewReceipt) => Promise<ReceiptModelType>
+  firstOrCreate: (search: Partial<ReceiptsTable>, values?: NewReceipt) => Promise<ReceiptModelType>
+  updateOrCreate: (search: Partial<ReceiptsTable>, values?: NewReceipt) => Promise<ReceiptModelType>
+  createMany: (newReceipt: NewReceipt[]) => Promise<void>
+  forceCreate: (newReceipt: NewReceipt) => Promise<ReceiptModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof ReceiptsTable, values: V[]) => ReceiptModelType
+  distinct: (column: keyof ReceiptJsonResponse) => ReceiptModelType
+  join: (table: string, firstCol: string, secondCol: string) => ReceiptModelType
+
   // Instance methods
-  createInstance: (data: ReceiptJsonResponse) => IReceiptModel
-  create: (newReceipt: NewReceipt) => Promise<IReceiptModel>
-  update: (newReceipt: ReceiptUpdate) => Promise<IReceiptModel | undefined>
-  forceUpdate: (newReceipt: ReceiptUpdate) => Promise<IReceiptModel | undefined>
-  save: () => Promise<IReceiptModel>
+  createInstance: (data: ReceiptJsonResponse) => ReceiptModelType
+  update: (newReceipt: ReceiptUpdate) => Promise<ReceiptModelType | undefined>
+  forceUpdate: (newReceipt: ReceiptUpdate) => Promise<ReceiptModelType | undefined>
+  save: () => Promise<ReceiptModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<ReceiptJsonResponse>
   toJSON: () => ReceiptJsonResponse
-  parseResult: (model: IReceiptModel) => IReceiptModel
+  parseResult: (model: ReceiptModelType) => ReceiptModelType
 }
-
-export type ReceiptModelType = IReceiptModel & IReceiptModelStatic

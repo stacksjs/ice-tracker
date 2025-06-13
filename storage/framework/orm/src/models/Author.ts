@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { AuthorJsonResponse, AuthorModelType, AuthorsTable, AuthorUpdate, NewAuthor } from '../types/AuthorType'
+import type { AuthorJsonResponse, AuthorsTable, AuthorUpdate, NewAuthor } from '../types/AuthorType'
 import type { PostModel } from './Post'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
@@ -11,7 +11,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class AuthorModel extends BaseOrm<AuthorModel, AuthorsTable, AuthorJsonResponse> implements AuthorModelType {
+export class AuthorModel extends BaseOrm<AuthorModel, AuthorsTable, AuthorJsonResponse> {
   private readonly hidden: Array<keyof AuthorJsonResponse> = []
   private readonly fillable: Array<keyof AuthorJsonResponse> = ['name', 'email', 'uuid', 'two_factor_secret', 'public_key', 'user_id']
   private readonly guarded: Array<keyof AuthorJsonResponse> = []

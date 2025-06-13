@@ -42,87 +42,29 @@ export interface CartItemJsonResponse extends Omit<Selectable<CartItemRead>, 'pa
 export type NewCartItem = Insertable<CartItemWrite>
 export type CartItemUpdate = Updateable<CartItemWrite>
 
-export interface ICartItemModelStatic {
-  with: (relations: string[]) => ICartItemModel
-  select: (params: (keyof CartItemJsonResponse)[] | RawBuilder<string> | string) => ICartItemModel
-  find: (id: number) => Promise<ICartItemModel | undefined>
-  first: () => Promise<ICartItemModel | undefined>
-  last: () => Promise<ICartItemModel | undefined>
-  firstOrFail: () => Promise<ICartItemModel | undefined>
-  all: () => Promise<ICartItemModel[]>
-  findOrFail: (id: number) => Promise<ICartItemModel | undefined>
-  findMany: (ids: number[]) => Promise<ICartItemModel[]>
-  latest: (column?: keyof CartItemsTable) => Promise<ICartItemModel | undefined>
-  oldest: (column?: keyof CartItemsTable) => Promise<ICartItemModel | undefined>
-  skip: (count: number) => ICartItemModel
-  take: (count: number) => ICartItemModel
-  where: <V = string>(column: keyof CartItemsTable, ...args: [V] | [Operator, V]) => ICartItemModel
-  orWhere: (...conditions: [string, any][]) => ICartItemModel
-  whereNotIn: <V = number>(column: keyof CartItemsTable, values: V[]) => ICartItemModel
-  whereBetween: <V = number>(column: keyof CartItemsTable, range: [V, V]) => ICartItemModel
-  whereRef: (column: keyof CartItemsTable, ...args: string[]) => ICartItemModel
-  when: (condition: boolean, callback: (query: ICartItemModel) => ICartItemModel) => ICartItemModel
-  whereNull: (column: keyof CartItemsTable) => ICartItemModel
-  whereNotNull: (column: keyof CartItemsTable) => ICartItemModel
-  whereLike: (column: keyof CartItemsTable, value: string) => ICartItemModel
-  orderBy: (column: keyof CartItemsTable, order: 'asc' | 'desc') => ICartItemModel
-  orderByAsc: (column: keyof CartItemsTable) => ICartItemModel
-  orderByDesc: (column: keyof CartItemsTable) => ICartItemModel
-  groupBy: (column: keyof CartItemsTable) => ICartItemModel
-  having: <V = string>(column: keyof CartItemsTable, operator: Operator, value: V) => ICartItemModel
-  inRandomOrder: () => ICartItemModel
-  whereColumn: (first: keyof CartItemsTable, operator: Operator, second: keyof CartItemsTable) => ICartItemModel
-  max: (field: keyof CartItemsTable) => Promise<number>
-  min: (field: keyof CartItemsTable) => Promise<number>
-  avg: (field: keyof CartItemsTable) => Promise<number>
-  sum: (field: keyof CartItemsTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<ICartItemModel[]>
-  pluck: <K extends keyof ICartItemModel>(field: K) => Promise<ICartItemModel[K][]>
-  chunk: (size: number, callback: (models: ICartItemModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: ICartItemModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newCartItem: NewCartItem) => Promise<ICartItemModel>
-  firstOrCreate: (search: Partial<CartItemsTable>, values?: NewCartItem) => Promise<ICartItemModel>
-  updateOrCreate: (search: Partial<CartItemsTable>, values?: NewCartItem) => Promise<ICartItemModel>
-  createMany: (newCartItem: NewCartItem[]) => Promise<void>
-  forceCreate: (newCartItem: NewCartItem) => Promise<ICartItemModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof CartItemsTable, values: V[]) => ICartItemModel
-  distinct: (column: keyof CartItemJsonResponse) => ICartItemModel
-  join: (table: string, firstCol: string, secondCol: string) => ICartItemModel
-}
-
-export interface ICartItemModel {
+export interface CartItemModelType {
   // Properties
   readonly id: number
   get quantity(): number
   set quantity(value: number)
-  get unit_price(): number
-  set unit_price(value: number)
-  get total_price(): number
-  set total_price(value: number)
-  get tax_rate(): number | undefined
-  set tax_rate(value: number)
-  get tax_amount(): number | undefined
-  set tax_amount(value: number)
-  get discount_percentage(): number | undefined
-  set discount_percentage(value: number)
-  get discount_amount(): number | undefined
-  set discount_amount(value: number)
-  get product_name(): string
-  set product_name(value: string)
-  get product_sku(): string | undefined
-  set product_sku(value: string)
-  get product_image(): string | undefined
-  set product_image(value: string)
+  get unitPrice(): number
+  set unitPrice(value: number)
+  get totalPrice(): number
+  set totalPrice(value: number)
+  get taxRate(): number | undefined
+  set taxRate(value: number)
+  get taxAmount(): number | undefined
+  set taxAmount(value: number)
+  get discountPercentage(): number | undefined
+  set discountPercentage(value: number)
+  get discountAmount(): number | undefined
+  set discountAmount(value: number)
+  get productName(): string
+  set productName(value: string)
+  get productSku(): string | undefined
+  set productSku(value: string)
+  get productImage(): string | undefined
+  set productImage(value: string)
   get notes(): string | undefined
   set notes(value: string)
   get uuid(): string | undefined
@@ -131,16 +73,70 @@ export interface ICartItemModel {
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => CartItemModelType
+  select: (params: (keyof CartItemJsonResponse)[] | RawBuilder<string> | string) => CartItemModelType
+  find: (id: number) => Promise<CartItemModelType | undefined>
+  first: () => Promise<CartItemModelType | undefined>
+  last: () => Promise<CartItemModelType | undefined>
+  firstOrFail: () => Promise<CartItemModelType | undefined>
+  all: () => Promise<CartItemModelType[]>
+  findOrFail: (id: number) => Promise<CartItemModelType | undefined>
+  findMany: (ids: number[]) => Promise<CartItemModelType[]>
+  latest: (column?: keyof CartItemsTable) => Promise<CartItemModelType | undefined>
+  oldest: (column?: keyof CartItemsTable) => Promise<CartItemModelType | undefined>
+  skip: (count: number) => CartItemModelType
+  take: (count: number) => CartItemModelType
+  where: <V = string>(column: keyof CartItemsTable, ...args: [V] | [Operator, V]) => CartItemModelType
+  orWhere: (...conditions: [string, any][]) => CartItemModelType
+  whereNotIn: <V = number>(column: keyof CartItemsTable, values: V[]) => CartItemModelType
+  whereBetween: <V = number>(column: keyof CartItemsTable, range: [V, V]) => CartItemModelType
+  whereRef: (column: keyof CartItemsTable, ...args: string[]) => CartItemModelType
+  when: (condition: boolean, callback: (query: CartItemModelType) => CartItemModelType) => CartItemModelType
+  whereNull: (column: keyof CartItemsTable) => CartItemModelType
+  whereNotNull: (column: keyof CartItemsTable) => CartItemModelType
+  whereLike: (column: keyof CartItemsTable, value: string) => CartItemModelType
+  orderBy: (column: keyof CartItemsTable, order: 'asc' | 'desc') => CartItemModelType
+  orderByAsc: (column: keyof CartItemsTable) => CartItemModelType
+  orderByDesc: (column: keyof CartItemsTable) => CartItemModelType
+  groupBy: (column: keyof CartItemsTable) => CartItemModelType
+  having: <V = string>(column: keyof CartItemsTable, operator: Operator, value: V) => CartItemModelType
+  inRandomOrder: () => CartItemModelType
+  whereColumn: (first: keyof CartItemsTable, operator: Operator, second: keyof CartItemsTable) => CartItemModelType
+  max: (field: keyof CartItemsTable) => Promise<number>
+  min: (field: keyof CartItemsTable) => Promise<number>
+  avg: (field: keyof CartItemsTable) => Promise<number>
+  sum: (field: keyof CartItemsTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<CartItemModelType[]>
+  pluck: <K extends keyof CartItemModelType>(field: K) => Promise<CartItemModelType[K][]>
+  chunk: (size: number, callback: (models: CartItemModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: CartItemModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newCartItem: NewCartItem) => Promise<CartItemModelType>
+  firstOrCreate: (search: Partial<CartItemsTable>, values?: NewCartItem) => Promise<CartItemModelType>
+  updateOrCreate: (search: Partial<CartItemsTable>, values?: NewCartItem) => Promise<CartItemModelType>
+  createMany: (newCartItem: NewCartItem[]) => Promise<void>
+  forceCreate: (newCartItem: NewCartItem) => Promise<CartItemModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof CartItemsTable, values: V[]) => CartItemModelType
+  distinct: (column: keyof CartItemJsonResponse) => CartItemModelType
+  join: (table: string, firstCol: string, secondCol: string) => CartItemModelType
+
   // Instance methods
-  createInstance: (data: CartItemJsonResponse) => ICartItemModel
-  create: (newCartItem: NewCartItem) => Promise<ICartItemModel>
-  update: (newCartItem: CartItemUpdate) => Promise<ICartItemModel | undefined>
-  forceUpdate: (newCartItem: CartItemUpdate) => Promise<ICartItemModel | undefined>
-  save: () => Promise<ICartItemModel>
+  createInstance: (data: CartItemJsonResponse) => CartItemModelType
+  update: (newCartItem: CartItemUpdate) => Promise<CartItemModelType | undefined>
+  forceUpdate: (newCartItem: CartItemUpdate) => Promise<CartItemModelType | undefined>
+  save: () => Promise<CartItemModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<CartItemJsonResponse>
   toJSON: () => CartItemJsonResponse
-  parseResult: (model: ICartItemModel) => ICartItemModel
+  parseResult: (model: CartItemModelType) => CartItemModelType
 }
-
-export type CartItemModelType = ICartItemModel & ICartItemModelStatic

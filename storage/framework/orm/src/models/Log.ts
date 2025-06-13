@@ -1,13 +1,13 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { LogJsonResponse, LogModelType, LogsTable, LogUpdate, NewLog } from '../types/LogType'
+import type { LogJsonResponse, LogsTable, LogUpdate, NewLog } from '../types/LogType'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> implements LogModelType {
+export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
   private readonly hidden: Array<keyof LogJsonResponse> = []
   private readonly fillable: Array<keyof LogJsonResponse> = ['timestamp', 'type', 'source', 'message', 'project', 'stacktrace', 'file', 'uuid']
   private readonly guarded: Array<keyof LogJsonResponse> = []

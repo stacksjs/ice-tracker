@@ -37,46 +37,67 @@ export interface CategoryJsonResponse extends Omit<Selectable<CategoryRead>, 'pa
 export type NewCategory = Insertable<CategoryWrite>
 export type CategoryUpdate = Updateable<CategoryWrite>
 
-export interface ICategoryModelStatic {
-  with: (relations: string[]) => ICategoryModel
-  select: (params: (keyof CategoryJsonResponse)[] | RawBuilder<string> | string) => ICategoryModel
-  find: (id: number) => Promise<ICategoryModel | undefined>
-  first: () => Promise<ICategoryModel | undefined>
-  last: () => Promise<ICategoryModel | undefined>
-  firstOrFail: () => Promise<ICategoryModel | undefined>
-  all: () => Promise<ICategoryModel[]>
-  findOrFail: (id: number) => Promise<ICategoryModel | undefined>
-  findMany: (ids: number[]) => Promise<ICategoryModel[]>
-  latest: (column?: keyof CategoriesTable) => Promise<ICategoryModel | undefined>
-  oldest: (column?: keyof CategoriesTable) => Promise<ICategoryModel | undefined>
-  skip: (count: number) => ICategoryModel
-  take: (count: number) => ICategoryModel
-  where: <V = string>(column: keyof CategoriesTable, ...args: [V] | [Operator, V]) => ICategoryModel
-  orWhere: (...conditions: [string, any][]) => ICategoryModel
-  whereNotIn: <V = number>(column: keyof CategoriesTable, values: V[]) => ICategoryModel
-  whereBetween: <V = number>(column: keyof CategoriesTable, range: [V, V]) => ICategoryModel
-  whereRef: (column: keyof CategoriesTable, ...args: string[]) => ICategoryModel
-  when: (condition: boolean, callback: (query: ICategoryModel) => ICategoryModel) => ICategoryModel
-  whereNull: (column: keyof CategoriesTable) => ICategoryModel
-  whereNotNull: (column: keyof CategoriesTable) => ICategoryModel
-  whereLike: (column: keyof CategoriesTable, value: string) => ICategoryModel
-  orderBy: (column: keyof CategoriesTable, order: 'asc' | 'desc') => ICategoryModel
-  orderByAsc: (column: keyof CategoriesTable) => ICategoryModel
-  orderByDesc: (column: keyof CategoriesTable) => ICategoryModel
-  groupBy: (column: keyof CategoriesTable) => ICategoryModel
-  having: <V = string>(column: keyof CategoriesTable, operator: Operator, value: V) => ICategoryModel
-  inRandomOrder: () => ICategoryModel
-  whereColumn: (first: keyof CategoriesTable, operator: Operator, second: keyof CategoriesTable) => ICategoryModel
+export interface CategoryModelType {
+  // Properties
+  readonly id: number
+  get name(): string
+  set name(value: string)
+  get description(): string | undefined
+  set description(value: string)
+  get imageUrl(): string | undefined
+  set imageUrl(value: string)
+  get isActive(): boolean | undefined
+  set isActive(value: boolean)
+  get parentCategoryId(): string | undefined
+  set parentCategoryId(value: string)
+  get displayOrder(): number
+  set displayOrder(value: number)
+  get uuid(): string | undefined
+  set uuid(value: string)
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
+  // Static methods
+  with: (relations: string[]) => CategoryModelType
+  select: (params: (keyof CategoryJsonResponse)[] | RawBuilder<string> | string) => CategoryModelType
+  find: (id: number) => Promise<CategoryModelType | undefined>
+  first: () => Promise<CategoryModelType | undefined>
+  last: () => Promise<CategoryModelType | undefined>
+  firstOrFail: () => Promise<CategoryModelType | undefined>
+  all: () => Promise<CategoryModelType[]>
+  findOrFail: (id: number) => Promise<CategoryModelType | undefined>
+  findMany: (ids: number[]) => Promise<CategoryModelType[]>
+  latest: (column?: keyof CategoriesTable) => Promise<CategoryModelType | undefined>
+  oldest: (column?: keyof CategoriesTable) => Promise<CategoryModelType | undefined>
+  skip: (count: number) => CategoryModelType
+  take: (count: number) => CategoryModelType
+  where: <V = string>(column: keyof CategoriesTable, ...args: [V] | [Operator, V]) => CategoryModelType
+  orWhere: (...conditions: [string, any][]) => CategoryModelType
+  whereNotIn: <V = number>(column: keyof CategoriesTable, values: V[]) => CategoryModelType
+  whereBetween: <V = number>(column: keyof CategoriesTable, range: [V, V]) => CategoryModelType
+  whereRef: (column: keyof CategoriesTable, ...args: string[]) => CategoryModelType
+  when: (condition: boolean, callback: (query: CategoryModelType) => CategoryModelType) => CategoryModelType
+  whereNull: (column: keyof CategoriesTable) => CategoryModelType
+  whereNotNull: (column: keyof CategoriesTable) => CategoryModelType
+  whereLike: (column: keyof CategoriesTable, value: string) => CategoryModelType
+  orderBy: (column: keyof CategoriesTable, order: 'asc' | 'desc') => CategoryModelType
+  orderByAsc: (column: keyof CategoriesTable) => CategoryModelType
+  orderByDesc: (column: keyof CategoriesTable) => CategoryModelType
+  groupBy: (column: keyof CategoriesTable) => CategoryModelType
+  having: <V = string>(column: keyof CategoriesTable, operator: Operator, value: V) => CategoryModelType
+  inRandomOrder: () => CategoryModelType
+  whereColumn: (first: keyof CategoriesTable, operator: Operator, second: keyof CategoriesTable) => CategoryModelType
   max: (field: keyof CategoriesTable) => Promise<number>
   min: (field: keyof CategoriesTable) => Promise<number>
   avg: (field: keyof CategoriesTable) => Promise<number>
   sum: (field: keyof CategoriesTable) => Promise<number>
   count: () => Promise<number>
-  get: () => Promise<ICategoryModel[]>
-  pluck: <K extends keyof ICategoryModel>(field: K) => Promise<ICategoryModel[K][]>
-  chunk: (size: number, callback: (models: ICategoryModel[]) => Promise<void>) => Promise<void>
+  get: () => Promise<CategoryModelType[]>
+  pluck: <K extends keyof CategoryModelType>(field: K) => Promise<CategoryModelType[K][]>
+  chunk: (size: number, callback: (models: CategoryModelType[]) => Promise<void>) => Promise<void>
   paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: ICategoryModel[]
+    data: CategoryModelType[]
     paging: {
       total_records: number
       page: number
@@ -84,48 +105,23 @@ export interface ICategoryModelStatic {
     }
     next_cursor: number | null
   }>
-  create: (newCategory: NewCategory) => Promise<ICategoryModel>
-  firstOrCreate: (search: Partial<CategoriesTable>, values?: NewCategory) => Promise<ICategoryModel>
-  updateOrCreate: (search: Partial<CategoriesTable>, values?: NewCategory) => Promise<ICategoryModel>
+  create: (newCategory: NewCategory) => Promise<CategoryModelType>
+  firstOrCreate: (search: Partial<CategoriesTable>, values?: NewCategory) => Promise<CategoryModelType>
+  updateOrCreate: (search: Partial<CategoriesTable>, values?: NewCategory) => Promise<CategoryModelType>
   createMany: (newCategory: NewCategory[]) => Promise<void>
-  forceCreate: (newCategory: NewCategory) => Promise<ICategoryModel>
+  forceCreate: (newCategory: NewCategory) => Promise<CategoryModelType>
   remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof CategoriesTable, values: V[]) => ICategoryModel
-  distinct: (column: keyof CategoryJsonResponse) => ICategoryModel
-  join: (table: string, firstCol: string, secondCol: string) => ICategoryModel
-}
-
-export interface ICategoryModel {
-  // Properties
-  readonly id: number
-  get name(): string
-  set name(value: string)
-  get description(): string | undefined
-  set description(value: string)
-  get image_url(): string | undefined
-  set image_url(value: string)
-  get is_active(): boolean | undefined
-  set is_active(value: boolean)
-  get parent_category_id(): string | undefined
-  set parent_category_id(value: string)
-  get display_order(): number
-  set display_order(value: number)
-  get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
+  whereIn: <V = number>(column: keyof CategoriesTable, values: V[]) => CategoryModelType
+  distinct: (column: keyof CategoryJsonResponse) => CategoryModelType
+  join: (table: string, firstCol: string, secondCol: string) => CategoryModelType
 
   // Instance methods
-  createInstance: (data: CategoryJsonResponse) => ICategoryModel
-  create: (newCategory: NewCategory) => Promise<ICategoryModel>
-  update: (newCategory: CategoryUpdate) => Promise<ICategoryModel | undefined>
-  forceUpdate: (newCategory: CategoryUpdate) => Promise<ICategoryModel | undefined>
-  save: () => Promise<ICategoryModel>
+  createInstance: (data: CategoryJsonResponse) => CategoryModelType
+  update: (newCategory: CategoryUpdate) => Promise<CategoryModelType | undefined>
+  forceUpdate: (newCategory: CategoryUpdate) => Promise<CategoryModelType | undefined>
+  save: () => Promise<CategoryModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<CategoryJsonResponse>
   toJSON: () => CategoryJsonResponse
-  parseResult: (model: ICategoryModel) => ICategoryModel
+  parseResult: (model: CategoryModelType) => CategoryModelType
 }
-
-export type CategoryModelType = ICategoryModel & ICategoryModelStatic

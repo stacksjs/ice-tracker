@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { DriverJsonResponse, DriverModelType, DriversTable, DriverUpdate, NewDriver } from '../types/DriverType'
+import type { DriverJsonResponse, DriversTable, DriverUpdate, NewDriver } from '../types/DriverType'
 import type { DeliveryRouteModel } from './DeliveryRoute'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
@@ -11,7 +11,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonResponse> implements DriverModelType {
+export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonResponse> {
   private readonly hidden: Array<keyof DriverJsonResponse> = []
   private readonly fillable: Array<keyof DriverJsonResponse> = ['name', 'phone', 'vehicle_number', 'license', 'status', 'uuid', 'user_id']
   private readonly guarded: Array<keyof DriverJsonResponse> = []

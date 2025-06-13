@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { NewProductItem, ProductItemJsonResponse, ProductItemModelType, ProductItemsTable, ProductItemUpdate } from '../types/ProductItemType'
+import type { NewProductItem, ProductItemJsonResponse, ProductItemsTable, ProductItemUpdate } from '../types/ProductItemType'
 import type { CategoryModel } from './Category'
 import type { ManufacturerModel } from './Manufacturer'
 import type { ProductModel } from './Product'
@@ -13,7 +13,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTable, ProductItemJsonResponse> implements ProductItemModelType {
+export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTable, ProductItemJsonResponse> {
   private readonly hidden: Array<keyof ProductItemJsonResponse> = []
   private readonly fillable: Array<keyof ProductItemJsonResponse> = ['name', 'size', 'color', 'price', 'image_url', 'is_available', 'inventory_count', 'sku', 'custom_options', 'uuid']
   private readonly guarded: Array<keyof ProductItemJsonResponse> = []

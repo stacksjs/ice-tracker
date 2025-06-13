@@ -13,6 +13,7 @@ export interface PersonalAccessTokensTable {
   ip_address?: string
   device_name?: string
   is_single_use?: boolean
+  uuid?: string
   created_at?: string
   updated_at?: string
 }
@@ -40,46 +41,75 @@ export interface PersonalAccessTokenJsonResponse extends Omit<Selectable<Persona
 export type NewPersonalAccessToken = Insertable<PersonalAccessTokenWrite>
 export type PersonalAccessTokenUpdate = Updateable<PersonalAccessTokenWrite>
 
-export interface IPersonalAccessTokenModelStatic {
-  with: (relations: string[]) => IPersonalAccessTokenModel
-  select: (params: (keyof PersonalAccessTokenJsonResponse)[] | RawBuilder<string> | string) => IPersonalAccessTokenModel
-  find: (id: number) => Promise<IPersonalAccessTokenModel | undefined>
-  first: () => Promise<IPersonalAccessTokenModel | undefined>
-  last: () => Promise<IPersonalAccessTokenModel | undefined>
-  firstOrFail: () => Promise<IPersonalAccessTokenModel | undefined>
-  all: () => Promise<IPersonalAccessTokenModel[]>
-  findOrFail: (id: number) => Promise<IPersonalAccessTokenModel | undefined>
-  findMany: (ids: number[]) => Promise<IPersonalAccessTokenModel[]>
-  latest: (column?: keyof PersonalAccessTokensTable) => Promise<IPersonalAccessTokenModel | undefined>
-  oldest: (column?: keyof PersonalAccessTokensTable) => Promise<IPersonalAccessTokenModel | undefined>
-  skip: (count: number) => IPersonalAccessTokenModel
-  take: (count: number) => IPersonalAccessTokenModel
-  where: <V = string>(column: keyof PersonalAccessTokensTable, ...args: [V] | [Operator, V]) => IPersonalAccessTokenModel
-  orWhere: (...conditions: [string, any][]) => IPersonalAccessTokenModel
-  whereNotIn: <V = number>(column: keyof PersonalAccessTokensTable, values: V[]) => IPersonalAccessTokenModel
-  whereBetween: <V = number>(column: keyof PersonalAccessTokensTable, range: [V, V]) => IPersonalAccessTokenModel
-  whereRef: (column: keyof PersonalAccessTokensTable, ...args: string[]) => IPersonalAccessTokenModel
-  when: (condition: boolean, callback: (query: IPersonalAccessTokenModel) => IPersonalAccessTokenModel) => IPersonalAccessTokenModel
-  whereNull: (column: keyof PersonalAccessTokensTable) => IPersonalAccessTokenModel
-  whereNotNull: (column: keyof PersonalAccessTokensTable) => IPersonalAccessTokenModel
-  whereLike: (column: keyof PersonalAccessTokensTable, value: string) => IPersonalAccessTokenModel
-  orderBy: (column: keyof PersonalAccessTokensTable, order: 'asc' | 'desc') => IPersonalAccessTokenModel
-  orderByAsc: (column: keyof PersonalAccessTokensTable) => IPersonalAccessTokenModel
-  orderByDesc: (column: keyof PersonalAccessTokensTable) => IPersonalAccessTokenModel
-  groupBy: (column: keyof PersonalAccessTokensTable) => IPersonalAccessTokenModel
-  having: <V = string>(column: keyof PersonalAccessTokensTable, operator: Operator, value: V) => IPersonalAccessTokenModel
-  inRandomOrder: () => IPersonalAccessTokenModel
-  whereColumn: (first: keyof PersonalAccessTokensTable, operator: Operator, second: keyof PersonalAccessTokensTable) => IPersonalAccessTokenModel
+export interface PersonalAccessTokenModelType {
+  // Properties
+  readonly id: number
+  get name(): string
+  set name(value: string)
+  get token(): string
+  set token(value: string)
+  get plainTextToken(): string
+  set plainTextToken(value: string)
+  get abilities(): string
+  set abilities(value: string)
+  get lastUsedAt(): Date | string | undefined
+  set lastUsedAt(value: Date | string)
+  get expiresAt(): Date | string | undefined
+  set expiresAt(value: Date | string)
+  get revokedAt(): Date | string | undefined
+  set revokedAt(value: Date | string)
+  get ipAddress(): string | undefined
+  set ipAddress(value: string)
+  get deviceName(): string | undefined
+  set deviceName(value: string)
+  get isSingleUse(): boolean | undefined
+  set isSingleUse(value: boolean)
+  get uuid(): string | undefined
+  set uuid(value: string)
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
+  // Static methods
+  with: (relations: string[]) => PersonalAccessTokenModelType
+  select: (params: (keyof PersonalAccessTokenJsonResponse)[] | RawBuilder<string> | string) => PersonalAccessTokenModelType
+  find: (id: number) => Promise<PersonalAccessTokenModelType | undefined>
+  first: () => Promise<PersonalAccessTokenModelType | undefined>
+  last: () => Promise<PersonalAccessTokenModelType | undefined>
+  firstOrFail: () => Promise<PersonalAccessTokenModelType | undefined>
+  all: () => Promise<PersonalAccessTokenModelType[]>
+  findOrFail: (id: number) => Promise<PersonalAccessTokenModelType | undefined>
+  findMany: (ids: number[]) => Promise<PersonalAccessTokenModelType[]>
+  latest: (column?: keyof PersonalAccessTokensTable) => Promise<PersonalAccessTokenModelType | undefined>
+  oldest: (column?: keyof PersonalAccessTokensTable) => Promise<PersonalAccessTokenModelType | undefined>
+  skip: (count: number) => PersonalAccessTokenModelType
+  take: (count: number) => PersonalAccessTokenModelType
+  where: <V = string>(column: keyof PersonalAccessTokensTable, ...args: [V] | [Operator, V]) => PersonalAccessTokenModelType
+  orWhere: (...conditions: [string, any][]) => PersonalAccessTokenModelType
+  whereNotIn: <V = number>(column: keyof PersonalAccessTokensTable, values: V[]) => PersonalAccessTokenModelType
+  whereBetween: <V = number>(column: keyof PersonalAccessTokensTable, range: [V, V]) => PersonalAccessTokenModelType
+  whereRef: (column: keyof PersonalAccessTokensTable, ...args: string[]) => PersonalAccessTokenModelType
+  when: (condition: boolean, callback: (query: PersonalAccessTokenModelType) => PersonalAccessTokenModelType) => PersonalAccessTokenModelType
+  whereNull: (column: keyof PersonalAccessTokensTable) => PersonalAccessTokenModelType
+  whereNotNull: (column: keyof PersonalAccessTokensTable) => PersonalAccessTokenModelType
+  whereLike: (column: keyof PersonalAccessTokensTable, value: string) => PersonalAccessTokenModelType
+  orderBy: (column: keyof PersonalAccessTokensTable, order: 'asc' | 'desc') => PersonalAccessTokenModelType
+  orderByAsc: (column: keyof PersonalAccessTokensTable) => PersonalAccessTokenModelType
+  orderByDesc: (column: keyof PersonalAccessTokensTable) => PersonalAccessTokenModelType
+  groupBy: (column: keyof PersonalAccessTokensTable) => PersonalAccessTokenModelType
+  having: <V = string>(column: keyof PersonalAccessTokensTable, operator: Operator, value: V) => PersonalAccessTokenModelType
+  inRandomOrder: () => PersonalAccessTokenModelType
+  whereColumn: (first: keyof PersonalAccessTokensTable, operator: Operator, second: keyof PersonalAccessTokensTable) => PersonalAccessTokenModelType
   max: (field: keyof PersonalAccessTokensTable) => Promise<number>
   min: (field: keyof PersonalAccessTokensTable) => Promise<number>
   avg: (field: keyof PersonalAccessTokensTable) => Promise<number>
   sum: (field: keyof PersonalAccessTokensTable) => Promise<number>
   count: () => Promise<number>
-  get: () => Promise<IPersonalAccessTokenModel[]>
-  pluck: <K extends keyof IPersonalAccessTokenModel>(field: K) => Promise<IPersonalAccessTokenModel[K][]>
-  chunk: (size: number, callback: (models: IPersonalAccessTokenModel[]) => Promise<void>) => Promise<void>
+  get: () => Promise<PersonalAccessTokenModelType[]>
+  pluck: <K extends keyof PersonalAccessTokenModelType>(field: K) => Promise<PersonalAccessTokenModelType[K][]>
+  chunk: (size: number, callback: (models: PersonalAccessTokenModelType[]) => Promise<void>) => Promise<void>
   paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IPersonalAccessTokenModel[]
+    data: PersonalAccessTokenModelType[]
     paging: {
       total_records: number
       page: number
@@ -87,54 +117,23 @@ export interface IPersonalAccessTokenModelStatic {
     }
     next_cursor: number | null
   }>
-  create: (newPersonalAccessToken: NewPersonalAccessToken) => Promise<IPersonalAccessTokenModel>
-  firstOrCreate: (search: Partial<PersonalAccessTokensTable>, values?: NewPersonalAccessToken) => Promise<IPersonalAccessTokenModel>
-  updateOrCreate: (search: Partial<PersonalAccessTokensTable>, values?: NewPersonalAccessToken) => Promise<IPersonalAccessTokenModel>
+  create: (newPersonalAccessToken: NewPersonalAccessToken) => Promise<PersonalAccessTokenModelType>
+  firstOrCreate: (search: Partial<PersonalAccessTokensTable>, values?: NewPersonalAccessToken) => Promise<PersonalAccessTokenModelType>
+  updateOrCreate: (search: Partial<PersonalAccessTokensTable>, values?: NewPersonalAccessToken) => Promise<PersonalAccessTokenModelType>
   createMany: (newPersonalAccessToken: NewPersonalAccessToken[]) => Promise<void>
-  forceCreate: (newPersonalAccessToken: NewPersonalAccessToken) => Promise<IPersonalAccessTokenModel>
+  forceCreate: (newPersonalAccessToken: NewPersonalAccessToken) => Promise<PersonalAccessTokenModelType>
   remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof PersonalAccessTokensTable, values: V[]) => IPersonalAccessTokenModel
-  distinct: (column: keyof PersonalAccessTokenJsonResponse) => IPersonalAccessTokenModel
-  join: (table: string, firstCol: string, secondCol: string) => IPersonalAccessTokenModel
-}
-
-export interface IPersonalAccessTokenModel {
-  // Properties
-  readonly id: number
-  get name(): string
-  set name(value: string)
-  get token(): string
-  set token(value: string)
-  get plain_text_token(): string
-  set plain_text_token(value: string)
-  get abilities(): string
-  set abilities(value: string)
-  get last_used_at(): Date | string | undefined
-  set last_used_at(value: Date | string)
-  get expires_at(): Date | string | undefined
-  set expires_at(value: Date | string)
-  get revoked_at(): Date | string | undefined
-  set revoked_at(value: Date | string)
-  get ip_address(): string | undefined
-  set ip_address(value: string)
-  get device_name(): string | undefined
-  set device_name(value: string)
-  get is_single_use(): boolean | undefined
-  set is_single_use(value: boolean)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
+  whereIn: <V = number>(column: keyof PersonalAccessTokensTable, values: V[]) => PersonalAccessTokenModelType
+  distinct: (column: keyof PersonalAccessTokenJsonResponse) => PersonalAccessTokenModelType
+  join: (table: string, firstCol: string, secondCol: string) => PersonalAccessTokenModelType
 
   // Instance methods
-  createInstance: (data: PersonalAccessTokenJsonResponse) => IPersonalAccessTokenModel
-  create: (newPersonalAccessToken: NewPersonalAccessToken) => Promise<IPersonalAccessTokenModel>
-  update: (newPersonalAccessToken: PersonalAccessTokenUpdate) => Promise<IPersonalAccessTokenModel | undefined>
-  forceUpdate: (newPersonalAccessToken: PersonalAccessTokenUpdate) => Promise<IPersonalAccessTokenModel | undefined>
-  save: () => Promise<IPersonalAccessTokenModel>
+  createInstance: (data: PersonalAccessTokenJsonResponse) => PersonalAccessTokenModelType
+  update: (newPersonalAccessToken: PersonalAccessTokenUpdate) => Promise<PersonalAccessTokenModelType | undefined>
+  forceUpdate: (newPersonalAccessToken: PersonalAccessTokenUpdate) => Promise<PersonalAccessTokenModelType | undefined>
+  save: () => Promise<PersonalAccessTokenModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<PersonalAccessTokenJsonResponse>
   toJSON: () => PersonalAccessTokenJsonResponse
-  parseResult: (model: IPersonalAccessTokenModel) => IPersonalAccessTokenModel
+  parseResult: (model: PersonalAccessTokenModelType) => PersonalAccessTokenModelType
 }
-
-export type PersonalAccessTokenModelType = IPersonalAccessTokenModel & IPersonalAccessTokenModelStatic

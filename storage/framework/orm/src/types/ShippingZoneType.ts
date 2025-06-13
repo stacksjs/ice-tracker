@@ -36,65 +36,7 @@ export interface ShippingZoneJsonResponse extends Omit<Selectable<ShippingZoneRe
 export type NewShippingZone = Insertable<ShippingZoneWrite>
 export type ShippingZoneUpdate = Updateable<ShippingZoneWrite>
 
-export interface IShippingZoneModelStatic {
-  with: (relations: string[]) => IShippingZoneModel
-  select: (params: (keyof ShippingZoneJsonResponse)[] | RawBuilder<string> | string) => IShippingZoneModel
-  find: (id: number) => Promise<IShippingZoneModel | undefined>
-  first: () => Promise<IShippingZoneModel | undefined>
-  last: () => Promise<IShippingZoneModel | undefined>
-  firstOrFail: () => Promise<IShippingZoneModel | undefined>
-  all: () => Promise<IShippingZoneModel[]>
-  findOrFail: (id: number) => Promise<IShippingZoneModel | undefined>
-  findMany: (ids: number[]) => Promise<IShippingZoneModel[]>
-  latest: (column?: keyof ShippingZonesTable) => Promise<IShippingZoneModel | undefined>
-  oldest: (column?: keyof ShippingZonesTable) => Promise<IShippingZoneModel | undefined>
-  skip: (count: number) => IShippingZoneModel
-  take: (count: number) => IShippingZoneModel
-  where: <V = string>(column: keyof ShippingZonesTable, ...args: [V] | [Operator, V]) => IShippingZoneModel
-  orWhere: (...conditions: [string, any][]) => IShippingZoneModel
-  whereNotIn: <V = number>(column: keyof ShippingZonesTable, values: V[]) => IShippingZoneModel
-  whereBetween: <V = number>(column: keyof ShippingZonesTable, range: [V, V]) => IShippingZoneModel
-  whereRef: (column: keyof ShippingZonesTable, ...args: string[]) => IShippingZoneModel
-  when: (condition: boolean, callback: (query: IShippingZoneModel) => IShippingZoneModel) => IShippingZoneModel
-  whereNull: (column: keyof ShippingZonesTable) => IShippingZoneModel
-  whereNotNull: (column: keyof ShippingZonesTable) => IShippingZoneModel
-  whereLike: (column: keyof ShippingZonesTable, value: string) => IShippingZoneModel
-  orderBy: (column: keyof ShippingZonesTable, order: 'asc' | 'desc') => IShippingZoneModel
-  orderByAsc: (column: keyof ShippingZonesTable) => IShippingZoneModel
-  orderByDesc: (column: keyof ShippingZonesTable) => IShippingZoneModel
-  groupBy: (column: keyof ShippingZonesTable) => IShippingZoneModel
-  having: <V = string>(column: keyof ShippingZonesTable, operator: Operator, value: V) => IShippingZoneModel
-  inRandomOrder: () => IShippingZoneModel
-  whereColumn: (first: keyof ShippingZonesTable, operator: Operator, second: keyof ShippingZonesTable) => IShippingZoneModel
-  max: (field: keyof ShippingZonesTable) => Promise<number>
-  min: (field: keyof ShippingZonesTable) => Promise<number>
-  avg: (field: keyof ShippingZonesTable) => Promise<number>
-  sum: (field: keyof ShippingZonesTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<IShippingZoneModel[]>
-  pluck: <K extends keyof IShippingZoneModel>(field: K) => Promise<IShippingZoneModel[K][]>
-  chunk: (size: number, callback: (models: IShippingZoneModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IShippingZoneModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newShippingZone: NewShippingZone) => Promise<IShippingZoneModel>
-  firstOrCreate: (search: Partial<ShippingZonesTable>, values?: NewShippingZone) => Promise<IShippingZoneModel>
-  updateOrCreate: (search: Partial<ShippingZonesTable>, values?: NewShippingZone) => Promise<IShippingZoneModel>
-  createMany: (newShippingZone: NewShippingZone[]) => Promise<void>
-  forceCreate: (newShippingZone: NewShippingZone) => Promise<IShippingZoneModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof ShippingZonesTable, values: V[]) => IShippingZoneModel
-  distinct: (column: keyof ShippingZoneJsonResponse) => IShippingZoneModel
-  join: (table: string, firstCol: string, secondCol: string) => IShippingZoneModel
-}
-
-export interface IShippingZoneModel {
+export interface ShippingZoneModelType {
   // Properties
   readonly id: number
   get name(): string
@@ -103,8 +45,8 @@ export interface IShippingZoneModel {
   set countries(value: string)
   get regions(): string | undefined
   set regions(value: string)
-  get postal_codes(): string | undefined
-  set postal_codes(value: string)
+  get postalCodes(): string | undefined
+  set postalCodes(value: string)
   get status(): string | string[]
   set status(value: string | string[])
   get uuid(): string | undefined
@@ -113,16 +55,70 @@ export interface IShippingZoneModel {
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => ShippingZoneModelType
+  select: (params: (keyof ShippingZoneJsonResponse)[] | RawBuilder<string> | string) => ShippingZoneModelType
+  find: (id: number) => Promise<ShippingZoneModelType | undefined>
+  first: () => Promise<ShippingZoneModelType | undefined>
+  last: () => Promise<ShippingZoneModelType | undefined>
+  firstOrFail: () => Promise<ShippingZoneModelType | undefined>
+  all: () => Promise<ShippingZoneModelType[]>
+  findOrFail: (id: number) => Promise<ShippingZoneModelType | undefined>
+  findMany: (ids: number[]) => Promise<ShippingZoneModelType[]>
+  latest: (column?: keyof ShippingZonesTable) => Promise<ShippingZoneModelType | undefined>
+  oldest: (column?: keyof ShippingZonesTable) => Promise<ShippingZoneModelType | undefined>
+  skip: (count: number) => ShippingZoneModelType
+  take: (count: number) => ShippingZoneModelType
+  where: <V = string>(column: keyof ShippingZonesTable, ...args: [V] | [Operator, V]) => ShippingZoneModelType
+  orWhere: (...conditions: [string, any][]) => ShippingZoneModelType
+  whereNotIn: <V = number>(column: keyof ShippingZonesTable, values: V[]) => ShippingZoneModelType
+  whereBetween: <V = number>(column: keyof ShippingZonesTable, range: [V, V]) => ShippingZoneModelType
+  whereRef: (column: keyof ShippingZonesTable, ...args: string[]) => ShippingZoneModelType
+  when: (condition: boolean, callback: (query: ShippingZoneModelType) => ShippingZoneModelType) => ShippingZoneModelType
+  whereNull: (column: keyof ShippingZonesTable) => ShippingZoneModelType
+  whereNotNull: (column: keyof ShippingZonesTable) => ShippingZoneModelType
+  whereLike: (column: keyof ShippingZonesTable, value: string) => ShippingZoneModelType
+  orderBy: (column: keyof ShippingZonesTable, order: 'asc' | 'desc') => ShippingZoneModelType
+  orderByAsc: (column: keyof ShippingZonesTable) => ShippingZoneModelType
+  orderByDesc: (column: keyof ShippingZonesTable) => ShippingZoneModelType
+  groupBy: (column: keyof ShippingZonesTable) => ShippingZoneModelType
+  having: <V = string>(column: keyof ShippingZonesTable, operator: Operator, value: V) => ShippingZoneModelType
+  inRandomOrder: () => ShippingZoneModelType
+  whereColumn: (first: keyof ShippingZonesTable, operator: Operator, second: keyof ShippingZonesTable) => ShippingZoneModelType
+  max: (field: keyof ShippingZonesTable) => Promise<number>
+  min: (field: keyof ShippingZonesTable) => Promise<number>
+  avg: (field: keyof ShippingZonesTable) => Promise<number>
+  sum: (field: keyof ShippingZonesTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<ShippingZoneModelType[]>
+  pluck: <K extends keyof ShippingZoneModelType>(field: K) => Promise<ShippingZoneModelType[K][]>
+  chunk: (size: number, callback: (models: ShippingZoneModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: ShippingZoneModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newShippingZone: NewShippingZone) => Promise<ShippingZoneModelType>
+  firstOrCreate: (search: Partial<ShippingZonesTable>, values?: NewShippingZone) => Promise<ShippingZoneModelType>
+  updateOrCreate: (search: Partial<ShippingZonesTable>, values?: NewShippingZone) => Promise<ShippingZoneModelType>
+  createMany: (newShippingZone: NewShippingZone[]) => Promise<void>
+  forceCreate: (newShippingZone: NewShippingZone) => Promise<ShippingZoneModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof ShippingZonesTable, values: V[]) => ShippingZoneModelType
+  distinct: (column: keyof ShippingZoneJsonResponse) => ShippingZoneModelType
+  join: (table: string, firstCol: string, secondCol: string) => ShippingZoneModelType
+
   // Instance methods
-  createInstance: (data: ShippingZoneJsonResponse) => IShippingZoneModel
-  create: (newShippingZone: NewShippingZone) => Promise<IShippingZoneModel>
-  update: (newShippingZone: ShippingZoneUpdate) => Promise<IShippingZoneModel | undefined>
-  forceUpdate: (newShippingZone: ShippingZoneUpdate) => Promise<IShippingZoneModel | undefined>
-  save: () => Promise<IShippingZoneModel>
+  createInstance: (data: ShippingZoneJsonResponse) => ShippingZoneModelType
+  update: (newShippingZone: ShippingZoneUpdate) => Promise<ShippingZoneModelType | undefined>
+  forceUpdate: (newShippingZone: ShippingZoneUpdate) => Promise<ShippingZoneModelType | undefined>
+  save: () => Promise<ShippingZoneModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<ShippingZoneJsonResponse>
   toJSON: () => ShippingZoneJsonResponse
-  parseResult: (model: IShippingZoneModel) => IShippingZoneModel
+  parseResult: (model: ShippingZoneModelType) => ShippingZoneModelType
 }
-
-export type ShippingZoneModelType = IShippingZoneModel & IShippingZoneModelStatic

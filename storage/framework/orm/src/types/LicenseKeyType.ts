@@ -35,73 +35,15 @@ export interface LicenseKeyJsonResponse extends Omit<Selectable<LicenseKeyRead>,
 export type NewLicenseKey = Insertable<LicenseKeyWrite>
 export type LicenseKeyUpdate = Updateable<LicenseKeyWrite>
 
-export interface ILicenseKeyModelStatic {
-  with: (relations: string[]) => ILicenseKeyModel
-  select: (params: (keyof LicenseKeyJsonResponse)[] | RawBuilder<string> | string) => ILicenseKeyModel
-  find: (id: number) => Promise<ILicenseKeyModel | undefined>
-  first: () => Promise<ILicenseKeyModel | undefined>
-  last: () => Promise<ILicenseKeyModel | undefined>
-  firstOrFail: () => Promise<ILicenseKeyModel | undefined>
-  all: () => Promise<ILicenseKeyModel[]>
-  findOrFail: (id: number) => Promise<ILicenseKeyModel | undefined>
-  findMany: (ids: number[]) => Promise<ILicenseKeyModel[]>
-  latest: (column?: keyof LicenseKeysTable) => Promise<ILicenseKeyModel | undefined>
-  oldest: (column?: keyof LicenseKeysTable) => Promise<ILicenseKeyModel | undefined>
-  skip: (count: number) => ILicenseKeyModel
-  take: (count: number) => ILicenseKeyModel
-  where: <V = string>(column: keyof LicenseKeysTable, ...args: [V] | [Operator, V]) => ILicenseKeyModel
-  orWhere: (...conditions: [string, any][]) => ILicenseKeyModel
-  whereNotIn: <V = number>(column: keyof LicenseKeysTable, values: V[]) => ILicenseKeyModel
-  whereBetween: <V = number>(column: keyof LicenseKeysTable, range: [V, V]) => ILicenseKeyModel
-  whereRef: (column: keyof LicenseKeysTable, ...args: string[]) => ILicenseKeyModel
-  when: (condition: boolean, callback: (query: ILicenseKeyModel) => ILicenseKeyModel) => ILicenseKeyModel
-  whereNull: (column: keyof LicenseKeysTable) => ILicenseKeyModel
-  whereNotNull: (column: keyof LicenseKeysTable) => ILicenseKeyModel
-  whereLike: (column: keyof LicenseKeysTable, value: string) => ILicenseKeyModel
-  orderBy: (column: keyof LicenseKeysTable, order: 'asc' | 'desc') => ILicenseKeyModel
-  orderByAsc: (column: keyof LicenseKeysTable) => ILicenseKeyModel
-  orderByDesc: (column: keyof LicenseKeysTable) => ILicenseKeyModel
-  groupBy: (column: keyof LicenseKeysTable) => ILicenseKeyModel
-  having: <V = string>(column: keyof LicenseKeysTable, operator: Operator, value: V) => ILicenseKeyModel
-  inRandomOrder: () => ILicenseKeyModel
-  whereColumn: (first: keyof LicenseKeysTable, operator: Operator, second: keyof LicenseKeysTable) => ILicenseKeyModel
-  max: (field: keyof LicenseKeysTable) => Promise<number>
-  min: (field: keyof LicenseKeysTable) => Promise<number>
-  avg: (field: keyof LicenseKeysTable) => Promise<number>
-  sum: (field: keyof LicenseKeysTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<ILicenseKeyModel[]>
-  pluck: <K extends keyof ILicenseKeyModel>(field: K) => Promise<ILicenseKeyModel[K][]>
-  chunk: (size: number, callback: (models: ILicenseKeyModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: ILicenseKeyModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newLicenseKey: NewLicenseKey) => Promise<ILicenseKeyModel>
-  firstOrCreate: (search: Partial<LicenseKeysTable>, values?: NewLicenseKey) => Promise<ILicenseKeyModel>
-  updateOrCreate: (search: Partial<LicenseKeysTable>, values?: NewLicenseKey) => Promise<ILicenseKeyModel>
-  createMany: (newLicenseKey: NewLicenseKey[]) => Promise<void>
-  forceCreate: (newLicenseKey: NewLicenseKey) => Promise<ILicenseKeyModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof LicenseKeysTable, values: V[]) => ILicenseKeyModel
-  distinct: (column: keyof LicenseKeyJsonResponse) => ILicenseKeyModel
-  join: (table: string, firstCol: string, secondCol: string) => ILicenseKeyModel
-}
-
-export interface ILicenseKeyModel {
+export interface LicenseKeyModelType {
   // Properties
   readonly id: number
   get key(): string
   set key(value: string)
   get template(): string | string[]
   set template(value: string | string[])
-  get expiry_date(): Date | string
-  set expiry_date(value: Date | string)
+  get expiryDate(): Date | string
+  set expiryDate(value: Date | string)
   get status(): string | string[] | undefined
   set status(value: string | string[])
   get uuid(): string | undefined
@@ -110,16 +52,70 @@ export interface ILicenseKeyModel {
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => LicenseKeyModelType
+  select: (params: (keyof LicenseKeyJsonResponse)[] | RawBuilder<string> | string) => LicenseKeyModelType
+  find: (id: number) => Promise<LicenseKeyModelType | undefined>
+  first: () => Promise<LicenseKeyModelType | undefined>
+  last: () => Promise<LicenseKeyModelType | undefined>
+  firstOrFail: () => Promise<LicenseKeyModelType | undefined>
+  all: () => Promise<LicenseKeyModelType[]>
+  findOrFail: (id: number) => Promise<LicenseKeyModelType | undefined>
+  findMany: (ids: number[]) => Promise<LicenseKeyModelType[]>
+  latest: (column?: keyof LicenseKeysTable) => Promise<LicenseKeyModelType | undefined>
+  oldest: (column?: keyof LicenseKeysTable) => Promise<LicenseKeyModelType | undefined>
+  skip: (count: number) => LicenseKeyModelType
+  take: (count: number) => LicenseKeyModelType
+  where: <V = string>(column: keyof LicenseKeysTable, ...args: [V] | [Operator, V]) => LicenseKeyModelType
+  orWhere: (...conditions: [string, any][]) => LicenseKeyModelType
+  whereNotIn: <V = number>(column: keyof LicenseKeysTable, values: V[]) => LicenseKeyModelType
+  whereBetween: <V = number>(column: keyof LicenseKeysTable, range: [V, V]) => LicenseKeyModelType
+  whereRef: (column: keyof LicenseKeysTable, ...args: string[]) => LicenseKeyModelType
+  when: (condition: boolean, callback: (query: LicenseKeyModelType) => LicenseKeyModelType) => LicenseKeyModelType
+  whereNull: (column: keyof LicenseKeysTable) => LicenseKeyModelType
+  whereNotNull: (column: keyof LicenseKeysTable) => LicenseKeyModelType
+  whereLike: (column: keyof LicenseKeysTable, value: string) => LicenseKeyModelType
+  orderBy: (column: keyof LicenseKeysTable, order: 'asc' | 'desc') => LicenseKeyModelType
+  orderByAsc: (column: keyof LicenseKeysTable) => LicenseKeyModelType
+  orderByDesc: (column: keyof LicenseKeysTable) => LicenseKeyModelType
+  groupBy: (column: keyof LicenseKeysTable) => LicenseKeyModelType
+  having: <V = string>(column: keyof LicenseKeysTable, operator: Operator, value: V) => LicenseKeyModelType
+  inRandomOrder: () => LicenseKeyModelType
+  whereColumn: (first: keyof LicenseKeysTable, operator: Operator, second: keyof LicenseKeysTable) => LicenseKeyModelType
+  max: (field: keyof LicenseKeysTable) => Promise<number>
+  min: (field: keyof LicenseKeysTable) => Promise<number>
+  avg: (field: keyof LicenseKeysTable) => Promise<number>
+  sum: (field: keyof LicenseKeysTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<LicenseKeyModelType[]>
+  pluck: <K extends keyof LicenseKeyModelType>(field: K) => Promise<LicenseKeyModelType[K][]>
+  chunk: (size: number, callback: (models: LicenseKeyModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: LicenseKeyModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newLicenseKey: NewLicenseKey) => Promise<LicenseKeyModelType>
+  firstOrCreate: (search: Partial<LicenseKeysTable>, values?: NewLicenseKey) => Promise<LicenseKeyModelType>
+  updateOrCreate: (search: Partial<LicenseKeysTable>, values?: NewLicenseKey) => Promise<LicenseKeyModelType>
+  createMany: (newLicenseKey: NewLicenseKey[]) => Promise<void>
+  forceCreate: (newLicenseKey: NewLicenseKey) => Promise<LicenseKeyModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof LicenseKeysTable, values: V[]) => LicenseKeyModelType
+  distinct: (column: keyof LicenseKeyJsonResponse) => LicenseKeyModelType
+  join: (table: string, firstCol: string, secondCol: string) => LicenseKeyModelType
+
   // Instance methods
-  createInstance: (data: LicenseKeyJsonResponse) => ILicenseKeyModel
-  create: (newLicenseKey: NewLicenseKey) => Promise<ILicenseKeyModel>
-  update: (newLicenseKey: LicenseKeyUpdate) => Promise<ILicenseKeyModel | undefined>
-  forceUpdate: (newLicenseKey: LicenseKeyUpdate) => Promise<ILicenseKeyModel | undefined>
-  save: () => Promise<ILicenseKeyModel>
+  createInstance: (data: LicenseKeyJsonResponse) => LicenseKeyModelType
+  update: (newLicenseKey: LicenseKeyUpdate) => Promise<LicenseKeyModelType | undefined>
+  forceUpdate: (newLicenseKey: LicenseKeyUpdate) => Promise<LicenseKeyModelType | undefined>
+  save: () => Promise<LicenseKeyModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<LicenseKeyJsonResponse>
   toJSON: () => LicenseKeyJsonResponse
-  parseResult: (model: ILicenseKeyModel) => ILicenseKeyModel
+  parseResult: (model: LicenseKeyModelType) => LicenseKeyModelType
 }
-
-export type LicenseKeyModelType = ILicenseKeyModel & ILicenseKeyModelStatic

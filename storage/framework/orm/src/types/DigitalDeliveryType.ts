@@ -38,79 +38,21 @@ export interface DigitalDeliveryJsonResponse extends Omit<Selectable<DigitalDeli
 export type NewDigitalDelivery = Insertable<DigitalDeliveryWrite>
 export type DigitalDeliveryUpdate = Updateable<DigitalDeliveryWrite>
 
-export interface IDigitalDeliveryModelStatic {
-  with: (relations: string[]) => IDigitalDeliveryModel
-  select: (params: (keyof DigitalDeliveryJsonResponse)[] | RawBuilder<string> | string) => IDigitalDeliveryModel
-  find: (id: number) => Promise<IDigitalDeliveryModel | undefined>
-  first: () => Promise<IDigitalDeliveryModel | undefined>
-  last: () => Promise<IDigitalDeliveryModel | undefined>
-  firstOrFail: () => Promise<IDigitalDeliveryModel | undefined>
-  all: () => Promise<IDigitalDeliveryModel[]>
-  findOrFail: (id: number) => Promise<IDigitalDeliveryModel | undefined>
-  findMany: (ids: number[]) => Promise<IDigitalDeliveryModel[]>
-  latest: (column?: keyof DigitalDeliveriesTable) => Promise<IDigitalDeliveryModel | undefined>
-  oldest: (column?: keyof DigitalDeliveriesTable) => Promise<IDigitalDeliveryModel | undefined>
-  skip: (count: number) => IDigitalDeliveryModel
-  take: (count: number) => IDigitalDeliveryModel
-  where: <V = string>(column: keyof DigitalDeliveriesTable, ...args: [V] | [Operator, V]) => IDigitalDeliveryModel
-  orWhere: (...conditions: [string, any][]) => IDigitalDeliveryModel
-  whereNotIn: <V = number>(column: keyof DigitalDeliveriesTable, values: V[]) => IDigitalDeliveryModel
-  whereBetween: <V = number>(column: keyof DigitalDeliveriesTable, range: [V, V]) => IDigitalDeliveryModel
-  whereRef: (column: keyof DigitalDeliveriesTable, ...args: string[]) => IDigitalDeliveryModel
-  when: (condition: boolean, callback: (query: IDigitalDeliveryModel) => IDigitalDeliveryModel) => IDigitalDeliveryModel
-  whereNull: (column: keyof DigitalDeliveriesTable) => IDigitalDeliveryModel
-  whereNotNull: (column: keyof DigitalDeliveriesTable) => IDigitalDeliveryModel
-  whereLike: (column: keyof DigitalDeliveriesTable, value: string) => IDigitalDeliveryModel
-  orderBy: (column: keyof DigitalDeliveriesTable, order: 'asc' | 'desc') => IDigitalDeliveryModel
-  orderByAsc: (column: keyof DigitalDeliveriesTable) => IDigitalDeliveryModel
-  orderByDesc: (column: keyof DigitalDeliveriesTable) => IDigitalDeliveryModel
-  groupBy: (column: keyof DigitalDeliveriesTable) => IDigitalDeliveryModel
-  having: <V = string>(column: keyof DigitalDeliveriesTable, operator: Operator, value: V) => IDigitalDeliveryModel
-  inRandomOrder: () => IDigitalDeliveryModel
-  whereColumn: (first: keyof DigitalDeliveriesTable, operator: Operator, second: keyof DigitalDeliveriesTable) => IDigitalDeliveryModel
-  max: (field: keyof DigitalDeliveriesTable) => Promise<number>
-  min: (field: keyof DigitalDeliveriesTable) => Promise<number>
-  avg: (field: keyof DigitalDeliveriesTable) => Promise<number>
-  sum: (field: keyof DigitalDeliveriesTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<IDigitalDeliveryModel[]>
-  pluck: <K extends keyof IDigitalDeliveryModel>(field: K) => Promise<IDigitalDeliveryModel[K][]>
-  chunk: (size: number, callback: (models: IDigitalDeliveryModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IDigitalDeliveryModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newDigitalDelivery: NewDigitalDelivery) => Promise<IDigitalDeliveryModel>
-  firstOrCreate: (search: Partial<DigitalDeliveriesTable>, values?: NewDigitalDelivery) => Promise<IDigitalDeliveryModel>
-  updateOrCreate: (search: Partial<DigitalDeliveriesTable>, values?: NewDigitalDelivery) => Promise<IDigitalDeliveryModel>
-  createMany: (newDigitalDelivery: NewDigitalDelivery[]) => Promise<void>
-  forceCreate: (newDigitalDelivery: NewDigitalDelivery) => Promise<IDigitalDeliveryModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof DigitalDeliveriesTable, values: V[]) => IDigitalDeliveryModel
-  distinct: (column: keyof DigitalDeliveryJsonResponse) => IDigitalDeliveryModel
-  join: (table: string, firstCol: string, secondCol: string) => IDigitalDeliveryModel
-}
-
-export interface IDigitalDeliveryModel {
+export interface DigitalDeliveryModelType {
   // Properties
   readonly id: number
   get name(): string
   set name(value: string)
   get description(): string
   set description(value: string)
-  get download_limit(): number | undefined
-  set download_limit(value: number)
-  get expiry_days(): number
-  set expiry_days(value: number)
-  get requires_login(): boolean | undefined
-  set requires_login(value: boolean)
-  get automatic_delivery(): boolean | undefined
-  set automatic_delivery(value: boolean)
+  get downloadLimit(): number | undefined
+  set downloadLimit(value: number)
+  get expiryDays(): number
+  set expiryDays(value: number)
+  get requiresLogin(): boolean | undefined
+  set requiresLogin(value: boolean)
+  get automaticDelivery(): boolean | undefined
+  set automaticDelivery(value: boolean)
   get status(): string | string[] | undefined
   set status(value: string | string[])
   get uuid(): string | undefined
@@ -119,16 +61,70 @@ export interface IDigitalDeliveryModel {
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => DigitalDeliveryModelType
+  select: (params: (keyof DigitalDeliveryJsonResponse)[] | RawBuilder<string> | string) => DigitalDeliveryModelType
+  find: (id: number) => Promise<DigitalDeliveryModelType | undefined>
+  first: () => Promise<DigitalDeliveryModelType | undefined>
+  last: () => Promise<DigitalDeliveryModelType | undefined>
+  firstOrFail: () => Promise<DigitalDeliveryModelType | undefined>
+  all: () => Promise<DigitalDeliveryModelType[]>
+  findOrFail: (id: number) => Promise<DigitalDeliveryModelType | undefined>
+  findMany: (ids: number[]) => Promise<DigitalDeliveryModelType[]>
+  latest: (column?: keyof DigitalDeliveriesTable) => Promise<DigitalDeliveryModelType | undefined>
+  oldest: (column?: keyof DigitalDeliveriesTable) => Promise<DigitalDeliveryModelType | undefined>
+  skip: (count: number) => DigitalDeliveryModelType
+  take: (count: number) => DigitalDeliveryModelType
+  where: <V = string>(column: keyof DigitalDeliveriesTable, ...args: [V] | [Operator, V]) => DigitalDeliveryModelType
+  orWhere: (...conditions: [string, any][]) => DigitalDeliveryModelType
+  whereNotIn: <V = number>(column: keyof DigitalDeliveriesTable, values: V[]) => DigitalDeliveryModelType
+  whereBetween: <V = number>(column: keyof DigitalDeliveriesTable, range: [V, V]) => DigitalDeliveryModelType
+  whereRef: (column: keyof DigitalDeliveriesTable, ...args: string[]) => DigitalDeliveryModelType
+  when: (condition: boolean, callback: (query: DigitalDeliveryModelType) => DigitalDeliveryModelType) => DigitalDeliveryModelType
+  whereNull: (column: keyof DigitalDeliveriesTable) => DigitalDeliveryModelType
+  whereNotNull: (column: keyof DigitalDeliveriesTable) => DigitalDeliveryModelType
+  whereLike: (column: keyof DigitalDeliveriesTable, value: string) => DigitalDeliveryModelType
+  orderBy: (column: keyof DigitalDeliveriesTable, order: 'asc' | 'desc') => DigitalDeliveryModelType
+  orderByAsc: (column: keyof DigitalDeliveriesTable) => DigitalDeliveryModelType
+  orderByDesc: (column: keyof DigitalDeliveriesTable) => DigitalDeliveryModelType
+  groupBy: (column: keyof DigitalDeliveriesTable) => DigitalDeliveryModelType
+  having: <V = string>(column: keyof DigitalDeliveriesTable, operator: Operator, value: V) => DigitalDeliveryModelType
+  inRandomOrder: () => DigitalDeliveryModelType
+  whereColumn: (first: keyof DigitalDeliveriesTable, operator: Operator, second: keyof DigitalDeliveriesTable) => DigitalDeliveryModelType
+  max: (field: keyof DigitalDeliveriesTable) => Promise<number>
+  min: (field: keyof DigitalDeliveriesTable) => Promise<number>
+  avg: (field: keyof DigitalDeliveriesTable) => Promise<number>
+  sum: (field: keyof DigitalDeliveriesTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<DigitalDeliveryModelType[]>
+  pluck: <K extends keyof DigitalDeliveryModelType>(field: K) => Promise<DigitalDeliveryModelType[K][]>
+  chunk: (size: number, callback: (models: DigitalDeliveryModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: DigitalDeliveryModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newDigitalDelivery: NewDigitalDelivery) => Promise<DigitalDeliveryModelType>
+  firstOrCreate: (search: Partial<DigitalDeliveriesTable>, values?: NewDigitalDelivery) => Promise<DigitalDeliveryModelType>
+  updateOrCreate: (search: Partial<DigitalDeliveriesTable>, values?: NewDigitalDelivery) => Promise<DigitalDeliveryModelType>
+  createMany: (newDigitalDelivery: NewDigitalDelivery[]) => Promise<void>
+  forceCreate: (newDigitalDelivery: NewDigitalDelivery) => Promise<DigitalDeliveryModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof DigitalDeliveriesTable, values: V[]) => DigitalDeliveryModelType
+  distinct: (column: keyof DigitalDeliveryJsonResponse) => DigitalDeliveryModelType
+  join: (table: string, firstCol: string, secondCol: string) => DigitalDeliveryModelType
+
   // Instance methods
-  createInstance: (data: DigitalDeliveryJsonResponse) => IDigitalDeliveryModel
-  create: (newDigitalDelivery: NewDigitalDelivery) => Promise<IDigitalDeliveryModel>
-  update: (newDigitalDelivery: DigitalDeliveryUpdate) => Promise<IDigitalDeliveryModel | undefined>
-  forceUpdate: (newDigitalDelivery: DigitalDeliveryUpdate) => Promise<IDigitalDeliveryModel | undefined>
-  save: () => Promise<IDigitalDeliveryModel>
+  createInstance: (data: DigitalDeliveryJsonResponse) => DigitalDeliveryModelType
+  update: (newDigitalDelivery: DigitalDeliveryUpdate) => Promise<DigitalDeliveryModelType | undefined>
+  forceUpdate: (newDigitalDelivery: DigitalDeliveryUpdate) => Promise<DigitalDeliveryModelType | undefined>
+  save: () => Promise<DigitalDeliveryModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<DigitalDeliveryJsonResponse>
   toJSON: () => DigitalDeliveryJsonResponse
-  parseResult: (model: IDigitalDeliveryModel) => IDigitalDeliveryModel
+  parseResult: (model: DigitalDeliveryModelType) => DigitalDeliveryModelType
 }
-
-export type DigitalDeliveryModelType = IDigitalDeliveryModel & IDigitalDeliveryModelStatic

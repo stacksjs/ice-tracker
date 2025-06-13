@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { NewPrintDevice, PrintDeviceJsonResponse, PrintDeviceModelType, PrintDevicesTable, PrintDeviceUpdate } from '../types/PrintDeviceType'
+import type { NewPrintDevice, PrintDeviceJsonResponse, PrintDevicesTable, PrintDeviceUpdate } from '../types/PrintDeviceType'
 import type { ReceiptModel } from './Receipt'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -10,7 +10,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTable, PrintDeviceJsonResponse> implements PrintDeviceModelType {
+export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTable, PrintDeviceJsonResponse> {
   private readonly hidden: Array<keyof PrintDeviceJsonResponse> = []
   private readonly fillable: Array<keyof PrintDeviceJsonResponse> = ['name', 'mac_address', 'location', 'terminal', 'status', 'last_ping', 'print_count', 'uuid']
   private readonly guarded: Array<keyof PrintDeviceJsonResponse> = []

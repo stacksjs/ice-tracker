@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { CategorizableTable, CommentablesTable, Operator, TaggableTable } from '@stacksjs/orm'
-import type { NewPost, PostJsonResponse, PostModelType, PostsTable, PostUpdate } from '../types/PostType'
+import type { NewPost, PostJsonResponse, PostsTable, PostUpdate } from '../types/PostType'
 import type { AuthorModel } from './Author'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -10,7 +10,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> implements PostModelType {
+export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> {
   private readonly hidden: Array<keyof PostJsonResponse> = []
   private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'poster', 'content', 'excerpt', 'views', 'published_at', 'status', 'is_featured', 'uuid', 'author_id']
   private readonly guarded: Array<keyof PostJsonResponse> = []

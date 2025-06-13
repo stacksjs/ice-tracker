@@ -42,46 +42,77 @@ export interface SubscriptionJsonResponse extends Omit<Selectable<SubscriptionRe
 export type NewSubscription = Insertable<SubscriptionWrite>
 export type SubscriptionUpdate = Updateable<SubscriptionWrite>
 
-export interface ISubscriptionModelStatic {
-  with: (relations: string[]) => ISubscriptionModel
-  select: (params: (keyof SubscriptionJsonResponse)[] | RawBuilder<string> | string) => ISubscriptionModel
-  find: (id: number) => Promise<ISubscriptionModel | undefined>
-  first: () => Promise<ISubscriptionModel | undefined>
-  last: () => Promise<ISubscriptionModel | undefined>
-  firstOrFail: () => Promise<ISubscriptionModel | undefined>
-  all: () => Promise<ISubscriptionModel[]>
-  findOrFail: (id: number) => Promise<ISubscriptionModel | undefined>
-  findMany: (ids: number[]) => Promise<ISubscriptionModel[]>
-  latest: (column?: keyof SubscriptionsTable) => Promise<ISubscriptionModel | undefined>
-  oldest: (column?: keyof SubscriptionsTable) => Promise<ISubscriptionModel | undefined>
-  skip: (count: number) => ISubscriptionModel
-  take: (count: number) => ISubscriptionModel
-  where: <V = string>(column: keyof SubscriptionsTable, ...args: [V] | [Operator, V]) => ISubscriptionModel
-  orWhere: (...conditions: [string, any][]) => ISubscriptionModel
-  whereNotIn: <V = number>(column: keyof SubscriptionsTable, values: V[]) => ISubscriptionModel
-  whereBetween: <V = number>(column: keyof SubscriptionsTable, range: [V, V]) => ISubscriptionModel
-  whereRef: (column: keyof SubscriptionsTable, ...args: string[]) => ISubscriptionModel
-  when: (condition: boolean, callback: (query: ISubscriptionModel) => ISubscriptionModel) => ISubscriptionModel
-  whereNull: (column: keyof SubscriptionsTable) => ISubscriptionModel
-  whereNotNull: (column: keyof SubscriptionsTable) => ISubscriptionModel
-  whereLike: (column: keyof SubscriptionsTable, value: string) => ISubscriptionModel
-  orderBy: (column: keyof SubscriptionsTable, order: 'asc' | 'desc') => ISubscriptionModel
-  orderByAsc: (column: keyof SubscriptionsTable) => ISubscriptionModel
-  orderByDesc: (column: keyof SubscriptionsTable) => ISubscriptionModel
-  groupBy: (column: keyof SubscriptionsTable) => ISubscriptionModel
-  having: <V = string>(column: keyof SubscriptionsTable, operator: Operator, value: V) => ISubscriptionModel
-  inRandomOrder: () => ISubscriptionModel
-  whereColumn: (first: keyof SubscriptionsTable, operator: Operator, second: keyof SubscriptionsTable) => ISubscriptionModel
+export interface SubscriptionModelType {
+  // Properties
+  readonly id: number
+  get type(): string
+  set type(value: string)
+  get plan(): string | undefined
+  set plan(value: string)
+  get providerId(): string
+  set providerId(value: string)
+  get providerStatus(): string
+  set providerStatus(value: string)
+  get unitPrice(): number | undefined
+  set unitPrice(value: number)
+  get providerType(): string
+  set providerType(value: string)
+  get providerPriceId(): string | undefined
+  set providerPriceId(value: string)
+  get quantity(): number | undefined
+  set quantity(value: number)
+  get trialEndsAt(): Date | string | undefined
+  set trialEndsAt(value: Date | string)
+  get endsAt(): Date | string | undefined
+  set endsAt(value: Date | string)
+  get lastUsedAt(): Date | string | undefined
+  set lastUsedAt(value: Date | string)
+  get uuid(): string | undefined
+  set uuid(value: string)
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
+  // Static methods
+  with: (relations: string[]) => SubscriptionModelType
+  select: (params: (keyof SubscriptionJsonResponse)[] | RawBuilder<string> | string) => SubscriptionModelType
+  find: (id: number) => Promise<SubscriptionModelType | undefined>
+  first: () => Promise<SubscriptionModelType | undefined>
+  last: () => Promise<SubscriptionModelType | undefined>
+  firstOrFail: () => Promise<SubscriptionModelType | undefined>
+  all: () => Promise<SubscriptionModelType[]>
+  findOrFail: (id: number) => Promise<SubscriptionModelType | undefined>
+  findMany: (ids: number[]) => Promise<SubscriptionModelType[]>
+  latest: (column?: keyof SubscriptionsTable) => Promise<SubscriptionModelType | undefined>
+  oldest: (column?: keyof SubscriptionsTable) => Promise<SubscriptionModelType | undefined>
+  skip: (count: number) => SubscriptionModelType
+  take: (count: number) => SubscriptionModelType
+  where: <V = string>(column: keyof SubscriptionsTable, ...args: [V] | [Operator, V]) => SubscriptionModelType
+  orWhere: (...conditions: [string, any][]) => SubscriptionModelType
+  whereNotIn: <V = number>(column: keyof SubscriptionsTable, values: V[]) => SubscriptionModelType
+  whereBetween: <V = number>(column: keyof SubscriptionsTable, range: [V, V]) => SubscriptionModelType
+  whereRef: (column: keyof SubscriptionsTable, ...args: string[]) => SubscriptionModelType
+  when: (condition: boolean, callback: (query: SubscriptionModelType) => SubscriptionModelType) => SubscriptionModelType
+  whereNull: (column: keyof SubscriptionsTable) => SubscriptionModelType
+  whereNotNull: (column: keyof SubscriptionsTable) => SubscriptionModelType
+  whereLike: (column: keyof SubscriptionsTable, value: string) => SubscriptionModelType
+  orderBy: (column: keyof SubscriptionsTable, order: 'asc' | 'desc') => SubscriptionModelType
+  orderByAsc: (column: keyof SubscriptionsTable) => SubscriptionModelType
+  orderByDesc: (column: keyof SubscriptionsTable) => SubscriptionModelType
+  groupBy: (column: keyof SubscriptionsTable) => SubscriptionModelType
+  having: <V = string>(column: keyof SubscriptionsTable, operator: Operator, value: V) => SubscriptionModelType
+  inRandomOrder: () => SubscriptionModelType
+  whereColumn: (first: keyof SubscriptionsTable, operator: Operator, second: keyof SubscriptionsTable) => SubscriptionModelType
   max: (field: keyof SubscriptionsTable) => Promise<number>
   min: (field: keyof SubscriptionsTable) => Promise<number>
   avg: (field: keyof SubscriptionsTable) => Promise<number>
   sum: (field: keyof SubscriptionsTable) => Promise<number>
   count: () => Promise<number>
-  get: () => Promise<ISubscriptionModel[]>
-  pluck: <K extends keyof ISubscriptionModel>(field: K) => Promise<ISubscriptionModel[K][]>
-  chunk: (size: number, callback: (models: ISubscriptionModel[]) => Promise<void>) => Promise<void>
+  get: () => Promise<SubscriptionModelType[]>
+  pluck: <K extends keyof SubscriptionModelType>(field: K) => Promise<SubscriptionModelType[K][]>
+  chunk: (size: number, callback: (models: SubscriptionModelType[]) => Promise<void>) => Promise<void>
   paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: ISubscriptionModel[]
+    data: SubscriptionModelType[]
     paging: {
       total_records: number
       page: number
@@ -89,58 +120,23 @@ export interface ISubscriptionModelStatic {
     }
     next_cursor: number | null
   }>
-  create: (newSubscription: NewSubscription) => Promise<ISubscriptionModel>
-  firstOrCreate: (search: Partial<SubscriptionsTable>, values?: NewSubscription) => Promise<ISubscriptionModel>
-  updateOrCreate: (search: Partial<SubscriptionsTable>, values?: NewSubscription) => Promise<ISubscriptionModel>
+  create: (newSubscription: NewSubscription) => Promise<SubscriptionModelType>
+  firstOrCreate: (search: Partial<SubscriptionsTable>, values?: NewSubscription) => Promise<SubscriptionModelType>
+  updateOrCreate: (search: Partial<SubscriptionsTable>, values?: NewSubscription) => Promise<SubscriptionModelType>
   createMany: (newSubscription: NewSubscription[]) => Promise<void>
-  forceCreate: (newSubscription: NewSubscription) => Promise<ISubscriptionModel>
+  forceCreate: (newSubscription: NewSubscription) => Promise<SubscriptionModelType>
   remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof SubscriptionsTable, values: V[]) => ISubscriptionModel
-  distinct: (column: keyof SubscriptionJsonResponse) => ISubscriptionModel
-  join: (table: string, firstCol: string, secondCol: string) => ISubscriptionModel
-}
-
-export interface ISubscriptionModel {
-  // Properties
-  readonly id: number
-  get type(): string
-  set type(value: string)
-  get plan(): string | undefined
-  set plan(value: string)
-  get provider_id(): string
-  set provider_id(value: string)
-  get provider_status(): string
-  set provider_status(value: string)
-  get unit_price(): number | undefined
-  set unit_price(value: number)
-  get provider_type(): string
-  set provider_type(value: string)
-  get provider_price_id(): string | undefined
-  set provider_price_id(value: string)
-  get quantity(): number | undefined
-  set quantity(value: number)
-  get trial_ends_at(): Date | string | undefined
-  set trial_ends_at(value: Date | string)
-  get ends_at(): Date | string | undefined
-  set ends_at(value: Date | string)
-  get last_used_at(): Date | string | undefined
-  set last_used_at(value: Date | string)
-  get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
+  whereIn: <V = number>(column: keyof SubscriptionsTable, values: V[]) => SubscriptionModelType
+  distinct: (column: keyof SubscriptionJsonResponse) => SubscriptionModelType
+  join: (table: string, firstCol: string, secondCol: string) => SubscriptionModelType
 
   // Instance methods
-  createInstance: (data: SubscriptionJsonResponse) => ISubscriptionModel
-  create: (newSubscription: NewSubscription) => Promise<ISubscriptionModel>
-  update: (newSubscription: SubscriptionUpdate) => Promise<ISubscriptionModel | undefined>
-  forceUpdate: (newSubscription: SubscriptionUpdate) => Promise<ISubscriptionModel | undefined>
-  save: () => Promise<ISubscriptionModel>
+  createInstance: (data: SubscriptionJsonResponse) => SubscriptionModelType
+  update: (newSubscription: SubscriptionUpdate) => Promise<SubscriptionModelType | undefined>
+  forceUpdate: (newSubscription: SubscriptionUpdate) => Promise<SubscriptionModelType | undefined>
+  save: () => Promise<SubscriptionModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<SubscriptionJsonResponse>
   toJSON: () => SubscriptionJsonResponse
-  parseResult: (model: ISubscriptionModel) => ISubscriptionModel
+  parseResult: (model: SubscriptionModelType) => SubscriptionModelType
 }
-
-export type SubscriptionModelType = ISubscriptionModel & ISubscriptionModelStatic

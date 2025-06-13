@@ -36,65 +36,7 @@ export interface PaymentTransactionJsonResponse extends Omit<Selectable<PaymentT
 export type NewPaymentTransaction = Insertable<PaymentTransactionWrite>
 export type PaymentTransactionUpdate = Updateable<PaymentTransactionWrite>
 
-export interface IPaymentTransactionModelStatic {
-  with: (relations: string[]) => IPaymentTransactionModel
-  select: (params: (keyof PaymentTransactionJsonResponse)[] | RawBuilder<string> | string) => IPaymentTransactionModel
-  find: (id: number) => Promise<IPaymentTransactionModel | undefined>
-  first: () => Promise<IPaymentTransactionModel | undefined>
-  last: () => Promise<IPaymentTransactionModel | undefined>
-  firstOrFail: () => Promise<IPaymentTransactionModel | undefined>
-  all: () => Promise<IPaymentTransactionModel[]>
-  findOrFail: (id: number) => Promise<IPaymentTransactionModel | undefined>
-  findMany: (ids: number[]) => Promise<IPaymentTransactionModel[]>
-  latest: (column?: keyof PaymentTransactionsTable) => Promise<IPaymentTransactionModel | undefined>
-  oldest: (column?: keyof PaymentTransactionsTable) => Promise<IPaymentTransactionModel | undefined>
-  skip: (count: number) => IPaymentTransactionModel
-  take: (count: number) => IPaymentTransactionModel
-  where: <V = string>(column: keyof PaymentTransactionsTable, ...args: [V] | [Operator, V]) => IPaymentTransactionModel
-  orWhere: (...conditions: [string, any][]) => IPaymentTransactionModel
-  whereNotIn: <V = number>(column: keyof PaymentTransactionsTable, values: V[]) => IPaymentTransactionModel
-  whereBetween: <V = number>(column: keyof PaymentTransactionsTable, range: [V, V]) => IPaymentTransactionModel
-  whereRef: (column: keyof PaymentTransactionsTable, ...args: string[]) => IPaymentTransactionModel
-  when: (condition: boolean, callback: (query: IPaymentTransactionModel) => IPaymentTransactionModel) => IPaymentTransactionModel
-  whereNull: (column: keyof PaymentTransactionsTable) => IPaymentTransactionModel
-  whereNotNull: (column: keyof PaymentTransactionsTable) => IPaymentTransactionModel
-  whereLike: (column: keyof PaymentTransactionsTable, value: string) => IPaymentTransactionModel
-  orderBy: (column: keyof PaymentTransactionsTable, order: 'asc' | 'desc') => IPaymentTransactionModel
-  orderByAsc: (column: keyof PaymentTransactionsTable) => IPaymentTransactionModel
-  orderByDesc: (column: keyof PaymentTransactionsTable) => IPaymentTransactionModel
-  groupBy: (column: keyof PaymentTransactionsTable) => IPaymentTransactionModel
-  having: <V = string>(column: keyof PaymentTransactionsTable, operator: Operator, value: V) => IPaymentTransactionModel
-  inRandomOrder: () => IPaymentTransactionModel
-  whereColumn: (first: keyof PaymentTransactionsTable, operator: Operator, second: keyof PaymentTransactionsTable) => IPaymentTransactionModel
-  max: (field: keyof PaymentTransactionsTable) => Promise<number>
-  min: (field: keyof PaymentTransactionsTable) => Promise<number>
-  avg: (field: keyof PaymentTransactionsTable) => Promise<number>
-  sum: (field: keyof PaymentTransactionsTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<IPaymentTransactionModel[]>
-  pluck: <K extends keyof IPaymentTransactionModel>(field: K) => Promise<IPaymentTransactionModel[K][]>
-  chunk: (size: number, callback: (models: IPaymentTransactionModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IPaymentTransactionModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newPaymentTransaction: NewPaymentTransaction) => Promise<IPaymentTransactionModel>
-  firstOrCreate: (search: Partial<PaymentTransactionsTable>, values?: NewPaymentTransaction) => Promise<IPaymentTransactionModel>
-  updateOrCreate: (search: Partial<PaymentTransactionsTable>, values?: NewPaymentTransaction) => Promise<IPaymentTransactionModel>
-  createMany: (newPaymentTransaction: NewPaymentTransaction[]) => Promise<void>
-  forceCreate: (newPaymentTransaction: NewPaymentTransaction) => Promise<IPaymentTransactionModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof PaymentTransactionsTable, values: V[]) => IPaymentTransactionModel
-  distinct: (column: keyof PaymentTransactionJsonResponse) => IPaymentTransactionModel
-  join: (table: string, firstCol: string, secondCol: string) => IPaymentTransactionModel
-}
-
-export interface IPaymentTransactionModel {
+export interface PaymentTransactionModelType {
   // Properties
   readonly id: number
   get name(): string
@@ -105,24 +47,78 @@ export interface IPaymentTransactionModel {
   set amount(value: number)
   get type(): string
   set type(value: string)
-  get provider_id(): string | undefined
-  set provider_id(value: string)
+  get providerId(): string | undefined
+  set providerId(value: string)
   get uuid(): string | undefined
   set uuid(value: string)
   get created_at(): string | undefined
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => PaymentTransactionModelType
+  select: (params: (keyof PaymentTransactionJsonResponse)[] | RawBuilder<string> | string) => PaymentTransactionModelType
+  find: (id: number) => Promise<PaymentTransactionModelType | undefined>
+  first: () => Promise<PaymentTransactionModelType | undefined>
+  last: () => Promise<PaymentTransactionModelType | undefined>
+  firstOrFail: () => Promise<PaymentTransactionModelType | undefined>
+  all: () => Promise<PaymentTransactionModelType[]>
+  findOrFail: (id: number) => Promise<PaymentTransactionModelType | undefined>
+  findMany: (ids: number[]) => Promise<PaymentTransactionModelType[]>
+  latest: (column?: keyof PaymentTransactionsTable) => Promise<PaymentTransactionModelType | undefined>
+  oldest: (column?: keyof PaymentTransactionsTable) => Promise<PaymentTransactionModelType | undefined>
+  skip: (count: number) => PaymentTransactionModelType
+  take: (count: number) => PaymentTransactionModelType
+  where: <V = string>(column: keyof PaymentTransactionsTable, ...args: [V] | [Operator, V]) => PaymentTransactionModelType
+  orWhere: (...conditions: [string, any][]) => PaymentTransactionModelType
+  whereNotIn: <V = number>(column: keyof PaymentTransactionsTable, values: V[]) => PaymentTransactionModelType
+  whereBetween: <V = number>(column: keyof PaymentTransactionsTable, range: [V, V]) => PaymentTransactionModelType
+  whereRef: (column: keyof PaymentTransactionsTable, ...args: string[]) => PaymentTransactionModelType
+  when: (condition: boolean, callback: (query: PaymentTransactionModelType) => PaymentTransactionModelType) => PaymentTransactionModelType
+  whereNull: (column: keyof PaymentTransactionsTable) => PaymentTransactionModelType
+  whereNotNull: (column: keyof PaymentTransactionsTable) => PaymentTransactionModelType
+  whereLike: (column: keyof PaymentTransactionsTable, value: string) => PaymentTransactionModelType
+  orderBy: (column: keyof PaymentTransactionsTable, order: 'asc' | 'desc') => PaymentTransactionModelType
+  orderByAsc: (column: keyof PaymentTransactionsTable) => PaymentTransactionModelType
+  orderByDesc: (column: keyof PaymentTransactionsTable) => PaymentTransactionModelType
+  groupBy: (column: keyof PaymentTransactionsTable) => PaymentTransactionModelType
+  having: <V = string>(column: keyof PaymentTransactionsTable, operator: Operator, value: V) => PaymentTransactionModelType
+  inRandomOrder: () => PaymentTransactionModelType
+  whereColumn: (first: keyof PaymentTransactionsTable, operator: Operator, second: keyof PaymentTransactionsTable) => PaymentTransactionModelType
+  max: (field: keyof PaymentTransactionsTable) => Promise<number>
+  min: (field: keyof PaymentTransactionsTable) => Promise<number>
+  avg: (field: keyof PaymentTransactionsTable) => Promise<number>
+  sum: (field: keyof PaymentTransactionsTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<PaymentTransactionModelType[]>
+  pluck: <K extends keyof PaymentTransactionModelType>(field: K) => Promise<PaymentTransactionModelType[K][]>
+  chunk: (size: number, callback: (models: PaymentTransactionModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: PaymentTransactionModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newPaymentTransaction: NewPaymentTransaction) => Promise<PaymentTransactionModelType>
+  firstOrCreate: (search: Partial<PaymentTransactionsTable>, values?: NewPaymentTransaction) => Promise<PaymentTransactionModelType>
+  updateOrCreate: (search: Partial<PaymentTransactionsTable>, values?: NewPaymentTransaction) => Promise<PaymentTransactionModelType>
+  createMany: (newPaymentTransaction: NewPaymentTransaction[]) => Promise<void>
+  forceCreate: (newPaymentTransaction: NewPaymentTransaction) => Promise<PaymentTransactionModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof PaymentTransactionsTable, values: V[]) => PaymentTransactionModelType
+  distinct: (column: keyof PaymentTransactionJsonResponse) => PaymentTransactionModelType
+  join: (table: string, firstCol: string, secondCol: string) => PaymentTransactionModelType
+
   // Instance methods
-  createInstance: (data: PaymentTransactionJsonResponse) => IPaymentTransactionModel
-  create: (newPaymentTransaction: NewPaymentTransaction) => Promise<IPaymentTransactionModel>
-  update: (newPaymentTransaction: PaymentTransactionUpdate) => Promise<IPaymentTransactionModel | undefined>
-  forceUpdate: (newPaymentTransaction: PaymentTransactionUpdate) => Promise<IPaymentTransactionModel | undefined>
-  save: () => Promise<IPaymentTransactionModel>
+  createInstance: (data: PaymentTransactionJsonResponse) => PaymentTransactionModelType
+  update: (newPaymentTransaction: PaymentTransactionUpdate) => Promise<PaymentTransactionModelType | undefined>
+  forceUpdate: (newPaymentTransaction: PaymentTransactionUpdate) => Promise<PaymentTransactionModelType | undefined>
+  save: () => Promise<PaymentTransactionModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<PaymentTransactionJsonResponse>
   toJSON: () => PaymentTransactionJsonResponse
-  parseResult: (model: IPaymentTransactionModel) => IPaymentTransactionModel
+  parseResult: (model: PaymentTransactionModelType) => PaymentTransactionModelType
 }
-
-export type PaymentTransactionModelType = IPaymentTransactionModel & IPaymentTransactionModelStatic

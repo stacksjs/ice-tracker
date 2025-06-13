@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { NewPage, PageJsonResponse, PageModelType, PagesTable, PageUpdate } from '../types/PageType'
+import type { NewPage, PageJsonResponse, PagesTable, PageUpdate } from '../types/PageType'
 import type { AuthorModel } from './Author'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -9,7 +9,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> implements PageModelType {
+export class PageModel extends BaseOrm<PageModel, PagesTable, PageJsonResponse> {
   private readonly hidden: Array<keyof PageJsonResponse> = []
   private readonly fillable: Array<keyof PageJsonResponse> = ['title', 'template', 'views', 'published_at', 'conversions', 'uuid']
   private readonly guarded: Array<keyof PageJsonResponse> = []

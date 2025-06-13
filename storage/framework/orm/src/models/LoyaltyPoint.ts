@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { LoyaltyPointJsonResponse, LoyaltyPointModelType, LoyaltyPointsTable, LoyaltyPointUpdate, NewLoyaltyPoint } from '../types/LoyaltyPointType'
+import type { LoyaltyPointJsonResponse, LoyaltyPointsTable, LoyaltyPointUpdate, NewLoyaltyPoint } from '../types/LoyaltyPointType'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -9,7 +9,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsTable, LoyaltyPointJsonResponse> implements LoyaltyPointModelType {
+export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsTable, LoyaltyPointJsonResponse> {
   private readonly hidden: Array<keyof LoyaltyPointJsonResponse> = []
   private readonly fillable: Array<keyof LoyaltyPointJsonResponse> = ['wallet_id', 'points', 'source', 'source_reference_id', 'description', 'expiry_date', 'is_used', 'uuid']
   private readonly guarded: Array<keyof LoyaltyPointJsonResponse> = []

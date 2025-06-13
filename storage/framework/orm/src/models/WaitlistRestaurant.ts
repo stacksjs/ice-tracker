@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { NewWaitlistRestaurant, WaitlistRestaurantJsonResponse, WaitlistRestaurantModelType, WaitlistRestaurantsTable, WaitlistRestaurantUpdate } from '../types/WaitlistRestaurantType'
+import type { NewWaitlistRestaurant, WaitlistRestaurantJsonResponse, WaitlistRestaurantsTable, WaitlistRestaurantUpdate } from '../types/WaitlistRestaurantType'
 import type { CustomerModel } from './Customer'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -10,7 +10,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, WaitlistRestaurantsTable, WaitlistRestaurantJsonResponse> implements WaitlistRestaurantModelType {
+export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, WaitlistRestaurantsTable, WaitlistRestaurantJsonResponse> {
   private readonly hidden: Array<keyof WaitlistRestaurantJsonResponse> = []
   private readonly fillable: Array<keyof WaitlistRestaurantJsonResponse> = ['name', 'email', 'phone', 'party_size', 'check_in_time', 'table_preference', 'status', 'quoted_wait_time', 'actual_wait_time', 'queue_position', 'seated_at', 'no_show_at', 'cancelled_at', 'uuid', 'customer_id']
   private readonly guarded: Array<keyof WaitlistRestaurantJsonResponse> = []

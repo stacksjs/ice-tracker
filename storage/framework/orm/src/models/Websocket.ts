@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { NewWebsocket, WebsocketJsonResponse, WebsocketModelType, WebsocketsTable, WebsocketUpdate } from '../types/WebsocketType'
+import type { NewWebsocket, WebsocketJsonResponse, WebsocketsTable, WebsocketUpdate } from '../types/WebsocketType'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
@@ -8,7 +8,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, WebsocketJsonResponse> implements WebsocketModelType {
+export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, WebsocketJsonResponse> {
   private readonly hidden: Array<keyof WebsocketJsonResponse> = []
   private readonly fillable: Array<keyof WebsocketJsonResponse> = ['type', 'socket', 'details', 'time', 'uuid']
   private readonly guarded: Array<keyof WebsocketJsonResponse> = []

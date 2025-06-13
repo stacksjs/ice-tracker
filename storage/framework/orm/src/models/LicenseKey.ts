@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { LicenseKeyJsonResponse, LicenseKeyModelType, LicenseKeysTable, LicenseKeyUpdate, NewLicenseKey } from '../types/LicenseKeyType'
+import type { LicenseKeyJsonResponse, LicenseKeysTable, LicenseKeyUpdate, NewLicenseKey } from '../types/LicenseKeyType'
 import type { CustomerModel } from './Customer'
 import type { OrderModel } from './Order'
 import type { ProductModel } from './Product'
@@ -13,7 +13,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, LicenseKeyJsonResponse> implements LicenseKeyModelType {
+export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, LicenseKeyJsonResponse> {
   private readonly hidden: Array<keyof LicenseKeyJsonResponse> = []
   private readonly fillable: Array<keyof LicenseKeyJsonResponse> = ['key', 'template', 'expiry_date', 'status', 'uuid', 'customer_id', 'product_id', 'order_id']
   private readonly guarded: Array<keyof LicenseKeyJsonResponse> = []

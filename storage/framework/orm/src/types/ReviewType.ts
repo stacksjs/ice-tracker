@@ -41,65 +41,7 @@ export interface ReviewJsonResponse extends Omit<Selectable<ReviewRead>, 'passwo
 export type NewReview = Insertable<ReviewWrite>
 export type ReviewUpdate = Updateable<ReviewWrite>
 
-export interface IReviewModelStatic {
-  with: (relations: string[]) => IReviewModel
-  select: (params: (keyof ReviewJsonResponse)[] | RawBuilder<string> | string) => IReviewModel
-  find: (id: number) => Promise<IReviewModel | undefined>
-  first: () => Promise<IReviewModel | undefined>
-  last: () => Promise<IReviewModel | undefined>
-  firstOrFail: () => Promise<IReviewModel | undefined>
-  all: () => Promise<IReviewModel[]>
-  findOrFail: (id: number) => Promise<IReviewModel | undefined>
-  findMany: (ids: number[]) => Promise<IReviewModel[]>
-  latest: (column?: keyof ReviewsTable) => Promise<IReviewModel | undefined>
-  oldest: (column?: keyof ReviewsTable) => Promise<IReviewModel | undefined>
-  skip: (count: number) => IReviewModel
-  take: (count: number) => IReviewModel
-  where: <V = string>(column: keyof ReviewsTable, ...args: [V] | [Operator, V]) => IReviewModel
-  orWhere: (...conditions: [string, any][]) => IReviewModel
-  whereNotIn: <V = number>(column: keyof ReviewsTable, values: V[]) => IReviewModel
-  whereBetween: <V = number>(column: keyof ReviewsTable, range: [V, V]) => IReviewModel
-  whereRef: (column: keyof ReviewsTable, ...args: string[]) => IReviewModel
-  when: (condition: boolean, callback: (query: IReviewModel) => IReviewModel) => IReviewModel
-  whereNull: (column: keyof ReviewsTable) => IReviewModel
-  whereNotNull: (column: keyof ReviewsTable) => IReviewModel
-  whereLike: (column: keyof ReviewsTable, value: string) => IReviewModel
-  orderBy: (column: keyof ReviewsTable, order: 'asc' | 'desc') => IReviewModel
-  orderByAsc: (column: keyof ReviewsTable) => IReviewModel
-  orderByDesc: (column: keyof ReviewsTable) => IReviewModel
-  groupBy: (column: keyof ReviewsTable) => IReviewModel
-  having: <V = string>(column: keyof ReviewsTable, operator: Operator, value: V) => IReviewModel
-  inRandomOrder: () => IReviewModel
-  whereColumn: (first: keyof ReviewsTable, operator: Operator, second: keyof ReviewsTable) => IReviewModel
-  max: (field: keyof ReviewsTable) => Promise<number>
-  min: (field: keyof ReviewsTable) => Promise<number>
-  avg: (field: keyof ReviewsTable) => Promise<number>
-  sum: (field: keyof ReviewsTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<IReviewModel[]>
-  pluck: <K extends keyof IReviewModel>(field: K) => Promise<IReviewModel[K][]>
-  chunk: (size: number, callback: (models: IReviewModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IReviewModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newReview: NewReview) => Promise<IReviewModel>
-  firstOrCreate: (search: Partial<ReviewsTable>, values?: NewReview) => Promise<IReviewModel>
-  updateOrCreate: (search: Partial<ReviewsTable>, values?: NewReview) => Promise<IReviewModel>
-  createMany: (newReview: NewReview[]) => Promise<void>
-  forceCreate: (newReview: NewReview) => Promise<IReviewModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof ReviewsTable, values: V[]) => IReviewModel
-  distinct: (column: keyof ReviewJsonResponse) => IReviewModel
-  join: (table: string, firstCol: string, secondCol: string) => IReviewModel
-}
-
-export interface IReviewModel {
+export interface ReviewModelType {
   // Properties
   readonly id: number
   get rating(): number
@@ -108,18 +50,18 @@ export interface IReviewModel {
   set title(value: string)
   get content(): string
   set content(value: string)
-  get is_verified_purchase(): boolean | undefined
-  set is_verified_purchase(value: boolean)
-  get is_approved(): boolean | undefined
-  set is_approved(value: boolean)
-  get is_featured(): boolean | undefined
-  set is_featured(value: boolean)
-  get helpful_votes(): number | undefined
-  set helpful_votes(value: number)
-  get unhelpful_votes(): number | undefined
-  set unhelpful_votes(value: number)
-  get purchase_date(): string | undefined
-  set purchase_date(value: string)
+  get isVerifiedPurchase(): boolean | undefined
+  set isVerifiedPurchase(value: boolean)
+  get isApproved(): boolean | undefined
+  set isApproved(value: boolean)
+  get isFeatured(): boolean | undefined
+  set isFeatured(value: boolean)
+  get helpfulVotes(): number | undefined
+  set helpfulVotes(value: number)
+  get unhelpfulVotes(): number | undefined
+  set unhelpfulVotes(value: number)
+  get purchaseDate(): string | undefined
+  set purchaseDate(value: string)
   get images(): string | undefined
   set images(value: string)
   get uuid(): string | undefined
@@ -128,16 +70,70 @@ export interface IReviewModel {
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => ReviewModelType
+  select: (params: (keyof ReviewJsonResponse)[] | RawBuilder<string> | string) => ReviewModelType
+  find: (id: number) => Promise<ReviewModelType | undefined>
+  first: () => Promise<ReviewModelType | undefined>
+  last: () => Promise<ReviewModelType | undefined>
+  firstOrFail: () => Promise<ReviewModelType | undefined>
+  all: () => Promise<ReviewModelType[]>
+  findOrFail: (id: number) => Promise<ReviewModelType | undefined>
+  findMany: (ids: number[]) => Promise<ReviewModelType[]>
+  latest: (column?: keyof ReviewsTable) => Promise<ReviewModelType | undefined>
+  oldest: (column?: keyof ReviewsTable) => Promise<ReviewModelType | undefined>
+  skip: (count: number) => ReviewModelType
+  take: (count: number) => ReviewModelType
+  where: <V = string>(column: keyof ReviewsTable, ...args: [V] | [Operator, V]) => ReviewModelType
+  orWhere: (...conditions: [string, any][]) => ReviewModelType
+  whereNotIn: <V = number>(column: keyof ReviewsTable, values: V[]) => ReviewModelType
+  whereBetween: <V = number>(column: keyof ReviewsTable, range: [V, V]) => ReviewModelType
+  whereRef: (column: keyof ReviewsTable, ...args: string[]) => ReviewModelType
+  when: (condition: boolean, callback: (query: ReviewModelType) => ReviewModelType) => ReviewModelType
+  whereNull: (column: keyof ReviewsTable) => ReviewModelType
+  whereNotNull: (column: keyof ReviewsTable) => ReviewModelType
+  whereLike: (column: keyof ReviewsTable, value: string) => ReviewModelType
+  orderBy: (column: keyof ReviewsTable, order: 'asc' | 'desc') => ReviewModelType
+  orderByAsc: (column: keyof ReviewsTable) => ReviewModelType
+  orderByDesc: (column: keyof ReviewsTable) => ReviewModelType
+  groupBy: (column: keyof ReviewsTable) => ReviewModelType
+  having: <V = string>(column: keyof ReviewsTable, operator: Operator, value: V) => ReviewModelType
+  inRandomOrder: () => ReviewModelType
+  whereColumn: (first: keyof ReviewsTable, operator: Operator, second: keyof ReviewsTable) => ReviewModelType
+  max: (field: keyof ReviewsTable) => Promise<number>
+  min: (field: keyof ReviewsTable) => Promise<number>
+  avg: (field: keyof ReviewsTable) => Promise<number>
+  sum: (field: keyof ReviewsTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<ReviewModelType[]>
+  pluck: <K extends keyof ReviewModelType>(field: K) => Promise<ReviewModelType[K][]>
+  chunk: (size: number, callback: (models: ReviewModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: ReviewModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newReview: NewReview) => Promise<ReviewModelType>
+  firstOrCreate: (search: Partial<ReviewsTable>, values?: NewReview) => Promise<ReviewModelType>
+  updateOrCreate: (search: Partial<ReviewsTable>, values?: NewReview) => Promise<ReviewModelType>
+  createMany: (newReview: NewReview[]) => Promise<void>
+  forceCreate: (newReview: NewReview) => Promise<ReviewModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof ReviewsTable, values: V[]) => ReviewModelType
+  distinct: (column: keyof ReviewJsonResponse) => ReviewModelType
+  join: (table: string, firstCol: string, secondCol: string) => ReviewModelType
+
   // Instance methods
-  createInstance: (data: ReviewJsonResponse) => IReviewModel
-  create: (newReview: NewReview) => Promise<IReviewModel>
-  update: (newReview: ReviewUpdate) => Promise<IReviewModel | undefined>
-  forceUpdate: (newReview: ReviewUpdate) => Promise<IReviewModel | undefined>
-  save: () => Promise<IReviewModel>
+  createInstance: (data: ReviewJsonResponse) => ReviewModelType
+  update: (newReview: ReviewUpdate) => Promise<ReviewModelType | undefined>
+  forceUpdate: (newReview: ReviewUpdate) => Promise<ReviewModelType | undefined>
+  save: () => Promise<ReviewModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<ReviewJsonResponse>
   toJSON: () => ReviewJsonResponse
-  parseResult: (model: IReviewModel) => IReviewModel
+  parseResult: (model: ReviewModelType) => ReviewModelType
 }
-
-export type ReviewModelType = IReviewModel & IReviewModelStatic

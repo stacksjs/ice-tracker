@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { NewPaymentProduct, PaymentProductJsonResponse, PaymentProductModelType, PaymentProductsTable, PaymentProductUpdate } from '../types/PaymentProductType'
+import type { NewPaymentProduct, PaymentProductJsonResponse, PaymentProductsTable, PaymentProductUpdate } from '../types/PaymentProductType'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -8,7 +8,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentProductsTable, PaymentProductJsonResponse> implements PaymentProductModelType {
+export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentProductsTable, PaymentProductJsonResponse> {
   private readonly hidden: Array<keyof PaymentProductJsonResponse> = []
   private readonly fillable: Array<keyof PaymentProductJsonResponse> = ['name', 'description', 'key', 'unit_price', 'status', 'image', 'provider_id', 'uuid']
   private readonly guarded: Array<keyof PaymentProductJsonResponse> = []

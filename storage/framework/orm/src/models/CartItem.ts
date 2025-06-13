@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CartItemJsonResponse, CartItemModelType, CartItemsTable, CartItemUpdate, NewCartItem } from '../types/CartItemType'
+import type { CartItemJsonResponse, CartItemsTable, CartItemUpdate, NewCartItem } from '../types/CartItemType'
 import type { CartModel } from './Cart'
 import type { ProductItemModel } from './ProductItem'
 import { randomUUIDv7 } from 'bun'
@@ -11,7 +11,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartItemJsonResponse> implements CartItemModelType {
+export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartItemJsonResponse> {
   private readonly hidden: Array<keyof CartItemJsonResponse> = []
   private readonly fillable: Array<keyof CartItemJsonResponse> = ['quantity', 'unit_price', 'total_price', 'tax_rate', 'tax_amount', 'discount_percentage', 'discount_amount', 'product_name', 'product_sku', 'product_image', 'notes', 'uuid', 'cart_id']
   private readonly guarded: Array<keyof CartItemJsonResponse> = []

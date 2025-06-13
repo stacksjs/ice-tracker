@@ -33,65 +33,7 @@ export interface AuthorJsonResponse extends Omit<Selectable<AuthorRead>, 'passwo
 export type NewAuthor = Insertable<AuthorWrite>
 export type AuthorUpdate = Updateable<AuthorWrite>
 
-export interface IAuthorModelStatic {
-  with: (relations: string[]) => IAuthorModel
-  select: (params: (keyof AuthorJsonResponse)[] | RawBuilder<string> | string) => IAuthorModel
-  find: (id: number) => Promise<IAuthorModel | undefined>
-  first: () => Promise<IAuthorModel | undefined>
-  last: () => Promise<IAuthorModel | undefined>
-  firstOrFail: () => Promise<IAuthorModel | undefined>
-  all: () => Promise<IAuthorModel[]>
-  findOrFail: (id: number) => Promise<IAuthorModel | undefined>
-  findMany: (ids: number[]) => Promise<IAuthorModel[]>
-  latest: (column?: keyof AuthorsTable) => Promise<IAuthorModel | undefined>
-  oldest: (column?: keyof AuthorsTable) => Promise<IAuthorModel | undefined>
-  skip: (count: number) => IAuthorModel
-  take: (count: number) => IAuthorModel
-  where: <V = string>(column: keyof AuthorsTable, ...args: [V] | [Operator, V]) => IAuthorModel
-  orWhere: (...conditions: [string, any][]) => IAuthorModel
-  whereNotIn: <V = number>(column: keyof AuthorsTable, values: V[]) => IAuthorModel
-  whereBetween: <V = number>(column: keyof AuthorsTable, range: [V, V]) => IAuthorModel
-  whereRef: (column: keyof AuthorsTable, ...args: string[]) => IAuthorModel
-  when: (condition: boolean, callback: (query: IAuthorModel) => IAuthorModel) => IAuthorModel
-  whereNull: (column: keyof AuthorsTable) => IAuthorModel
-  whereNotNull: (column: keyof AuthorsTable) => IAuthorModel
-  whereLike: (column: keyof AuthorsTable, value: string) => IAuthorModel
-  orderBy: (column: keyof AuthorsTable, order: 'asc' | 'desc') => IAuthorModel
-  orderByAsc: (column: keyof AuthorsTable) => IAuthorModel
-  orderByDesc: (column: keyof AuthorsTable) => IAuthorModel
-  groupBy: (column: keyof AuthorsTable) => IAuthorModel
-  having: <V = string>(column: keyof AuthorsTable, operator: Operator, value: V) => IAuthorModel
-  inRandomOrder: () => IAuthorModel
-  whereColumn: (first: keyof AuthorsTable, operator: Operator, second: keyof AuthorsTable) => IAuthorModel
-  max: (field: keyof AuthorsTable) => Promise<number>
-  min: (field: keyof AuthorsTable) => Promise<number>
-  avg: (field: keyof AuthorsTable) => Promise<number>
-  sum: (field: keyof AuthorsTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<IAuthorModel[]>
-  pluck: <K extends keyof IAuthorModel>(field: K) => Promise<IAuthorModel[K][]>
-  chunk: (size: number, callback: (models: IAuthorModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IAuthorModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newAuthor: NewAuthor) => Promise<IAuthorModel>
-  firstOrCreate: (search: Partial<AuthorsTable>, values?: NewAuthor) => Promise<IAuthorModel>
-  updateOrCreate: (search: Partial<AuthorsTable>, values?: NewAuthor) => Promise<IAuthorModel>
-  createMany: (newAuthor: NewAuthor[]) => Promise<void>
-  forceCreate: (newAuthor: NewAuthor) => Promise<IAuthorModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof AuthorsTable, values: V[]) => IAuthorModel
-  distinct: (column: keyof AuthorJsonResponse) => IAuthorModel
-  join: (table: string, firstCol: string, secondCol: string) => IAuthorModel
-}
-
-export interface IAuthorModel {
+export interface AuthorModelType {
   // Properties
   readonly id: number
   get name(): string
@@ -104,16 +46,70 @@ export interface IAuthorModel {
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => AuthorModelType
+  select: (params: (keyof AuthorJsonResponse)[] | RawBuilder<string> | string) => AuthorModelType
+  find: (id: number) => Promise<AuthorModelType | undefined>
+  first: () => Promise<AuthorModelType | undefined>
+  last: () => Promise<AuthorModelType | undefined>
+  firstOrFail: () => Promise<AuthorModelType | undefined>
+  all: () => Promise<AuthorModelType[]>
+  findOrFail: (id: number) => Promise<AuthorModelType | undefined>
+  findMany: (ids: number[]) => Promise<AuthorModelType[]>
+  latest: (column?: keyof AuthorsTable) => Promise<AuthorModelType | undefined>
+  oldest: (column?: keyof AuthorsTable) => Promise<AuthorModelType | undefined>
+  skip: (count: number) => AuthorModelType
+  take: (count: number) => AuthorModelType
+  where: <V = string>(column: keyof AuthorsTable, ...args: [V] | [Operator, V]) => AuthorModelType
+  orWhere: (...conditions: [string, any][]) => AuthorModelType
+  whereNotIn: <V = number>(column: keyof AuthorsTable, values: V[]) => AuthorModelType
+  whereBetween: <V = number>(column: keyof AuthorsTable, range: [V, V]) => AuthorModelType
+  whereRef: (column: keyof AuthorsTable, ...args: string[]) => AuthorModelType
+  when: (condition: boolean, callback: (query: AuthorModelType) => AuthorModelType) => AuthorModelType
+  whereNull: (column: keyof AuthorsTable) => AuthorModelType
+  whereNotNull: (column: keyof AuthorsTable) => AuthorModelType
+  whereLike: (column: keyof AuthorsTable, value: string) => AuthorModelType
+  orderBy: (column: keyof AuthorsTable, order: 'asc' | 'desc') => AuthorModelType
+  orderByAsc: (column: keyof AuthorsTable) => AuthorModelType
+  orderByDesc: (column: keyof AuthorsTable) => AuthorModelType
+  groupBy: (column: keyof AuthorsTable) => AuthorModelType
+  having: <V = string>(column: keyof AuthorsTable, operator: Operator, value: V) => AuthorModelType
+  inRandomOrder: () => AuthorModelType
+  whereColumn: (first: keyof AuthorsTable, operator: Operator, second: keyof AuthorsTable) => AuthorModelType
+  max: (field: keyof AuthorsTable) => Promise<number>
+  min: (field: keyof AuthorsTable) => Promise<number>
+  avg: (field: keyof AuthorsTable) => Promise<number>
+  sum: (field: keyof AuthorsTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<AuthorModelType[]>
+  pluck: <K extends keyof AuthorModelType>(field: K) => Promise<AuthorModelType[K][]>
+  chunk: (size: number, callback: (models: AuthorModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: AuthorModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newAuthor: NewAuthor) => Promise<AuthorModelType>
+  firstOrCreate: (search: Partial<AuthorsTable>, values?: NewAuthor) => Promise<AuthorModelType>
+  updateOrCreate: (search: Partial<AuthorsTable>, values?: NewAuthor) => Promise<AuthorModelType>
+  createMany: (newAuthor: NewAuthor[]) => Promise<void>
+  forceCreate: (newAuthor: NewAuthor) => Promise<AuthorModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof AuthorsTable, values: V[]) => AuthorModelType
+  distinct: (column: keyof AuthorJsonResponse) => AuthorModelType
+  join: (table: string, firstCol: string, secondCol: string) => AuthorModelType
+
   // Instance methods
-  createInstance: (data: AuthorJsonResponse) => IAuthorModel
-  create: (newAuthor: NewAuthor) => Promise<IAuthorModel>
-  update: (newAuthor: AuthorUpdate) => Promise<IAuthorModel | undefined>
-  forceUpdate: (newAuthor: AuthorUpdate) => Promise<IAuthorModel | undefined>
-  save: () => Promise<IAuthorModel>
+  createInstance: (data: AuthorJsonResponse) => AuthorModelType
+  update: (newAuthor: AuthorUpdate) => Promise<AuthorModelType | undefined>
+  forceUpdate: (newAuthor: AuthorUpdate) => Promise<AuthorModelType | undefined>
+  save: () => Promise<AuthorModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<AuthorJsonResponse>
   toJSON: () => AuthorJsonResponse
-  parseResult: (model: IAuthorModel) => IAuthorModel
+  parseResult: (model: AuthorModelType) => AuthorModelType
 }
-
-export type AuthorModelType = IAuthorModel & IAuthorModelStatic

@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { NewTaxRate, TaxRateJsonResponse, TaxRateModelType, TaxRatesTable, TaxRateUpdate } from '../types/TaxRateType'
+import type { NewTaxRate, TaxRateJsonResponse, TaxRatesTable, TaxRateUpdate } from '../types/TaxRateType'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -9,7 +9,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJsonResponse> implements TaxRateModelType {
+export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJsonResponse> {
   private readonly hidden: Array<keyof TaxRateJsonResponse> = []
   private readonly fillable: Array<keyof TaxRateJsonResponse> = ['name', 'rate', 'type', 'country', 'region', 'status', 'is_default', 'uuid']
   private readonly guarded: Array<keyof TaxRateJsonResponse> = []

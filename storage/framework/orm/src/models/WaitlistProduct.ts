@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { NewWaitlistProduct, WaitlistProductJsonResponse, WaitlistProductModelType, WaitlistProductsTable, WaitlistProductUpdate } from '../types/WaitlistProductType'
+import type { NewWaitlistProduct, WaitlistProductJsonResponse, WaitlistProductsTable, WaitlistProductUpdate } from '../types/WaitlistProductType'
 import type { CustomerModel } from './Customer'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
@@ -11,7 +11,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitlistProductsTable, WaitlistProductJsonResponse> implements WaitlistProductModelType {
+export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitlistProductsTable, WaitlistProductJsonResponse> {
   private readonly hidden: Array<keyof WaitlistProductJsonResponse> = []
   private readonly fillable: Array<keyof WaitlistProductJsonResponse> = ['name', 'email', 'phone', 'quantity', 'notification_preference', 'source', 'notes', 'status', 'notified_at', 'purchased_at', 'cancelled_at', 'uuid', 'customer_id', 'product_id']
   private readonly guarded: Array<keyof WaitlistProductJsonResponse> = []

@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { NewReview, ReviewJsonResponse, ReviewModelType, ReviewsTable, ReviewUpdate } from '../types/ReviewType'
+import type { NewReview, ReviewJsonResponse, ReviewsTable, ReviewUpdate } from '../types/ReviewType'
 import type { CustomerModel } from './Customer'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
@@ -11,7 +11,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class ReviewModel extends BaseOrm<ReviewModel, ReviewsTable, ReviewJsonResponse> implements ReviewModelType {
+export class ReviewModel extends BaseOrm<ReviewModel, ReviewsTable, ReviewJsonResponse> {
   private readonly hidden: Array<keyof ReviewJsonResponse> = []
   private readonly fillable: Array<keyof ReviewJsonResponse> = ['rating', 'title', 'content', 'is_verified_purchase', 'is_approved', 'is_featured', 'helpful_votes', 'unhelpful_votes', 'purchase_date', 'images', 'uuid', 'customer_id', 'product_id']
   private readonly guarded: Array<keyof ReviewJsonResponse> = []

@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CategoriesTable, CategoryJsonResponse, CategoryModelType, CategoryUpdate, NewCategory } from '../types/CategoryType'
+import type { CategoriesTable, CategoryJsonResponse, CategoryUpdate, NewCategory } from '../types/CategoryType'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -10,7 +10,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, CategoryJsonResponse> implements CategoryModelType {
+export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, CategoryJsonResponse> {
   private readonly hidden: Array<keyof CategoryJsonResponse> = []
   private readonly fillable: Array<keyof CategoryJsonResponse> = ['name', 'description', 'image_url', 'is_active', 'parent_category_id', 'display_order', 'uuid']
   private readonly guarded: Array<keyof CategoryJsonResponse> = []

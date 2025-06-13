@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { NewShippingMethod, ShippingMethodJsonResponse, ShippingMethodModelType, ShippingMethodsTable, ShippingMethodUpdate } from '../types/ShippingMethodType'
+import type { NewShippingMethod, ShippingMethodJsonResponse, ShippingMethodsTable, ShippingMethodUpdate } from '../types/ShippingMethodType'
 import type { ShippingZoneModel } from './ShippingZone'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -10,7 +10,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMethodsTable, ShippingMethodJsonResponse> implements ShippingMethodModelType {
+export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMethodsTable, ShippingMethodJsonResponse> {
   private readonly hidden: Array<keyof ShippingMethodJsonResponse> = []
   private readonly fillable: Array<keyof ShippingMethodJsonResponse> = ['name', 'description', 'base_rate', 'free_shipping', 'status', 'uuid']
   private readonly guarded: Array<keyof ShippingMethodJsonResponse> = []

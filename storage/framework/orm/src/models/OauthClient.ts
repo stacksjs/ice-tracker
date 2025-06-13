@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { NewOauthClient, OauthClientJsonResponse, OauthClientModelType, OauthClientsTable, OauthClientUpdate } from '../types/OauthClientType'
+import type { NewOauthClient, OauthClientJsonResponse, OauthClientsTable, OauthClientUpdate } from '../types/OauthClientType'
 import type { OauthAccessTokenModel } from './OauthAccessToken'
 import type { UserModel } from './User'
 import { sql } from '@stacksjs/database'
@@ -9,7 +9,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class OauthClientModel extends BaseOrm<OauthClientModel, OauthClientsTable, OauthClientJsonResponse> implements OauthClientModelType {
+export class OauthClientModel extends BaseOrm<OauthClientModel, OauthClientsTable, OauthClientJsonResponse> {
   private readonly hidden: Array<keyof OauthClientJsonResponse> = []
   private readonly fillable: Array<keyof OauthClientJsonResponse> = ['name', 'secret', 'provider', 'redirect', 'personal_access_client', 'password_client', 'revoked', 'uuid']
   private readonly guarded: Array<keyof OauthClientJsonResponse> = []

@@ -46,46 +46,85 @@ export interface GiftCardJsonResponse extends Omit<Selectable<GiftCardRead>, 'pa
 export type NewGiftCard = Insertable<GiftCardWrite>
 export type GiftCardUpdate = Updateable<GiftCardWrite>
 
-export interface IGiftCardModelStatic {
-  with: (relations: string[]) => IGiftCardModel
-  select: (params: (keyof GiftCardJsonResponse)[] | RawBuilder<string> | string) => IGiftCardModel
-  find: (id: number) => Promise<IGiftCardModel | undefined>
-  first: () => Promise<IGiftCardModel | undefined>
-  last: () => Promise<IGiftCardModel | undefined>
-  firstOrFail: () => Promise<IGiftCardModel | undefined>
-  all: () => Promise<IGiftCardModel[]>
-  findOrFail: (id: number) => Promise<IGiftCardModel | undefined>
-  findMany: (ids: number[]) => Promise<IGiftCardModel[]>
-  latest: (column?: keyof GiftCardsTable) => Promise<IGiftCardModel | undefined>
-  oldest: (column?: keyof GiftCardsTable) => Promise<IGiftCardModel | undefined>
-  skip: (count: number) => IGiftCardModel
-  take: (count: number) => IGiftCardModel
-  where: <V = string>(column: keyof GiftCardsTable, ...args: [V] | [Operator, V]) => IGiftCardModel
-  orWhere: (...conditions: [string, any][]) => IGiftCardModel
-  whereNotIn: <V = number>(column: keyof GiftCardsTable, values: V[]) => IGiftCardModel
-  whereBetween: <V = number>(column: keyof GiftCardsTable, range: [V, V]) => IGiftCardModel
-  whereRef: (column: keyof GiftCardsTable, ...args: string[]) => IGiftCardModel
-  when: (condition: boolean, callback: (query: IGiftCardModel) => IGiftCardModel) => IGiftCardModel
-  whereNull: (column: keyof GiftCardsTable) => IGiftCardModel
-  whereNotNull: (column: keyof GiftCardsTable) => IGiftCardModel
-  whereLike: (column: keyof GiftCardsTable, value: string) => IGiftCardModel
-  orderBy: (column: keyof GiftCardsTable, order: 'asc' | 'desc') => IGiftCardModel
-  orderByAsc: (column: keyof GiftCardsTable) => IGiftCardModel
-  orderByDesc: (column: keyof GiftCardsTable) => IGiftCardModel
-  groupBy: (column: keyof GiftCardsTable) => IGiftCardModel
-  having: <V = string>(column: keyof GiftCardsTable, operator: Operator, value: V) => IGiftCardModel
-  inRandomOrder: () => IGiftCardModel
-  whereColumn: (first: keyof GiftCardsTable, operator: Operator, second: keyof GiftCardsTable) => IGiftCardModel
+export interface GiftCardModelType {
+  // Properties
+  readonly id: number
+  get code(): string
+  set code(value: string)
+  get initialBalance(): number
+  set initialBalance(value: number)
+  get currentBalance(): number
+  set currentBalance(value: number)
+  get currency(): string | undefined
+  set currency(value: string)
+  get status(): string
+  set status(value: string)
+  get purchaserId(): string | undefined
+  set purchaserId(value: string)
+  get recipientEmail(): string | undefined
+  set recipientEmail(value: string)
+  get recipientName(): string | undefined
+  set recipientName(value: string)
+  get personalMessage(): string | undefined
+  set personalMessage(value: string)
+  get isDigital(): boolean | undefined
+  set isDigital(value: boolean)
+  get isReloadable(): boolean | undefined
+  set isReloadable(value: boolean)
+  get isActive(): boolean | undefined
+  set isActive(value: boolean)
+  get expiryDate(): Date | string | undefined
+  set expiryDate(value: Date | string)
+  get lastUsedDate(): Date | string | undefined
+  set lastUsedDate(value: Date | string)
+  get templateId(): string | undefined
+  set templateId(value: string)
+  get uuid(): string | undefined
+  set uuid(value: string)
+  get created_at(): string | undefined
+  get updated_at(): string | undefined
+  set updated_at(value: string)
+
+  // Static methods
+  with: (relations: string[]) => GiftCardModelType
+  select: (params: (keyof GiftCardJsonResponse)[] | RawBuilder<string> | string) => GiftCardModelType
+  find: (id: number) => Promise<GiftCardModelType | undefined>
+  first: () => Promise<GiftCardModelType | undefined>
+  last: () => Promise<GiftCardModelType | undefined>
+  firstOrFail: () => Promise<GiftCardModelType | undefined>
+  all: () => Promise<GiftCardModelType[]>
+  findOrFail: (id: number) => Promise<GiftCardModelType | undefined>
+  findMany: (ids: number[]) => Promise<GiftCardModelType[]>
+  latest: (column?: keyof GiftCardsTable) => Promise<GiftCardModelType | undefined>
+  oldest: (column?: keyof GiftCardsTable) => Promise<GiftCardModelType | undefined>
+  skip: (count: number) => GiftCardModelType
+  take: (count: number) => GiftCardModelType
+  where: <V = string>(column: keyof GiftCardsTable, ...args: [V] | [Operator, V]) => GiftCardModelType
+  orWhere: (...conditions: [string, any][]) => GiftCardModelType
+  whereNotIn: <V = number>(column: keyof GiftCardsTable, values: V[]) => GiftCardModelType
+  whereBetween: <V = number>(column: keyof GiftCardsTable, range: [V, V]) => GiftCardModelType
+  whereRef: (column: keyof GiftCardsTable, ...args: string[]) => GiftCardModelType
+  when: (condition: boolean, callback: (query: GiftCardModelType) => GiftCardModelType) => GiftCardModelType
+  whereNull: (column: keyof GiftCardsTable) => GiftCardModelType
+  whereNotNull: (column: keyof GiftCardsTable) => GiftCardModelType
+  whereLike: (column: keyof GiftCardsTable, value: string) => GiftCardModelType
+  orderBy: (column: keyof GiftCardsTable, order: 'asc' | 'desc') => GiftCardModelType
+  orderByAsc: (column: keyof GiftCardsTable) => GiftCardModelType
+  orderByDesc: (column: keyof GiftCardsTable) => GiftCardModelType
+  groupBy: (column: keyof GiftCardsTable) => GiftCardModelType
+  having: <V = string>(column: keyof GiftCardsTable, operator: Operator, value: V) => GiftCardModelType
+  inRandomOrder: () => GiftCardModelType
+  whereColumn: (first: keyof GiftCardsTable, operator: Operator, second: keyof GiftCardsTable) => GiftCardModelType
   max: (field: keyof GiftCardsTable) => Promise<number>
   min: (field: keyof GiftCardsTable) => Promise<number>
   avg: (field: keyof GiftCardsTable) => Promise<number>
   sum: (field: keyof GiftCardsTable) => Promise<number>
   count: () => Promise<number>
-  get: () => Promise<IGiftCardModel[]>
-  pluck: <K extends keyof IGiftCardModel>(field: K) => Promise<IGiftCardModel[K][]>
-  chunk: (size: number, callback: (models: IGiftCardModel[]) => Promise<void>) => Promise<void>
+  get: () => Promise<GiftCardModelType[]>
+  pluck: <K extends keyof GiftCardModelType>(field: K) => Promise<GiftCardModelType[K][]>
+  chunk: (size: number, callback: (models: GiftCardModelType[]) => Promise<void>) => Promise<void>
   paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IGiftCardModel[]
+    data: GiftCardModelType[]
     paging: {
       total_records: number
       page: number
@@ -93,66 +132,23 @@ export interface IGiftCardModelStatic {
     }
     next_cursor: number | null
   }>
-  create: (newGiftCard: NewGiftCard) => Promise<IGiftCardModel>
-  firstOrCreate: (search: Partial<GiftCardsTable>, values?: NewGiftCard) => Promise<IGiftCardModel>
-  updateOrCreate: (search: Partial<GiftCardsTable>, values?: NewGiftCard) => Promise<IGiftCardModel>
+  create: (newGiftCard: NewGiftCard) => Promise<GiftCardModelType>
+  firstOrCreate: (search: Partial<GiftCardsTable>, values?: NewGiftCard) => Promise<GiftCardModelType>
+  updateOrCreate: (search: Partial<GiftCardsTable>, values?: NewGiftCard) => Promise<GiftCardModelType>
   createMany: (newGiftCard: NewGiftCard[]) => Promise<void>
-  forceCreate: (newGiftCard: NewGiftCard) => Promise<IGiftCardModel>
+  forceCreate: (newGiftCard: NewGiftCard) => Promise<GiftCardModelType>
   remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof GiftCardsTable, values: V[]) => IGiftCardModel
-  distinct: (column: keyof GiftCardJsonResponse) => IGiftCardModel
-  join: (table: string, firstCol: string, secondCol: string) => IGiftCardModel
-}
-
-export interface IGiftCardModel {
-  // Properties
-  readonly id: number
-  get code(): string
-  set code(value: string)
-  get initial_balance(): number
-  set initial_balance(value: number)
-  get current_balance(): number
-  set current_balance(value: number)
-  get currency(): string | undefined
-  set currency(value: string)
-  get status(): string
-  set status(value: string)
-  get purchaser_id(): string | undefined
-  set purchaser_id(value: string)
-  get recipient_email(): string | undefined
-  set recipient_email(value: string)
-  get recipient_name(): string | undefined
-  set recipient_name(value: string)
-  get personal_message(): string | undefined
-  set personal_message(value: string)
-  get is_digital(): boolean | undefined
-  set is_digital(value: boolean)
-  get is_reloadable(): boolean | undefined
-  set is_reloadable(value: boolean)
-  get is_active(): boolean | undefined
-  set is_active(value: boolean)
-  get expiry_date(): Date | string | undefined
-  set expiry_date(value: Date | string)
-  get last_used_date(): Date | string | undefined
-  set last_used_date(value: Date | string)
-  get template_id(): string | undefined
-  set template_id(value: string)
-  get uuid(): string | undefined
-  set uuid(value: string)
-  get created_at(): string | undefined
-  get updated_at(): string | undefined
-  set updated_at(value: string)
+  whereIn: <V = number>(column: keyof GiftCardsTable, values: V[]) => GiftCardModelType
+  distinct: (column: keyof GiftCardJsonResponse) => GiftCardModelType
+  join: (table: string, firstCol: string, secondCol: string) => GiftCardModelType
 
   // Instance methods
-  createInstance: (data: GiftCardJsonResponse) => IGiftCardModel
-  create: (newGiftCard: NewGiftCard) => Promise<IGiftCardModel>
-  update: (newGiftCard: GiftCardUpdate) => Promise<IGiftCardModel | undefined>
-  forceUpdate: (newGiftCard: GiftCardUpdate) => Promise<IGiftCardModel | undefined>
-  save: () => Promise<IGiftCardModel>
+  createInstance: (data: GiftCardJsonResponse) => GiftCardModelType
+  update: (newGiftCard: GiftCardUpdate) => Promise<GiftCardModelType | undefined>
+  forceUpdate: (newGiftCard: GiftCardUpdate) => Promise<GiftCardModelType | undefined>
+  save: () => Promise<GiftCardModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<GiftCardJsonResponse>
   toJSON: () => GiftCardJsonResponse
-  parseResult: (model: IGiftCardModel) => IGiftCardModel
+  parseResult: (model: GiftCardModelType) => GiftCardModelType
 }
-
-export type GiftCardModelType = IGiftCardModel & IGiftCardModelStatic

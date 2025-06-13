@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { NewProductVariant, ProductVariantJsonResponse, ProductVariantModelType, ProductVariantsTable, ProductVariantUpdate } from '../types/ProductVariantType'
+import type { NewProductVariant, ProductVariantJsonResponse, ProductVariantsTable, ProductVariantUpdate } from '../types/ProductVariantType'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -10,7 +10,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVariantsTable, ProductVariantJsonResponse> implements ProductVariantModelType {
+export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVariantsTable, ProductVariantJsonResponse> {
   private readonly hidden: Array<keyof ProductVariantJsonResponse> = []
   private readonly fillable: Array<keyof ProductVariantJsonResponse> = ['variant', 'type', 'description', 'options', 'status', 'uuid', 'product_id']
   private readonly guarded: Array<keyof ProductVariantJsonResponse> = []

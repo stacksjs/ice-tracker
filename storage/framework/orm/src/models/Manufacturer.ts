@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { ManufacturerJsonResponse, ManufacturerModelType, ManufacturersTable, ManufacturerUpdate, NewManufacturer } from '../types/ManufacturerType'
+import type { ManufacturerJsonResponse, ManufacturersTable, ManufacturerUpdate, NewManufacturer } from '../types/ManufacturerType'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -10,7 +10,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersTable, ManufacturerJsonResponse> implements ManufacturerModelType {
+export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersTable, ManufacturerJsonResponse> {
   private readonly hidden: Array<keyof ManufacturerJsonResponse> = []
   private readonly fillable: Array<keyof ManufacturerJsonResponse> = ['manufacturer', 'description', 'country', 'featured', 'uuid']
   private readonly guarded: Array<keyof ManufacturerJsonResponse> = []

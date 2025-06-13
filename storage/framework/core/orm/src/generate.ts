@@ -84,11 +84,6 @@ export async function generateModelString(
   imports: string[] = [],
 ): Promise<string> {
   // Remove unused variables
-  const _formattedTableName = pascalCase(tableName)
-  const _useSearchable = model.useSearchable
-  const _displayableAttributes = model.displayableAttributes
-  const _fieldString = ''
-
   const formattedTableName = pascalCase(tableName) // users -> Users
   const formattedModelName = camelCase(modelName) // User -> user
 
@@ -891,10 +886,8 @@ export async function generateModelString(
   for (const attribute of attributes) {
     const entity = mapEntity(attribute)
 
-    const optionalIndicator = attribute.required === false ? '?' : ''
     const undefinedIndicator = attribute.required === false ? ' | undefined' : ''
 
-    fieldString += ` ${snakeCase(attribute.field)}${optionalIndicator}: ${entity}\n     `
     getFields += `get ${snakeCase(attribute.field)}(): ${entity}${undefinedIndicator} {
       return this.attributes.${snakeCase(attribute.field)}
     }\n\n`
@@ -1022,54 +1015,31 @@ export async function generateModelString(
     const socials = model.traits?.useSocials || []
     if (socials.includes('google')) {
       jsonFields += 'google_id: this.google_id,\n'
-      fieldString += 'google_id?: string \n'
     }
 
     if (socials.includes('github')) {
       jsonFields += 'github_id: this.github_id,\n'
-      fieldString += 'github_id?: string \n'
     }
 
     if (socials.includes('twitter')) {
       jsonFields += 'twitter_id: this.twitter_id,\n'
-      fieldString += 'twitter_id?: string \n'
     }
 
     if (socials.includes('facebook')) {
       jsonFields += 'facebook_id: this.facebook_id,\n'
-      fieldString += 'facebook_id?: string \n'
     }
   }
 
   if (useTwoFactor && tableName === 'users') {
     jsonFields += 'two_factor_secret: this.two_factor_secret\n'
-    fieldString += 'two_factor_secret?: string \n'
   }
 
   if (usePasskey && tableName === 'users') {
     jsonFields += 'public_passkey: this.public_passkey,\n'
-    fieldString += 'public_passkey?: string \n'
   }
 
   if (useBillable && tableName === 'users') {
     jsonFields += 'stripe_id: this.stripe_id, \n'
-    fieldString += 'stripe_id?: string \n'
-  }
-
-  if (useUuid)
-    fieldString += 'uuid?: string \n'
-
-  if (useTimestamps) {
-    fieldString += `
-        created_at?: string\n
-        updated_at?: string
-      `
-  }
-
-  if (useSoftDeletes) {
-    fieldString += `
-        deleted_at?: string
-      `
   }
 
   jsonFields += '}'
@@ -1100,7 +1070,7 @@ ${commentablesImports}
 ${importsString}
 ${taggableImports}
 
-export class ${modelName}Model extends BaseOrm<${modelName}Model, ${pascalCase(tableName)}Table, ${modelName}JsonResponse> implements ${modelName}ModelType {
+export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTableName}Table, ${modelName}JsonResponse> {
   private readonly hidden: Array<keyof ${modelName}JsonResponse> = ${hidden}
   private readonly fillable: Array<keyof ${modelName}JsonResponse> = ${fillable}
   private readonly guarded: Array<keyof ${modelName}JsonResponse> = ${guarded}
@@ -1304,7 +1274,7 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${pascalCase(t
     return models.map((modelItem: ${modelName}JsonResponse) => instance.parseResult(new ${modelName}Model(modelItem)))
   }
 
-  static async latest(column: keyof ${pascalCase(tableName)}Table = 'created_at'): Promise<${modelName}Model | undefined> {
+  static async latest(column: keyof ${formattedTableName}Table = 'created_at'): Promise<${modelName}Model | undefined> {
     const instance = new ${modelName}Model(undefined)
 
     const model = await instance.selectFromQuery
@@ -1318,7 +1288,7 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${pascalCase(t
     return new ${modelName}Model(model)
   }
 
-  static async oldest(column: keyof ${pascalCase(tableName)}Table = 'created_at'): Promise<${modelName}Model | undefined> {
+  static async oldest(column: keyof ${formattedTableName}Table = 'created_at'): Promise<${modelName}Model | undefined> {
     const instance = new ${modelName}Model(undefined)
 
     const model = await instance.selectFromQuery
@@ -1344,7 +1314,7 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${pascalCase(t
     return instance.applyTake(count)
   }
 
-  static where<V = string>(column: keyof ${pascalCase(tableName)}Table, ...args: [V] | [Operator, V]): ${modelName}Model {
+  static where<V = string>(column: keyof ${formattedTableName}Table, ...args: [V] | [Operator, V]): ${modelName}Model {
     const instance = new ${modelName}Model(undefined)
 
     return instance.applyWhere<V>(column, ...args)
@@ -1356,19 +1326,19 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${pascalCase(t
     return instance.applyOrWhere(...conditions)
   }
 
-  static whereNotIn<V = number>(column: keyof ${pascalCase(tableName)}Table, values: V[]): ${modelName}Model {
+  static whereNotIn<V = number>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
     const instance = new ${modelName}Model(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
 
-  static whereBetween<V = number>(column: keyof ${pascalCase(tableName)}Table, range: [V, V]): ${modelName}Model {
+  static whereBetween<V = number>(column: keyof ${formattedTableName}Table, range: [V, V]): ${modelName}Model {
     const instance = new ${modelName}Model(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
 
-  static whereRef(column: keyof ${pascalCase(tableName)}Table, ...args: string[]): ${modelName}Model {
+  static whereRef(column: keyof ${formattedTableName}Table, ...args: string[]): ${modelName}Model {
     const instance = new ${modelName}Model(undefined)
 
     return instance.applyWhereRef(column, ...args)
@@ -1380,49 +1350,49 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${pascalCase(t
     return instance.applyWhen(condition, callback as any)
   }
 
-  static whereNull(column: keyof ${pascalCase(tableName)}Table): ${modelName}Model {
+  static whereNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
     const instance = new ${modelName}Model(undefined)
 
     return instance.applyWhereNull(column)
   }
 
-  static whereNotNull(column: keyof ${pascalCase(tableName)}Table): ${modelName}Model {
+  static whereNotNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
     const instance = new ${modelName}Model(undefined)
 
     return instance.applyWhereNotNull(column)
   }
 
-  static whereLike(column: keyof ${pascalCase(tableName)}Table, value: string): ${modelName}Model {
+  static whereLike(column: keyof ${formattedTableName}Table, value: string): ${modelName}Model {
     const instance = new ${modelName}Model(undefined)
 
     return instance.applyWhereLike(column, value)
   }
 
-  static orderBy(column: keyof ${pascalCase(tableName)}Table, order: 'asc' | 'desc'): ${modelName}Model {
+  static orderBy(column: keyof ${formattedTableName}Table, order: 'asc' | 'desc'): ${modelName}Model {
     const instance = new ${modelName}Model(undefined)
 
     return instance.applyOrderBy(column, order)
   }
 
-  static orderByAsc(column: keyof ${pascalCase(tableName)}Table): ${modelName}Model {
+  static orderByAsc(column: keyof ${formattedTableName}Table): ${modelName}Model {
     const instance = new ${modelName}Model(undefined)
 
     return instance.applyOrderByAsc(column)
   }
 
-  static orderByDesc(column: keyof ${pascalCase(tableName)}Table): ${modelName}Model {
+  static orderByDesc(column: keyof ${formattedTableName}Table): ${modelName}Model {
     const instance = new ${modelName}Model(undefined)
 
     return instance.applyOrderByDesc(column)
   }
 
-  static groupBy(column: keyof ${pascalCase(tableName)}Table): ${modelName}Model {
+  static groupBy(column: keyof ${formattedTableName}Table): ${modelName}Model {
     const instance = new ${modelName}Model(undefined)
 
     return instance.applyGroupBy(column)
   }
 
-  static having<V = string>(column: keyof ${pascalCase(tableName)}Table, operator: Operator, value: V): ${modelName}Model {
+  static having<V = string>(column: keyof ${formattedTableName}Table, operator: Operator, value: V): ${modelName}Model {
     const instance = new ${modelName}Model(undefined)
 
     return instance.applyHaving<V>(column, operator, value)
@@ -1434,31 +1404,31 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${pascalCase(t
     return instance.applyInRandomOrder()
   }
 
-  static whereColumn(first: keyof ${pascalCase(tableName)}Table, operator: Operator, second: keyof ${pascalCase(tableName)}Table): ${modelName}Model {
+  static whereColumn(first: keyof ${formattedTableName}Table, operator: Operator, second: keyof ${formattedTableName}Table): ${modelName}Model {
     const instance = new ${modelName}Model(undefined)
 
     return instance.applyWhereColumn(first, operator, second)
   }
 
-  static async max(field: keyof ${pascalCase(tableName)}Table): Promise<number> {
+  static async max(field: keyof ${formattedTableName}Table): Promise<number> {
     const instance = new ${modelName}Model(undefined)
 
     return await instance.applyMax(field)
   }
 
-  static async min(field: keyof ${pascalCase(tableName)}Table): Promise<number> {
+  static async min(field: keyof ${formattedTableName}Table): Promise<number> {
     const instance = new ${modelName}Model(undefined)
 
     return await instance.applyMin(field)
   }
 
-  static async avg(field: keyof ${pascalCase(tableName)}Table): Promise<number> {
+  static async avg(field: keyof ${formattedTableName}Table): Promise<number> {
     const instance = new ${modelName}Model(undefined)
 
     return await instance.applyAvg(field)
   }
 
-  static async sum(field: keyof ${pascalCase(tableName)}Table): Promise<number> {
+  static async sum(field: keyof ${formattedTableName}Table): Promise<number> {
     const instance = new ${modelName}Model(undefined)
 
     return await instance.applySum(field)
@@ -1555,7 +1525,7 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${pascalCase(t
     return await instance.applyCreate(new${modelName})
   }
 
-  static async firstOrCreate(search: Partial<${pascalCase(tableName)}Table>, values: New${modelName} = {} as New${modelName}): Promise<${modelName}Model> {
+  static async firstOrCreate(search: Partial<${formattedTableName}Table>, values: New${modelName} = {} as New${modelName}): Promise<${modelName}Model> {
     // First try to find a record matching the search criteria
     const instance = new ${modelName}Model(undefined)
 
@@ -1576,7 +1546,7 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${pascalCase(t
     return await ${modelName}Model.create(createData)
   }
 
-  static async updateOrCreate(search: Partial<${pascalCase(tableName)}Table>, values: New${modelName} = {} as New${modelName}): Promise<${modelName}Model> {
+  static async updateOrCreate(search: Partial<${formattedTableName}Table>, values: New${modelName} = {} as New${modelName}): Promise<${modelName}Model> {
     // First try to find a record matching the search criteria
     const instance = new ${modelName}Model(undefined)
 
@@ -1779,7 +1749,7 @@ export class ${modelName}Model extends BaseOrm<${modelName}Model, ${pascalCase(t
 
   ${whereStatements}
 
-  static whereIn<V = number>(column: keyof ${pascalCase(tableName)}Table, values: V[]): ${modelName}Model {
+  static whereIn<V = number>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
     const instance = new ${modelName}Model(undefined)
 
     return instance.applyWhereIn<V>(column, values)

@@ -38,65 +38,7 @@ export interface CustomerJsonResponse extends Omit<Selectable<CustomerRead>, 'pa
 export type NewCustomer = Insertable<CustomerWrite>
 export type CustomerUpdate = Updateable<CustomerWrite>
 
-export interface ICustomerModelStatic {
-  with: (relations: string[]) => ICustomerModel
-  select: (params: (keyof CustomerJsonResponse)[] | RawBuilder<string> | string) => ICustomerModel
-  find: (id: number) => Promise<ICustomerModel | undefined>
-  first: () => Promise<ICustomerModel | undefined>
-  last: () => Promise<ICustomerModel | undefined>
-  firstOrFail: () => Promise<ICustomerModel | undefined>
-  all: () => Promise<ICustomerModel[]>
-  findOrFail: (id: number) => Promise<ICustomerModel | undefined>
-  findMany: (ids: number[]) => Promise<ICustomerModel[]>
-  latest: (column?: keyof CustomersTable) => Promise<ICustomerModel | undefined>
-  oldest: (column?: keyof CustomersTable) => Promise<ICustomerModel | undefined>
-  skip: (count: number) => ICustomerModel
-  take: (count: number) => ICustomerModel
-  where: <V = string>(column: keyof CustomersTable, ...args: [V] | [Operator, V]) => ICustomerModel
-  orWhere: (...conditions: [string, any][]) => ICustomerModel
-  whereNotIn: <V = number>(column: keyof CustomersTable, values: V[]) => ICustomerModel
-  whereBetween: <V = number>(column: keyof CustomersTable, range: [V, V]) => ICustomerModel
-  whereRef: (column: keyof CustomersTable, ...args: string[]) => ICustomerModel
-  when: (condition: boolean, callback: (query: ICustomerModel) => ICustomerModel) => ICustomerModel
-  whereNull: (column: keyof CustomersTable) => ICustomerModel
-  whereNotNull: (column: keyof CustomersTable) => ICustomerModel
-  whereLike: (column: keyof CustomersTable, value: string) => ICustomerModel
-  orderBy: (column: keyof CustomersTable, order: 'asc' | 'desc') => ICustomerModel
-  orderByAsc: (column: keyof CustomersTable) => ICustomerModel
-  orderByDesc: (column: keyof CustomersTable) => ICustomerModel
-  groupBy: (column: keyof CustomersTable) => ICustomerModel
-  having: <V = string>(column: keyof CustomersTable, operator: Operator, value: V) => ICustomerModel
-  inRandomOrder: () => ICustomerModel
-  whereColumn: (first: keyof CustomersTable, operator: Operator, second: keyof CustomersTable) => ICustomerModel
-  max: (field: keyof CustomersTable) => Promise<number>
-  min: (field: keyof CustomersTable) => Promise<number>
-  avg: (field: keyof CustomersTable) => Promise<number>
-  sum: (field: keyof CustomersTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<ICustomerModel[]>
-  pluck: <K extends keyof ICustomerModel>(field: K) => Promise<ICustomerModel[K][]>
-  chunk: (size: number, callback: (models: ICustomerModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: ICustomerModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newCustomer: NewCustomer) => Promise<ICustomerModel>
-  firstOrCreate: (search: Partial<CustomersTable>, values?: NewCustomer) => Promise<ICustomerModel>
-  updateOrCreate: (search: Partial<CustomersTable>, values?: NewCustomer) => Promise<ICustomerModel>
-  createMany: (newCustomer: NewCustomer[]) => Promise<void>
-  forceCreate: (newCustomer: NewCustomer) => Promise<ICustomerModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof CustomersTable, values: V[]) => ICustomerModel
-  distinct: (column: keyof CustomerJsonResponse) => ICustomerModel
-  join: (table: string, firstCol: string, secondCol: string) => ICustomerModel
-}
-
-export interface ICustomerModel {
+export interface CustomerModelType {
   // Properties
   readonly id: number
   get name(): string
@@ -105,10 +47,10 @@ export interface ICustomerModel {
   set email(value: string)
   get phone(): string
   set phone(value: string)
-  get total_spent(): number | undefined
-  set total_spent(value: number)
-  get last_order(): string | undefined
-  set last_order(value: string)
+  get totalSpent(): number | undefined
+  set totalSpent(value: number)
+  get lastOrder(): string | undefined
+  set lastOrder(value: string)
   get status(): string | string[]
   set status(value: string | string[])
   get avatar(): string | undefined
@@ -119,16 +61,70 @@ export interface ICustomerModel {
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => CustomerModelType
+  select: (params: (keyof CustomerJsonResponse)[] | RawBuilder<string> | string) => CustomerModelType
+  find: (id: number) => Promise<CustomerModelType | undefined>
+  first: () => Promise<CustomerModelType | undefined>
+  last: () => Promise<CustomerModelType | undefined>
+  firstOrFail: () => Promise<CustomerModelType | undefined>
+  all: () => Promise<CustomerModelType[]>
+  findOrFail: (id: number) => Promise<CustomerModelType | undefined>
+  findMany: (ids: number[]) => Promise<CustomerModelType[]>
+  latest: (column?: keyof CustomersTable) => Promise<CustomerModelType | undefined>
+  oldest: (column?: keyof CustomersTable) => Promise<CustomerModelType | undefined>
+  skip: (count: number) => CustomerModelType
+  take: (count: number) => CustomerModelType
+  where: <V = string>(column: keyof CustomersTable, ...args: [V] | [Operator, V]) => CustomerModelType
+  orWhere: (...conditions: [string, any][]) => CustomerModelType
+  whereNotIn: <V = number>(column: keyof CustomersTable, values: V[]) => CustomerModelType
+  whereBetween: <V = number>(column: keyof CustomersTable, range: [V, V]) => CustomerModelType
+  whereRef: (column: keyof CustomersTable, ...args: string[]) => CustomerModelType
+  when: (condition: boolean, callback: (query: CustomerModelType) => CustomerModelType) => CustomerModelType
+  whereNull: (column: keyof CustomersTable) => CustomerModelType
+  whereNotNull: (column: keyof CustomersTable) => CustomerModelType
+  whereLike: (column: keyof CustomersTable, value: string) => CustomerModelType
+  orderBy: (column: keyof CustomersTable, order: 'asc' | 'desc') => CustomerModelType
+  orderByAsc: (column: keyof CustomersTable) => CustomerModelType
+  orderByDesc: (column: keyof CustomersTable) => CustomerModelType
+  groupBy: (column: keyof CustomersTable) => CustomerModelType
+  having: <V = string>(column: keyof CustomersTable, operator: Operator, value: V) => CustomerModelType
+  inRandomOrder: () => CustomerModelType
+  whereColumn: (first: keyof CustomersTable, operator: Operator, second: keyof CustomersTable) => CustomerModelType
+  max: (field: keyof CustomersTable) => Promise<number>
+  min: (field: keyof CustomersTable) => Promise<number>
+  avg: (field: keyof CustomersTable) => Promise<number>
+  sum: (field: keyof CustomersTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<CustomerModelType[]>
+  pluck: <K extends keyof CustomerModelType>(field: K) => Promise<CustomerModelType[K][]>
+  chunk: (size: number, callback: (models: CustomerModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: CustomerModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newCustomer: NewCustomer) => Promise<CustomerModelType>
+  firstOrCreate: (search: Partial<CustomersTable>, values?: NewCustomer) => Promise<CustomerModelType>
+  updateOrCreate: (search: Partial<CustomersTable>, values?: NewCustomer) => Promise<CustomerModelType>
+  createMany: (newCustomer: NewCustomer[]) => Promise<void>
+  forceCreate: (newCustomer: NewCustomer) => Promise<CustomerModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof CustomersTable, values: V[]) => CustomerModelType
+  distinct: (column: keyof CustomerJsonResponse) => CustomerModelType
+  join: (table: string, firstCol: string, secondCol: string) => CustomerModelType
+
   // Instance methods
-  createInstance: (data: CustomerJsonResponse) => ICustomerModel
-  create: (newCustomer: NewCustomer) => Promise<ICustomerModel>
-  update: (newCustomer: CustomerUpdate) => Promise<ICustomerModel | undefined>
-  forceUpdate: (newCustomer: CustomerUpdate) => Promise<ICustomerModel | undefined>
-  save: () => Promise<ICustomerModel>
+  createInstance: (data: CustomerJsonResponse) => CustomerModelType
+  update: (newCustomer: CustomerUpdate) => Promise<CustomerModelType | undefined>
+  forceUpdate: (newCustomer: CustomerUpdate) => Promise<CustomerModelType | undefined>
+  save: () => Promise<CustomerModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<CustomerJsonResponse>
   toJSON: () => CustomerJsonResponse
-  parseResult: (model: ICustomerModel) => ICustomerModel
+  parseResult: (model: CustomerModelType) => CustomerModelType
 }
-
-export type CustomerModelType = ICustomerModel & ICustomerModelStatic

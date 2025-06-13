@@ -36,65 +36,7 @@ export interface ProductVariantJsonResponse extends Omit<Selectable<ProductVaria
 export type NewProductVariant = Insertable<ProductVariantWrite>
 export type ProductVariantUpdate = Updateable<ProductVariantWrite>
 
-export interface IProductVariantModelStatic {
-  with: (relations: string[]) => IProductVariantModel
-  select: (params: (keyof ProductVariantJsonResponse)[] | RawBuilder<string> | string) => IProductVariantModel
-  find: (id: number) => Promise<IProductVariantModel | undefined>
-  first: () => Promise<IProductVariantModel | undefined>
-  last: () => Promise<IProductVariantModel | undefined>
-  firstOrFail: () => Promise<IProductVariantModel | undefined>
-  all: () => Promise<IProductVariantModel[]>
-  findOrFail: (id: number) => Promise<IProductVariantModel | undefined>
-  findMany: (ids: number[]) => Promise<IProductVariantModel[]>
-  latest: (column?: keyof ProductVariantsTable) => Promise<IProductVariantModel | undefined>
-  oldest: (column?: keyof ProductVariantsTable) => Promise<IProductVariantModel | undefined>
-  skip: (count: number) => IProductVariantModel
-  take: (count: number) => IProductVariantModel
-  where: <V = string>(column: keyof ProductVariantsTable, ...args: [V] | [Operator, V]) => IProductVariantModel
-  orWhere: (...conditions: [string, any][]) => IProductVariantModel
-  whereNotIn: <V = number>(column: keyof ProductVariantsTable, values: V[]) => IProductVariantModel
-  whereBetween: <V = number>(column: keyof ProductVariantsTable, range: [V, V]) => IProductVariantModel
-  whereRef: (column: keyof ProductVariantsTable, ...args: string[]) => IProductVariantModel
-  when: (condition: boolean, callback: (query: IProductVariantModel) => IProductVariantModel) => IProductVariantModel
-  whereNull: (column: keyof ProductVariantsTable) => IProductVariantModel
-  whereNotNull: (column: keyof ProductVariantsTable) => IProductVariantModel
-  whereLike: (column: keyof ProductVariantsTable, value: string) => IProductVariantModel
-  orderBy: (column: keyof ProductVariantsTable, order: 'asc' | 'desc') => IProductVariantModel
-  orderByAsc: (column: keyof ProductVariantsTable) => IProductVariantModel
-  orderByDesc: (column: keyof ProductVariantsTable) => IProductVariantModel
-  groupBy: (column: keyof ProductVariantsTable) => IProductVariantModel
-  having: <V = string>(column: keyof ProductVariantsTable, operator: Operator, value: V) => IProductVariantModel
-  inRandomOrder: () => IProductVariantModel
-  whereColumn: (first: keyof ProductVariantsTable, operator: Operator, second: keyof ProductVariantsTable) => IProductVariantModel
-  max: (field: keyof ProductVariantsTable) => Promise<number>
-  min: (field: keyof ProductVariantsTable) => Promise<number>
-  avg: (field: keyof ProductVariantsTable) => Promise<number>
-  sum: (field: keyof ProductVariantsTable) => Promise<number>
-  count: () => Promise<number>
-  get: () => Promise<IProductVariantModel[]>
-  pluck: <K extends keyof IProductVariantModel>(field: K) => Promise<IProductVariantModel[K][]>
-  chunk: (size: number, callback: (models: IProductVariantModel[]) => Promise<void>) => Promise<void>
-  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
-    data: IProductVariantModel[]
-    paging: {
-      total_records: number
-      page: number
-      total_pages: number
-    }
-    next_cursor: number | null
-  }>
-  create: (newProductVariant: NewProductVariant) => Promise<IProductVariantModel>
-  firstOrCreate: (search: Partial<ProductVariantsTable>, values?: NewProductVariant) => Promise<IProductVariantModel>
-  updateOrCreate: (search: Partial<ProductVariantsTable>, values?: NewProductVariant) => Promise<IProductVariantModel>
-  createMany: (newProductVariant: NewProductVariant[]) => Promise<void>
-  forceCreate: (newProductVariant: NewProductVariant) => Promise<IProductVariantModel>
-  remove: (id: number) => Promise<any>
-  whereIn: <V = number>(column: keyof ProductVariantsTable, values: V[]) => IProductVariantModel
-  distinct: (column: keyof ProductVariantJsonResponse) => IProductVariantModel
-  join: (table: string, firstCol: string, secondCol: string) => IProductVariantModel
-}
-
-export interface IProductVariantModel {
+export interface ProductVariantModelType {
   // Properties
   readonly id: number
   get variant(): string
@@ -113,16 +55,70 @@ export interface IProductVariantModel {
   get updated_at(): string | undefined
   set updated_at(value: string)
 
+  // Static methods
+  with: (relations: string[]) => ProductVariantModelType
+  select: (params: (keyof ProductVariantJsonResponse)[] | RawBuilder<string> | string) => ProductVariantModelType
+  find: (id: number) => Promise<ProductVariantModelType | undefined>
+  first: () => Promise<ProductVariantModelType | undefined>
+  last: () => Promise<ProductVariantModelType | undefined>
+  firstOrFail: () => Promise<ProductVariantModelType | undefined>
+  all: () => Promise<ProductVariantModelType[]>
+  findOrFail: (id: number) => Promise<ProductVariantModelType | undefined>
+  findMany: (ids: number[]) => Promise<ProductVariantModelType[]>
+  latest: (column?: keyof ProductVariantsTable) => Promise<ProductVariantModelType | undefined>
+  oldest: (column?: keyof ProductVariantsTable) => Promise<ProductVariantModelType | undefined>
+  skip: (count: number) => ProductVariantModelType
+  take: (count: number) => ProductVariantModelType
+  where: <V = string>(column: keyof ProductVariantsTable, ...args: [V] | [Operator, V]) => ProductVariantModelType
+  orWhere: (...conditions: [string, any][]) => ProductVariantModelType
+  whereNotIn: <V = number>(column: keyof ProductVariantsTable, values: V[]) => ProductVariantModelType
+  whereBetween: <V = number>(column: keyof ProductVariantsTable, range: [V, V]) => ProductVariantModelType
+  whereRef: (column: keyof ProductVariantsTable, ...args: string[]) => ProductVariantModelType
+  when: (condition: boolean, callback: (query: ProductVariantModelType) => ProductVariantModelType) => ProductVariantModelType
+  whereNull: (column: keyof ProductVariantsTable) => ProductVariantModelType
+  whereNotNull: (column: keyof ProductVariantsTable) => ProductVariantModelType
+  whereLike: (column: keyof ProductVariantsTable, value: string) => ProductVariantModelType
+  orderBy: (column: keyof ProductVariantsTable, order: 'asc' | 'desc') => ProductVariantModelType
+  orderByAsc: (column: keyof ProductVariantsTable) => ProductVariantModelType
+  orderByDesc: (column: keyof ProductVariantsTable) => ProductVariantModelType
+  groupBy: (column: keyof ProductVariantsTable) => ProductVariantModelType
+  having: <V = string>(column: keyof ProductVariantsTable, operator: Operator, value: V) => ProductVariantModelType
+  inRandomOrder: () => ProductVariantModelType
+  whereColumn: (first: keyof ProductVariantsTable, operator: Operator, second: keyof ProductVariantsTable) => ProductVariantModelType
+  max: (field: keyof ProductVariantsTable) => Promise<number>
+  min: (field: keyof ProductVariantsTable) => Promise<number>
+  avg: (field: keyof ProductVariantsTable) => Promise<number>
+  sum: (field: keyof ProductVariantsTable) => Promise<number>
+  count: () => Promise<number>
+  get: () => Promise<ProductVariantModelType[]>
+  pluck: <K extends keyof ProductVariantModelType>(field: K) => Promise<ProductVariantModelType[K][]>
+  chunk: (size: number, callback: (models: ProductVariantModelType[]) => Promise<void>) => Promise<void>
+  paginate: (options?: { limit?: number, offset?: number, page?: number }) => Promise<{
+    data: ProductVariantModelType[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }>
+  create: (newProductVariant: NewProductVariant) => Promise<ProductVariantModelType>
+  firstOrCreate: (search: Partial<ProductVariantsTable>, values?: NewProductVariant) => Promise<ProductVariantModelType>
+  updateOrCreate: (search: Partial<ProductVariantsTable>, values?: NewProductVariant) => Promise<ProductVariantModelType>
+  createMany: (newProductVariant: NewProductVariant[]) => Promise<void>
+  forceCreate: (newProductVariant: NewProductVariant) => Promise<ProductVariantModelType>
+  remove: (id: number) => Promise<any>
+  whereIn: <V = number>(column: keyof ProductVariantsTable, values: V[]) => ProductVariantModelType
+  distinct: (column: keyof ProductVariantJsonResponse) => ProductVariantModelType
+  join: (table: string, firstCol: string, secondCol: string) => ProductVariantModelType
+
   // Instance methods
-  createInstance: (data: ProductVariantJsonResponse) => IProductVariantModel
-  create: (newProductVariant: NewProductVariant) => Promise<IProductVariantModel>
-  update: (newProductVariant: ProductVariantUpdate) => Promise<IProductVariantModel | undefined>
-  forceUpdate: (newProductVariant: ProductVariantUpdate) => Promise<IProductVariantModel | undefined>
-  save: () => Promise<IProductVariantModel>
+  createInstance: (data: ProductVariantJsonResponse) => ProductVariantModelType
+  update: (newProductVariant: ProductVariantUpdate) => Promise<ProductVariantModelType | undefined>
+  forceUpdate: (newProductVariant: ProductVariantUpdate) => Promise<ProductVariantModelType | undefined>
+  save: () => Promise<ProductVariantModelType>
   delete: () => Promise<number>
   toSearchableObject: () => Partial<ProductVariantJsonResponse>
   toJSON: () => ProductVariantJsonResponse
-  parseResult: (model: IProductVariantModel) => IProductVariantModel
+  parseResult: (model: ProductVariantModelType) => ProductVariantModelType
 }
-
-export type ProductVariantModelType = IProductVariantModel & IProductVariantModelStatic

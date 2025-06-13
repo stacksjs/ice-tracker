@@ -1,6 +1,6 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { CustomerJsonResponse, CustomerModelType, CustomersTable, CustomerUpdate, NewCustomer } from '../types/CustomerType'
+import type { CustomerJsonResponse, CustomersTable, CustomerUpdate, NewCustomer } from '../types/CustomerType'
 import type { GiftCardModel } from './GiftCard'
 import type { LicenseKeyModel } from './LicenseKey'
 import type { OrderModel } from './Order'
@@ -21,7 +21,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, CustomerJsonResponse> implements CustomerModelType {
+export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, CustomerJsonResponse> {
   private readonly hidden: Array<keyof CustomerJsonResponse> = []
   private readonly fillable: Array<keyof CustomerJsonResponse> = ['name', 'email', 'phone', 'total_spent', 'last_order', 'status', 'avatar', 'uuid']
   private readonly guarded: Array<keyof CustomerJsonResponse> = []
