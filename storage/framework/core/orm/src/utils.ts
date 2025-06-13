@@ -1511,7 +1511,8 @@ async function writeModelOrmImports(modelFiles: string[]): Promise<void> {
     const modelName = getModelName(model, modelFile)
     const tableName = getTableName(model, modelFile)
 
-    ormImportString += `export { default as ${modelName}, type ${modelName}JsonResponse, ${modelName}Model, type ${pascalCase(tableName)}Table, type New${modelName}, type ${modelName}Update } from './types/${modelName}ModelType'\n\n`
+    ormImportString += `export { type ${modelName}JsonResponse, type ${pascalCase(tableName)}Table, type New${modelName}, type ${modelName}ModelType, type ${modelName}Update } from './types/${modelName}Type'\n\n`
+    ormImportString += `export { default as ${modelName} } from './models/${modelName}'\n\n`
   }
 
   const file = Bun.file(path.frameworkPath(`orm/src/index.ts`))
