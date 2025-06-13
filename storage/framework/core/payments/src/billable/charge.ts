@@ -1,16 +1,17 @@
+import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
 import { log } from '@stacksjs/logging'
 import { stripe } from '..'
 
 export interface ManageCharge {
-  createPayment: (user: UserModelType, amount: number, options: Stripe.PaymentIntentCreateParams) => Promise<Stripe.Response<Stripe.PaymentIntent>>
+  createPayment: (user: UserModel, amount: number, options: Stripe.PaymentIntentCreateParams) => Promise<Stripe.Response<Stripe.PaymentIntent>>
   findPayment: (id: string) => Promise<Stripe.PaymentIntent | null>
   refund: (paymentIntentId: string, options?: Stripe.RefundCreateParams) => Promise<Stripe.Response<Stripe.Refund>>
-  charge: (user: UserModelType, amount: number, paymentMethod: string, options: Stripe.PaymentIntentCreateParams) => Promise<Stripe.Response<Stripe.PaymentIntent>>
+  charge: (user: UserModel, amount: number, paymentMethod: string, options: Stripe.PaymentIntentCreateParams) => Promise<Stripe.Response<Stripe.PaymentIntent>>
 }
 
 export const manageCharge: ManageCharge = (() => {
-  async function createPayment(user: UserModelType, amount: number, options: Stripe.PaymentIntentCreateParams): Promise<Stripe.Response<Stripe.PaymentIntent>> {
+  async function createPayment(user: UserModel, amount: number, options: Stripe.PaymentIntentCreateParams): Promise<Stripe.Response<Stripe.PaymentIntent>> {
     const defaultOptions: Stripe.PaymentIntentCreateParams = {
       // TODO: This should be fetched from the config.
       currency: 'usd',
@@ -47,7 +48,7 @@ export const manageCharge: ManageCharge = (() => {
     return await stripe.refunds.create(refundParams)
   }
 
-  async function charge(user: UserModelType, amount: number, paymentMethod: string, options: Stripe.PaymentIntentCreateParams): Promise<Stripe.Response<Stripe.PaymentIntent>> {
+  async function charge(user: UserModel, amount: number, paymentMethod: string, options: Stripe.PaymentIntentCreateParams): Promise<Stripe.Response<Stripe.PaymentIntent>> {
     const defaultOptions: Stripe.PaymentIntentCreateParams = {
       confirmation_method: 'automatic',
       confirm: true,

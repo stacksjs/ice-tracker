@@ -1,5 +1,6 @@
 import type { VerifiedRegistrationResponse } from '@simplewebauthn/server'
 import type { Insertable } from '@stacksjs/database'
+import type { UserModel } from '../../../orm/src/models/User'
 import { db } from '@stacksjs/database'
 
 export {
@@ -42,7 +43,7 @@ export async function getUserPasskey(userId: number, passkeyId: string): Promise
 }
 
 export async function setCurrentRegistrationOptions(
-  user: UserModelType,
+  user: UserModel,
   verified: VerifiedRegistrationResponse,
 ): Promise<void> {
   const passkeyData: PasskeyInsertable = {

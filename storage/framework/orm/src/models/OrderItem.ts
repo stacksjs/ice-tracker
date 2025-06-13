@@ -1,6 +1,8 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { NewOrderItem, OrderItemJsonResponse, OrderItemsTable, OrderItemUpdate } from '../types/OrderItemType'
+import type { OrderModel } from './Order'
+import type { ProductModel } from './Product'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'

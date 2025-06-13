@@ -1,6 +1,7 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { NewPrintDevice, PrintDeviceJsonResponse, PrintDevicesTable, PrintDeviceUpdate } from '../types/PrintDeviceType'
+import type { ReceiptModel } from './Receipt'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'

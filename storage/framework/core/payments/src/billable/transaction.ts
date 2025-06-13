@@ -1,13 +1,13 @@
-import type { PaymentTransactionsTable } from '@stacksjs/orm'
+import type { PaymentTransactionsTable, UserModel } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 export interface ManageTransaction {
-  store: (user: UserModelType, productId: number) => Promise<PaymentTransactionsTable | undefined>
-  list: (user: UserModelType) => Promise<PaymentTransactionsTable[]>
+  store: (user: UserModel, productId: number) => Promise<PaymentTransactionsTable | undefined>
+  list: (user: UserModel) => Promise<PaymentTransactionsTable[]>
 }
 
 export const manageTransaction: ManageTransaction = (() => {
-  async function store(user: UserModelType, productId: number): Promise<PaymentTransactionsTable | undefined> {
+  async function store(user: UserModel, productId: number): Promise<PaymentTransactionsTable | undefined> {
     const product = await db.selectFrom('payment_products').where('id', '=', productId).selectAll().executeTakeFirst()
 
     const data = {
@@ -27,7 +27,7 @@ export const manageTransaction: ManageTransaction = (() => {
     return transaction
   }
 
-  async function list(user: UserModelType): Promise<PaymentTransactionsTable[]> {
+  async function list(user: UserModel): Promise<PaymentTransactionsTable[]> {
     const transaction = await db.selectFrom('payment_transactions').where('user_id', '=', user.id).selectAll().execute()
 
     return transaction

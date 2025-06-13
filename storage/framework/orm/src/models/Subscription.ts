@@ -1,6 +1,7 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { NewSubscription, SubscriptionJsonResponse, SubscriptionsTable, SubscriptionUpdate } from '../types/SubscriptionType'
+import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'

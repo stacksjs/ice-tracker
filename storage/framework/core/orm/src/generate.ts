@@ -129,7 +129,7 @@ export async function generateModelString(
   const relations = await getRelations(model, modelName)
 
   for (const relationInstance of relations)
-    relationImports += `import type {${relationInstance.model}ModelType} from './types/${relationInstance.model}Type'\n\n`
+    relationImports += `import type {${relationInstance.model}Model} from './${relationInstance.model}'\n\n`
 
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSocials = model?.traits?.useSocials && Array.isArray(model.traits.useSocials) && model.traits.useSocials.length > 0

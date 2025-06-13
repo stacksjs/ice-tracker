@@ -1,6 +1,8 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { NewPayment, PaymentJsonResponse, PaymentsTable, PaymentUpdate } from '../types/PaymentType'
+import type { CustomerModel } from './Customer'
+import type { OrderModel } from './Order'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
