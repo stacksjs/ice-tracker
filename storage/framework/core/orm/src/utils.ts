@@ -1792,7 +1792,7 @@ export async function generateTypeString(
 
   // Combine all type declarations
   return `import type { Generated, Insertable, Selectable, Updateable, RawBuilder } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 
 ${tableInterface}${readType}${writeType}${responseInterface}${jsonResponseInterface}${newType}${updateType}${staticInterface}${instanceInterface}${combinedType}`
 }
