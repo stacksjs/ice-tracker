@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewPaymentTransaction, PaymentTransactionJsonResponse, PaymentTransactionModelType, PaymentTransactionsTable, PaymentTransactionUpdate } from '../types/PaymentTransactionType'
 import type { PaymentMethodModel } from './PaymentMethod'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
@@ -10,49 +11,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface PaymentTransactionsTable {
-  id: Generated<number>
-  user_id: number
-  payment_method_id: number
-  name: string
-  description?: string
-  amount: number
-  type: string
-  provider_id?: string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type PaymentTransactionRead = PaymentTransactionsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type PaymentTransactionWrite = Omit<PaymentTransactionsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface PaymentTransactionResponse {
-  data: PaymentTransactionJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface PaymentTransactionJsonResponse extends Omit<Selectable<PaymentTransactionRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewPaymentTransaction = Insertable<PaymentTransactionWrite>
-export type PaymentTransactionUpdate = Updateable<PaymentTransactionWrite>
-
-export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, PaymentTransactionsTable, PaymentTransactionJsonResponse> {
+export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, PaymentTransactionsTable, PaymentTransactionJsonResponse> implements PaymentTransactionModelType {
   private readonly hidden: Array<keyof PaymentTransactionJsonResponse> = []
   private readonly fillable: Array<keyof PaymentTransactionJsonResponse> = ['name', 'description', 'amount', 'type', 'provider_id', 'uuid', 'payment_method_id']
   private readonly guarded: Array<keyof PaymentTransactionJsonResponse> = []

@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { DigitalDeliveriesTable, DigitalDeliveryJsonResponse, DigitalDeliveryModelType, DigitalDeliveryUpdate, NewDigitalDelivery } from '../types/DigitalDeliveryType'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -8,49 +9,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface DigitalDeliveriesTable {
-  id: Generated<number>
-  name: string
-  description: string
-  download_limit?: number
-  expiry_days: number
-  requires_login?: boolean
-  automatic_delivery?: boolean
-  status?: string | string[]
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type DigitalDeliveryRead = DigitalDeliveriesTable
-
-// Type for creating/updating model data (created_at is optional)
-export type DigitalDeliveryWrite = Omit<DigitalDeliveriesTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface DigitalDeliveryResponse {
-  data: DigitalDeliveryJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface DigitalDeliveryJsonResponse extends Omit<Selectable<DigitalDeliveryRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewDigitalDelivery = Insertable<DigitalDeliveryWrite>
-export type DigitalDeliveryUpdate = Updateable<DigitalDeliveryWrite>
-
-export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalDeliveriesTable, DigitalDeliveryJsonResponse> {
+export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalDeliveriesTable, DigitalDeliveryJsonResponse> implements DigitalDeliveryModelType {
   private readonly hidden: Array<keyof DigitalDeliveryJsonResponse> = []
   private readonly fillable: Array<keyof DigitalDeliveryJsonResponse> = ['name', 'description', 'download_limit', 'expiry_days', 'requires_login', 'automatic_delivery', 'status', 'uuid']
   private readonly guarded: Array<keyof DigitalDeliveryJsonResponse> = []

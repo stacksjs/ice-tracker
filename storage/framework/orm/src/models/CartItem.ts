@@ -1,65 +1,17 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CartItemJsonResponse, CartItemModelType, CartItemsTable, CartItemUpdate, NewCartItem } from '../types/CartItemType'
 import type { CartModel } from './Cart'
 import type { ProductItemModel } from './ProductItem'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface CartItemsTable {
-  id: Generated<number>
-  cart_id: number
-  product_item_id: number
-  quantity: number
-  unit_price: number
-  total_price: number
-  tax_rate?: number
-  tax_amount?: number
-  discount_percentage?: number
-  discount_amount?: number
-  product_name: string
-  product_sku?: string
-  product_image?: string
-  notes?: string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type CartItemRead = CartItemsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type CartItemWrite = Omit<CartItemsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface CartItemResponse {
-  data: CartItemJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface CartItemJsonResponse extends Omit<Selectable<CartItemRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewCartItem = Insertable<CartItemWrite>
-export type CartItemUpdate = Updateable<CartItemWrite>
-
-export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartItemJsonResponse> {
+export class CartItemModel extends BaseOrm<CartItemModel, CartItemsTable, CartItemJsonResponse> implements CartItemModelType {
   private readonly hidden: Array<keyof CartItemJsonResponse> = []
   private readonly fillable: Array<keyof CartItemJsonResponse> = ['quantity', 'unit_price', 'total_price', 'tax_rate', 'tax_amount', 'discount_percentage', 'discount_amount', 'product_name', 'product_sku', 'product_image', 'notes', 'uuid', 'cart_id']
   private readonly guarded: Array<keyof CartItemJsonResponse> = []

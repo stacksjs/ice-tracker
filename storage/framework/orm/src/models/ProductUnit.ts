@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewProductUnit, ProductUnitJsonResponse, ProductUnitModelType, ProductUnitsTable, ProductUnitUpdate } from '../types/ProductUnitType'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -9,48 +10,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface ProductUnitsTable {
-  id: Generated<number>
-  product_id: number
-  name: string
-  abbreviation: string
-  type: string
-  description?: string
-  is_default?: boolean
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type ProductUnitRead = ProductUnitsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type ProductUnitWrite = Omit<ProductUnitsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface ProductUnitResponse {
-  data: ProductUnitJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface ProductUnitJsonResponse extends Omit<Selectable<ProductUnitRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewProductUnit = Insertable<ProductUnitWrite>
-export type ProductUnitUpdate = Updateable<ProductUnitWrite>
-
-export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTable, ProductUnitJsonResponse> {
+export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTable, ProductUnitJsonResponse> implements ProductUnitModelType {
   private readonly hidden: Array<keyof ProductUnitJsonResponse> = []
   private readonly fillable: Array<keyof ProductUnitJsonResponse> = ['name', 'abbreviation', 'type', 'description', 'is_default', 'uuid', 'product_id']
   private readonly guarded: Array<keyof ProductUnitJsonResponse> = []

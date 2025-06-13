@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewPrintDevice, PrintDeviceJsonResponse, PrintDeviceModelType, PrintDevicesTable, PrintDeviceUpdate } from '../types/PrintDeviceType'
 import type { ReceiptModel } from './Receipt'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -9,49 +10,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface PrintDevicesTable {
-  id: Generated<number>
-  name: string
-  mac_address: string
-  location: string
-  terminal: string
-  status: string | string[]
-  last_ping: number
-  print_count: number
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type PrintDeviceRead = PrintDevicesTable
-
-// Type for creating/updating model data (created_at is optional)
-export type PrintDeviceWrite = Omit<PrintDevicesTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface PrintDeviceResponse {
-  data: PrintDeviceJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface PrintDeviceJsonResponse extends Omit<Selectable<PrintDeviceRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewPrintDevice = Insertable<PrintDeviceWrite>
-export type PrintDeviceUpdate = Updateable<PrintDeviceWrite>
-
-export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTable, PrintDeviceJsonResponse> {
+export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTable, PrintDeviceJsonResponse> implements PrintDeviceModelType {
   private readonly hidden: Array<keyof PrintDeviceJsonResponse> = []
   private readonly fillable: Array<keyof PrintDeviceJsonResponse> = ['name', 'mac_address', 'location', 'terminal', 'status', 'last_ping', 'print_count', 'uuid']
   private readonly guarded: Array<keyof PrintDeviceJsonResponse> = []

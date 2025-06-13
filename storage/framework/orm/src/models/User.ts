@@ -1,69 +1,30 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { Stripe } from '@stacksjs/payments'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+// soon, these will be auto-imported
+// soon, these will be auto-imported
+import type Stripe from 'stripe'
+import type { PaymentMethodModelType } from '../types/PaymentMethodType'
+import type { PaymentTransactionsTable } from '../types/PaymentTransactionType'
+import type { NewUser, UserJsonResponse, UserModelType, UsersTable, UserUpdate } from '../types/UserType'
 import type { AuthorModel } from './Author'
 import type { DriverModel } from './Driver'
 import type { OauthAccessTokenModel } from './OauthAccessToken'
-import type { PaymentMethodsTable } from './PaymentMethod'
-import type { PaymentTransactionsTable } from './PaymentTransaction'
 import type { PersonalAccessTokenModel } from './PersonalAccessToken'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
+
 import { dispatch } from '@stacksjs/events'
 
 import { DB } from '@stacksjs/orm'
-
-// soon, these will be auto-imported
-// soon, these will be auto-imported
 
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, manageTransaction } from '@stacksjs/payments'
 
 import { makeHash } from '@stacksjs/security'
 import { BaseOrm } from '../utils/base'
 
-export interface UsersTable {
-  id: Generated<number>
-  name: string
-  email: string
-  password: string
-  public_passkey?: string
-  stripe_id?: string
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type UserRead = UsersTable
-
-// Type for creating/updating model data (created_at is optional)
-export type UserWrite = Omit<UsersTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface UserResponse {
-  data: UserJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface UserJsonResponse extends Omit<Selectable<UserRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewUser = Insertable<UserWrite>
-export type UserUpdate = Updateable<UserWrite>
-
-export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> {
+export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> implements UserModelType {
   private readonly hidden: Array<keyof UserJsonResponse> = ['password']
   private readonly fillable: Array<keyof UserJsonResponse> = ['name', 'email', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key']
   private readonly guarded: Array<keyof UserJsonResponse> = []
@@ -909,7 +870,7 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return customer
   }
 
-  async defaultPaymentMethod(): Promise<PaymentMethodModel | undefined> {
+  async defaultPaymentMethod(): Promise<PaymentMethodModelType | undefined> {
     const defaultPaymentMethod = await managePaymentMethod.retrieveDefaultPaymentMethod(this)
 
     return defaultPaymentMethod

@@ -1,54 +1,13 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { ActivitiesTable, ActivityJsonResponse, ActivityModelType, ActivityUpdate, NewActivity } from '../types/ActivityType'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface ActivitiesTable {
-  id: Generated<number>
-  title?: string
-  description?: string
-  address?: string
-  latlng?: string
-  info_source?: string | string[]
-  were_detained?: boolean
-
-  created_at?: string
-
-  updated_at?: string
-
-  deleted_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type ActivityRead = ActivitiesTable
-
-// Type for creating/updating model data (created_at is optional)
-export type ActivityWrite = Omit<ActivitiesTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface ActivityResponse {
-  data: ActivityJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface ActivityJsonResponse extends Omit<Selectable<ActivityRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewActivity = Insertable<ActivityWrite>
-export type ActivityUpdate = Updateable<ActivityWrite>
-
-export class ActivityModel extends BaseOrm<ActivityModel, ActivitiesTable, ActivityJsonResponse> {
+export class ActivityModel extends BaseOrm<ActivityModel, ActivitiesTable, ActivityJsonResponse> implements ActivityModelType {
   private readonly hidden: Array<keyof ActivityJsonResponse> = []
   private readonly fillable: Array<keyof ActivityJsonResponse> = ['title', 'description', 'address', 'latlng', 'info_source', 'were_detained', 'uuid']
   private readonly guarded: Array<keyof ActivityJsonResponse> = []

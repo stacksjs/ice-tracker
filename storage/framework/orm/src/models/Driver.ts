@@ -1,58 +1,17 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { DriverJsonResponse, DriverModelType, DriversTable, DriverUpdate, NewDriver } from '../types/DriverType'
 import type { DeliveryRouteModel } from './DeliveryRoute'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface DriversTable {
-  id: Generated<number>
-  user_id: number
-  name: string
-  phone: string
-  vehicle_number: string
-  license: string
-  status?: string | string[]
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type DriverRead = DriversTable
-
-// Type for creating/updating model data (created_at is optional)
-export type DriverWrite = Omit<DriversTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface DriverResponse {
-  data: DriverJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface DriverJsonResponse extends Omit<Selectable<DriverRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewDriver = Insertable<DriverWrite>
-export type DriverUpdate = Updateable<DriverWrite>
-
-export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonResponse> {
+export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonResponse> implements DriverModelType {
   private readonly hidden: Array<keyof DriverJsonResponse> = []
   private readonly fillable: Array<keyof DriverJsonResponse> = ['name', 'phone', 'vehicle_number', 'license', 'status', 'uuid', 'user_id']
   private readonly guarded: Array<keyof DriverJsonResponse> = []

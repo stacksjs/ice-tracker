@@ -1,5 +1,6 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewShippingRate, ShippingRateJsonResponse, ShippingRateModelType, ShippingRatesTable, ShippingRateUpdate } from '../types/ShippingRateType'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -8,47 +9,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface ShippingRatesTable {
-  id: Generated<number>
-  method: string
-  zone: string
-  weight_from: number
-  weight_to: number
-  rate: number
-  uuid?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type ShippingRateRead = ShippingRatesTable
-
-// Type for creating/updating model data (created_at is optional)
-export type ShippingRateWrite = Omit<ShippingRatesTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface ShippingRateResponse {
-  data: ShippingRateJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface ShippingRateJsonResponse extends Omit<Selectable<ShippingRateRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewShippingRate = Insertable<ShippingRateWrite>
-export type ShippingRateUpdate = Updateable<ShippingRateWrite>
-
-export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesTable, ShippingRateJsonResponse> {
+export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesTable, ShippingRateJsonResponse> implements ShippingRateModelType {
   private readonly hidden: Array<keyof ShippingRateJsonResponse> = []
   private readonly fillable: Array<keyof ShippingRateJsonResponse> = ['method', 'zone', 'weight_from', 'weight_to', 'rate', 'uuid']
   private readonly guarded: Array<keyof ShippingRateJsonResponse> = []

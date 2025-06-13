@@ -1,56 +1,13 @@
-import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { NewRequest, RequestJsonResponse, RequestModelType, RequestsTable, RequestUpdate } from '../types/RequestType'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface RequestsTable {
-  id: Generated<number>
-  method?: string | string[]
-  path?: string
-  status_code?: number
-  duration_ms?: number
-  ip_address?: string
-  memory_usage?: number
-  user_agent?: string
-  error_message?: string
-
-  created_at?: string
-
-  updated_at?: string
-
-  deleted_at?: string
-
-}
-
-// Type for reading model data (created_at is required)
-export type RequestRead = RequestsTable
-
-// Type for creating/updating model data (created_at is optional)
-export type RequestWrite = Omit<RequestsTable, 'created_at'> & {
-  created_at?: string
-}
-
-export interface RequestResponse {
-  data: RequestJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface RequestJsonResponse extends Omit<Selectable<RequestRead>, 'password'> {
-  [key: string]: any
-}
-
-export type NewRequest = Insertable<RequestWrite>
-export type RequestUpdate = Updateable<RequestWrite>
-
-export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJsonResponse> {
+export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJsonResponse> implements RequestModelType {
   private readonly hidden: Array<keyof RequestJsonResponse> = []
   private readonly fillable: Array<keyof RequestJsonResponse> = ['method', 'path', 'status_code', 'duration_ms', 'ip_address', 'memory_usage', 'user_agent', 'error_message', 'uuid']
   private readonly guarded: Array<keyof RequestJsonResponse> = []
