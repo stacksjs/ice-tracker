@@ -16,8 +16,7 @@ export class PusherDriver implements RealtimeDriver, Broadcastable {
 
   constructor() {
     if (!config.realtime.pusher?.appId || !config.realtime.pusher?.key || !config.realtime.pusher?.secret) {
-      // throw new Error('Pusher driver requires appId, key, and secret in realtime configuration')
-      console.log('Pusher driver requires appId, key, and secret in realtime configuration')
+      throw new Error('Pusher driver requires appId, key, and secret in realtime configuration')
     }
   }
 
