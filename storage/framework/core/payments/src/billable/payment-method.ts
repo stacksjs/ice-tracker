@@ -1,10 +1,9 @@
 import type { Selectable } from '@stacksjs/database'
+import type { PaymentMethodModel, PaymentMethodsTable, UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
-import type { PaymentMethodModel, PaymentMethodsTable } from '../../../../orm/src/models/PaymentMethod'
-import type { UserModel } from '../../../../orm/src/models/User'
 import { db } from '@stacksjs/database'
+import { PaymentMethod } from '@stacksjs/orm'
 import { stripe } from '..'
-import PaymentMethod from '../../../../orm/src/models/PaymentMethod'
 
 export interface ManagePaymentMethod {
   addPaymentMethod: (user: UserModel, paymentMethod: string | Stripe.PaymentMethod) => Promise<Stripe.Response<Stripe.PaymentMethod>>

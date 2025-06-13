@@ -18,7 +18,7 @@ import { getTraitTables } from '@stacksjs/database'
 import { handleError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
-import { camelCase, kebabCase, plural, singular, slugify, snakeCase } from '@stacksjs/strings'
+import { camelCase, kebabCase, pascalCase, plural, singular, slugify, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
 import { globSync } from 'tinyglobby'
 import { generateModelString } from './generate'
@@ -1480,8 +1480,9 @@ async function writeModelOrmImports(modelFiles: string[]): Promise<void> {
     const model = (await import(modelFile)).default as Model
 
     const modelName = getModelName(model, modelFile)
+    const tableName = getTableName(model, modelFile)
 
-    ormImportString += `export { default as ${modelName}, type ${modelName}JsonResponse, ${modelName}Model, type New${modelName}, type ${modelName}Update } from './models/${modelName}'\n\n`
+    ormImportString += `export { default as ${modelName}, type ${modelName}JsonResponse, ${modelName}Model, type ${pascalCase(tableName)}Table, type New${modelName}, type ${modelName}Update } from './models/${modelName}'\n\n`
   }
 
   const file = Bun.file(path.frameworkPath(`orm/src/index.ts`))

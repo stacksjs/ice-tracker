@@ -1,6 +1,6 @@
+import type { UserModel } from '@stacksjs/orm'
 import type { StripeCustomerOptions } from '@stacksjs/types'
 import type Stripe from 'stripe'
-import type { UserModel } from '../../../../orm/src/models/User'
 import { stripe } from '..'
 
 export interface ManageCustomer {
