@@ -1,6 +1,7 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { ActivitiesTable, ActivityJsonResponse, ActivityUpdate, NewActivity } from '../types/ActivityType'
+import type { UserModel } from './User'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
@@ -9,7 +10,7 @@ import { BaseOrm } from '../utils/base'
 
 export class ActivityModel extends BaseOrm<ActivityModel, ActivitiesTable, ActivityJsonResponse> {
   private readonly hidden: Array<keyof ActivityJsonResponse> = []
-  private readonly fillable: Array<keyof ActivityJsonResponse> = ['title', 'description', 'address', 'latlng', 'info_source', 'were_detained']
+  private readonly fillable: Array<keyof ActivityJsonResponse> = ['title', 'description', 'address', 'latlng', 'info_source', 'were_detained', 'user_id']
   private readonly guarded: Array<keyof ActivityJsonResponse> = []
   protected attributes = {} as ActivityJsonResponse
   protected originalAttributes = {} as ActivityJsonResponse
@@ -132,6 +133,14 @@ export class ActivityModel extends BaseOrm<ActivityModel, ActivitiesTable, Activ
     for (const [key, fn] of Object.entries(customSetter)) {
       (model as any)[key] = await fn()
     }
+  }
+
+  get user_id(): number {
+    return this.attributes.user_id
+  }
+
+  get user(): UserModel | undefined {
+    return this.attributes.user
   }
 
   get id(): number {
@@ -810,6 +819,20 @@ export class ActivityModel extends BaseOrm<ActivityModel, ActivitiesTable, Activ
     return instance.applyWhereIn<V>(column, values)
   }
 
+  async userBelong(): Promise<UserModel> {
+    if (this.user_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const model = await User
+      .where('id', '=', this.user_id)
+      .first()
+
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
+
+    return model
+  }
+
   async getLikeCount(): Promise<number> {
     const result = await DB.instance
       .selectFrom('activities_likes')
@@ -887,6 +910,8 @@ export class ActivityModel extends BaseOrm<ActivityModel, ActivitiesTable, Activ
 
       deleted_at: this.deleted_at,
 
+      user_id: this.user_id,
+      user: this.user,
       ...this.customColumns,
     }
 

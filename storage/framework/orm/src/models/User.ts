@@ -1,12 +1,14 @@
 import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { NewUser, UserJsonResponse, UsersTable, UserUpdate } from '../types/UserType'
+import type { ActivityModel } from './Activity'
 import type { AuthorModel } from './Author'
 import type { DriverModel } from './Driver'
 import type { OauthAccessTokenModel } from './OauthAccessToken'
 import type { PersonalAccessTokenModel } from './PersonalAccessToken'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
+
 import { HttpError } from '@stacksjs/error-handling'
 
 import { dispatch } from '@stacksjs/events'
@@ -172,6 +174,10 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
 
   get oauth_access_tokens(): OauthAccessTokenModel[] | [] {
     return this.attributes.oauth_access_tokens
+  }
+
+  get activities(): ActivityModel[] | [] {
+    return this.attributes.activities
   }
 
   get id(): number {
@@ -851,6 +857,7 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
 
       personal_access_tokens: this.personal_access_tokens,
       oauth_access_tokens: this.oauth_access_tokens,
+      activities: this.activities,
       ...this.customColumns,
       public_passkey: this.public_passkey,
     }

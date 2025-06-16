@@ -19,6 +19,7 @@ interface RequestDataActivity {
   latlng: string
   info_source: string[] | string
   were_detained: boolean
+  user_id: number
   deleted_at?: string
   created_at?: string
   updated_at?: string
@@ -31,6 +32,7 @@ export class ActivityRequest extends Request<RequestDataActivity> implements Act
   public latlng = ''
   public info_source = []
   public were_detained = false
+  public user_id = 0
   public created_at = ''
   public updated_at = ''
 

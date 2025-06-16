@@ -23,4 +23,4 @@ export default new Action({
       return response.error(error instanceof Error ? error.message : 'Unknown error')
     }
   },
-}) 
+})

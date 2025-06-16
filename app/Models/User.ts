@@ -55,6 +55,10 @@ export default {
       model: 'OauthAccessToken',
       foreignKey: 'user_id',
     },
+    {
+      model: 'Activity',
+      foreignKey: 'user_id',
+    },
   ],
 
   attributes: {

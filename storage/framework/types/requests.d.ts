@@ -279,6 +279,7 @@ interface RequestDataActivity {
   latlng: string
   info_source: string[] | string
   were_detained: boolean
+  user_id: number
   deleted_at?: string
   created_at?: string
   updated_at?: string
@@ -294,6 +295,7 @@ export interface ActivityRequestType extends Request {
   latlng: string
   info_source: string[] | string
   were_detained: boolean
+  user_id: number
   deleted_at?: string
   created_at?: string
   updated_at?: string

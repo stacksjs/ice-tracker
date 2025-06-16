@@ -17,6 +17,8 @@ export default {
     },
   },
 
+  belongsTo: ['User'],
+
   attributes: {
     title: {
       fillable: true,
