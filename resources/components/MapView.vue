@@ -16,9 +16,9 @@ const props = defineProps<{
 
 const router = useRouter()
 const { isAuthenticated, checkAuthentication } = useAuth()
-const { createActivity, isLoading: isSubmitting } = useTracker()
+const { createActivity, isLoading: isSubmitting, fetchActivities } = useTracker()
 
-const activities = ref<Activity[]>(props.activities)
+const activities = ref<Activity[]>([])
 const activityMarkers = ref<any[]>([])
 
 // -- Template refs
@@ -183,6 +183,12 @@ function initTouchEvents(container: HTMLElement, mapInstance: any) {
 // -- Map initialization
 onMounted(async () => {
   await checkAuthentication()
+  
+  // Fetch activities
+  const fetchedActivities = await fetchActivities()
+  if (fetchedActivities) {
+    activities.value = fetchedActivities
+  }
 
   try {
     // Default coordinates
