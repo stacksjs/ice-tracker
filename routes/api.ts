@@ -30,7 +30,7 @@ route.post('/logout', 'Actions/Auth/LogoutAction')
 route.get('/me', 'Actions/Auth/FetchUserAction').middleware('auth')
 
 // Activities routes
-route.get('/activities', 'Actions/FetchActivitiesAction').middleware('auth')
+route.get('/activities', 'Actions/FetchActivitiesAction')
 route.post('/activities', 'Actions/StoreActivitiesAction').middleware('auth')
 route.put('/activities/{id}', 'Actions/UpdateActivityAction').middleware('auth')
 route.delete('/activities/{id}', 'Actions/DeleteActivityAction').middleware('auth')

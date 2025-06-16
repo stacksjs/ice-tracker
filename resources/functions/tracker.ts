@@ -4,7 +4,9 @@ import { ref } from 'vue'
 const baseUrl = 'http://localhost:3008'
 
 interface ActivitiesResponse {
-  activities: Activity[]
+  data: {
+    activities: Activity[]
+  }
 }
 
 interface ActivityResponse {
@@ -26,14 +28,8 @@ export function useTracker() {
       isLoading.value = true
       error.value = null
 
-      const token = getBearerToken()
-      if (!token) {
-        throw new Error('No authentication token found')
-      }
-
       const response = await fetch(`${baseUrl}/activities`, {
         headers: {
-          Authorization: token,
           Accept: 'application/json',
         },
       })
@@ -43,8 +39,8 @@ export function useTracker() {
       }
 
       const data = await response.json() as ActivitiesResponse
-      activities.value = data.activities
-      return data.activities
+      activities.value = data.data.activities
+      return data.data.activities
     }
     catch (err) {
       error.value = err instanceof Error ? err.message : 'An error occurred'

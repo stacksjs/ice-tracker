@@ -7,7 +7,6 @@ const { checkAuthentication } = useAuth()
 
 // Check auth status on mount
 onMounted(async () => {
-  console.log('onMounted')
   await checkAuthentication()
 })
 

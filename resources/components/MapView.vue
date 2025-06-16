@@ -1,29 +1,34 @@
 <script setup lang="ts">
 import { Dialog, DialogPanel } from '@stacksjs/dialog'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useGeolocation } from '@vueuse/core'
 import type { Activity } from '@/types/ice'
-import DialogForm from './DialogForm.vue'
 import { useRouter } from 'vue-router'
+
 
 // -- Component emits
 const emit = defineEmits(['report'])
 
 const props = defineProps<{
   activities: Activity[]
-  onReport?: (report: Partial<Activity>) => void
 }>()
 
 const router = useRouter()
 const { isAuthenticated, checkAuthentication } = useAuth()
-const { createActivity, isLoading: isSubmitting, fetchActivities } = useTracker()
+const { createActivity, isLoading: isSubmitting } = useTracker()
 
-const activities = ref<Activity[]>([])
-const activityMarkers = ref<any[]>([])
+const activities = ref<Activity[]>(props.activities)
+const activityMarkers = ref<L.Marker[]>([])
+
+// Watch for changes in props.activities
+watch(() => props.activities, (newActivities) => {
+  activities.value = newActivities
+  displayActivityMarkers()
+}, { deep: true })
 
 // -- Template refs
 const mapContainer = ref<HTMLElement | null>(null)
-const map = ref<any | null>(null)
+const map = ref<L.Map | null>(null)
 
 // -- Dialog visibility
 const showActivityDialog = ref(false)
@@ -32,7 +37,7 @@ const isSelectingLocation = ref(false)
 
 // -- Location + Marker
 const selectedLocation = ref<[number, number] | null>(null)
-const currentMarker = ref<any | null>(null)
+const currentMarker = ref<L.Marker | null>(null)
 
 // -- Geolocation
 const { coords } = useGeolocation()
@@ -54,7 +59,7 @@ const liked = ref(false)
 
 // -- For detecting a "long press"
 const pressTimer = ref<number | null>(null)
-const pressPosition = ref<any | null>(null)
+const pressPosition = ref<L.LatLng | null>(null)
 
 // -- Cleanup function for map instance
 const cleanupMap = () => {
@@ -81,9 +86,9 @@ function isValidLatLng(lat: number, lng: number): boolean {
 }
 
 // -- Map/Mouse events
-function initMapEvents(mapInstance: any) {
+function initMapEvents(mapInstance: L.Map) {
   // Handle mousedown for long press
-  mapInstance.on('mousedown', (e) => {
+  mapInstance.on('mousedown', (e: L.LeafletMouseEvent) => {
     pressPosition.value = e.latlng
     pressTimer.value = window.setTimeout(() => {
       handleLongPress(e.latlng)
@@ -91,7 +96,7 @@ function initMapEvents(mapInstance: any) {
   })
 
   // Clear timer if mouse moves significantly or mouseup
-  mapInstance.on('mousemove', (e) => {
+  mapInstance.on('mousemove', (e: L.LeafletMouseEvent) => {
     if (pressPosition.value && pressTimer.value) {
       const movedDistance = pressPosition.value.distanceTo(e.latlng)
       if (movedDistance > 10) {
@@ -111,7 +116,7 @@ function initMapEvents(mapInstance: any) {
   })
 
   // Add click handler for location selection
-  mapInstance.on('click', (e) => {
+  mapInstance.on('click', (e: L.LeafletMouseEvent) => {
     if (isSelectingLocation.value) {
       selectedLocation.value = [e.latlng.lat, e.latlng.lng]
       activityForm.value.latlng = `${e.latlng.lat}, ${e.latlng.lng}`
@@ -130,7 +135,7 @@ function initMapEvents(mapInstance: any) {
 }
 
 // -- Touch events for long press
-function initTouchEvents(container: HTMLElement, mapInstance: any) {
+function initTouchEvents(container: HTMLElement, mapInstance: L.Map) {
   let touchStartTime = 0
   let touchStartPosition: Touch | null = null
 
@@ -183,12 +188,6 @@ function initTouchEvents(container: HTMLElement, mapInstance: any) {
 // -- Map initialization
 onMounted(async () => {
   await checkAuthentication()
-  
-  // Fetch activities
-  const fetchedActivities = await fetchActivities()
-  if (fetchedActivities) {
-    activities.value = fetchedActivities
-  }
 
   try {
     // Default coordinates
@@ -213,6 +212,10 @@ onMounted(async () => {
       console.warn('Using fallback coordinates')
       initialLat = defaultLat
       initialLng = defaultLng
+    }
+
+    if (!mapContainer.value) {
+      throw new Error('Map container not found')
     }
 
     const mapInstance = L.map(mapContainer.value, {
@@ -283,8 +286,7 @@ async function handleActivitySubmit(activityData: Partial<Activity>) {
   try {
     const newActivity = await createActivity(activityData)
     if (newActivity) {
-      activities.value.push(newActivity)
-      displayActivityMarkers() // Refresh markers with new activity
+      emit('report', newActivity)
       showActivityDialog.value = false
     }
   }
@@ -294,7 +296,7 @@ async function handleActivitySubmit(activityData: Partial<Activity>) {
 }
 
 // -- Handling a long-press on the map
-function handleLongPress(latlng: LatLng) {
+function handleLongPress(latlng: L.LatLng) {
   if (!map.value || !isValidLatLng(latlng.lat, latlng.lng)) return
 
   selectedLocation.value = [latlng.lat, latlng.lng]
@@ -314,14 +316,6 @@ function handleLongPress(latlng: LatLng) {
 function startLocationSelection() {
   isSelectingLocation.value = true
   showActivityDialog.value = false
-}
-
-// -- Simple upvote
-function upvoteActivity() {
-  if (!liked.value) {
-    likeCount.value += 1
-    liked.value = true
-  }
 }
 
 function openReportDialog() {
