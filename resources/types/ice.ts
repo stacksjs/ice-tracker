@@ -12,14 +12,18 @@ export interface Activity {
   images?: File[]
 }
 
-type ResponseError = {
-  errors: {
-    [key: string]: {
-      message: string
-    }[]
-  } | {
-    error: string
-  }
+export type ValidationError = {
+  [key: string]: {
+    message: string
+  }[]
+}
+
+export type ResponseError = {
+  error: string
+} | ValidationError
+
+export function isGeneralError(error: ResponseError): error is { error: string } {
+  return 'error' in error
 }
 
 export interface RegisterError {

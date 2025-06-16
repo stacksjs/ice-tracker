@@ -2,6 +2,8 @@
 import { useAuth } from '../functions/auth'
 import { useRouter } from 'vue-router'
 import { Toaster, notification } from '@stacksjs/notification'
+import type { ValidationError } from '../types/ice'
+import { isGeneralError } from '../types/ice'
 
 const router = useRouter()
 
@@ -10,7 +12,7 @@ const { register } = useAuth()
 const name = ref('')
 const email = ref('')
 const password = ref('')
-const validationErrors = ref<Record<string, { message: string }[]>>({})
+const validationErrors = ref<ValidationError>({})
 const error = ref('')
 
 async function submitRegistration() {
@@ -20,13 +22,11 @@ async function submitRegistration() {
     const response = await register({ name: name.value, email: email.value, password: password.value })
 
     if ('errors' in response) {
-      validationErrors.value = response.errors
-
-      if ('error' in response.errors) {
-        error.value = response.errors.error || 'Registration failed. Please try again.'
+      if (isGeneralError(response.errors)) {
+        error.value = response.errors.error
       }
       else {
-        error.value = 'Registration failed. Please try again.'
+        validationErrors.value = response.errors
       }
       return
     }
@@ -68,9 +68,9 @@ useHead({
               <input v-model="name" type="text" name="name" id="name" autocomplete="name" required 
                 :class="[
                   'block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 sm:text-sm/6',
-                  validationErrors.name ? 'outline-red-500 focus:outline-red-500' : 'outline-gray-300 focus:outline-gray-600'
+                  validationErrors?.name?.length ? 'outline-red-500 focus:outline-red-500' : 'outline-gray-300 focus:outline-gray-600'
                 ]">
-              <div v-if="validationErrors.name" class="mt-1">
+              <div v-if="validationErrors?.name?.length" class="mt-1">
                 <p v-for="error in validationErrors.name" :key="error.message" class="text-sm text-red-600">
                   {{ error.message }}
                 </p>
@@ -84,9 +84,9 @@ useHead({
               <input v-model="email" type="email" name="email" id="email" autocomplete="email" required 
                 :class="[
                   'block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 sm:text-sm/6',
-                  validationErrors.email ? 'outline-red-500 focus:outline-red-500' : 'outline-gray-300 focus:outline-gray-600'
+                  validationErrors?.email?.length ? 'outline-red-500 focus:outline-red-500' : 'outline-gray-300 focus:outline-gray-600'
                 ]">
-              <div v-if="validationErrors.email" class="mt-1">
+              <div v-if="validationErrors?.email?.length" class="mt-1">
                 <p v-for="error in validationErrors.email" :key="error.message" class="text-sm text-red-600">
                   {{ error.message }}
                 </p>
@@ -100,9 +100,9 @@ useHead({
               <input v-model="password" type="password" name="password" id="password" autocomplete="new-password" required 
                 :class="[
                   'block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 sm:text-sm/6',
-                  validationErrors.password ? 'outline-red-500 focus:outline-red-500' : 'outline-gray-300 focus:outline-gray-600'
+                  validationErrors?.password?.length ? 'outline-red-500 focus:outline-red-500' : 'outline-gray-300 focus:outline-gray-600'
                 ]">
-              <div v-if="validationErrors.password" class="mt-1">
+              <div v-if="validationErrors?.password?.length" class="mt-1">
                 <p v-for="error in validationErrors.password" :key="error.message" class="text-sm text-red-600">
                   {{ error.message }}
                 </p>
