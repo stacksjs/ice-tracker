@@ -456,8 +456,6 @@ export function getFillableAttributes(model: Model, otherModelRelations: Relatio
   const usePasskey = typeof model.traits?.useAuth === 'object' ? model.traits?.useAuth.usePasskey : false
   const useUuid = model.traits?.useUuid || false
 
-  console.log(model.name, useUuid)
-
   if (useBillable)
     additionalCols.push('stripe_id')
 

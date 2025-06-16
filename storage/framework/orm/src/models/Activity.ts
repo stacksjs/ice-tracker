@@ -723,8 +723,13 @@ export class ActivityModel extends BaseOrm<ActivityModel, ActivitiesTable, Activ
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
+    if (this.softDeletes) {
+      return await DB.instance.updateTable('activities')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', this.id)
+        .execute()
     }
 
     const deleted = await DB.instance.deleteFrom('activities')

@@ -739,8 +739,13 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
+    if (this.softDeletes) {
+      return await DB.instance.updateTable('requests')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', this.id)
+        .execute()
     }
 
     const deleted = await DB.instance.deleteFrom('requests')
