@@ -21,7 +21,6 @@ export default {
     useAuth: {
       usePasskey: true,
     },
-    billable: true,
     useUuid: true,
     useTimestamps: true, // defaults to true, `timestampable` used as an alias
     useSearch: {
