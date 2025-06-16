@@ -11,7 +11,7 @@ import { BaseOrm } from '../utils/base'
 
 export class OauthClientModel extends BaseOrm<OauthClientModel, OauthClientsTable, OauthClientJsonResponse> {
   private readonly hidden: Array<keyof OauthClientJsonResponse> = []
-  private readonly fillable: Array<keyof OauthClientJsonResponse> = ['name', 'secret', 'provider', 'redirect', 'personal_access_client', 'password_client', 'revoked', 'uuid']
+  private readonly fillable: Array<keyof OauthClientJsonResponse> = ['name', 'secret', 'provider', 'redirect', 'personal_access_client', 'password_client', 'revoked']
   private readonly guarded: Array<keyof OauthClientJsonResponse> = []
   protected attributes = {} as OauthClientJsonResponse
   protected originalAttributes = {} as OauthClientJsonResponse

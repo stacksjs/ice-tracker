@@ -11,6 +11,11 @@ interface ActivityResponse {
   activity: Activity
 }
 
+function getBearerToken(): string | null {
+  const token = localStorage.getItem('token')
+  return token ? `Bearer ${token}` : null
+}
+
 export function useTracker() {
   const activities = ref<Activity[]>([])
   const isLoading = ref(false)
@@ -21,10 +26,14 @@ export function useTracker() {
       isLoading.value = true
       error.value = null
 
-      const token = localStorage.getItem('token')
+      const token = getBearerToken()
+      if (!token) {
+        throw new Error('No authentication token found')
+      }
+
       const response = await fetch(`${baseUrl}/activities`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: token,
           Accept: 'application/json',
         },
       })
@@ -51,12 +60,16 @@ export function useTracker() {
       isLoading.value = true
       error.value = null
 
-      const token = localStorage.getItem('token')
+      const token = getBearerToken()
+      if (!token) {
+        throw new Error('No authentication token found')
+      }
+
       const response = await fetch(`${baseUrl}/activities`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': token,
         },
         body: JSON.stringify(activity),
       })
@@ -83,12 +96,16 @@ export function useTracker() {
       isLoading.value = true
       error.value = null
 
-      const token = localStorage.getItem('token')
+      const token = getBearerToken()
+      if (!token) {
+        throw new Error('No authentication token found')
+      }
+
       const response = await fetch(`${baseUrl}/activities/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': token,
         },
         body: JSON.stringify(activity),
       })
@@ -118,11 +135,15 @@ export function useTracker() {
       isLoading.value = true
       error.value = null
 
-      const token = localStorage.getItem('token')
+      const token = getBearerToken()
+      if (!token) {
+        throw new Error('No authentication token found')
+      }
+
       const response = await fetch(`${baseUrl}/activities/${id}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: token,
         },
       })
 

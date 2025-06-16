@@ -9,7 +9,7 @@ import { BaseOrm } from '../utils/base'
 
 export class ActivityModel extends BaseOrm<ActivityModel, ActivitiesTable, ActivityJsonResponse> {
   private readonly hidden: Array<keyof ActivityJsonResponse> = []
-  private readonly fillable: Array<keyof ActivityJsonResponse> = ['title', 'description', 'address', 'latlng', 'info_source', 'were_detained', 'uuid']
+  private readonly fillable: Array<keyof ActivityJsonResponse> = ['title', 'description', 'address', 'latlng', 'info_source', 'were_detained']
   private readonly guarded: Array<keyof ActivityJsonResponse> = []
   protected attributes = {} as ActivityJsonResponse
   protected originalAttributes = {} as ActivityJsonResponse

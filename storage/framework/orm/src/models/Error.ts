@@ -9,7 +9,7 @@ import { BaseOrm } from '../utils/base'
 
 export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonResponse> {
   private readonly hidden: Array<keyof ErrorJsonResponse> = []
-  private readonly fillable: Array<keyof ErrorJsonResponse> = ['type', 'message', 'stack', 'status', 'additional_info', 'uuid']
+  private readonly fillable: Array<keyof ErrorJsonResponse> = ['type', 'message', 'stack', 'status', 'additional_info']
   private readonly guarded: Array<keyof ErrorJsonResponse> = []
   protected attributes = {} as ErrorJsonResponse
   protected originalAttributes = {} as ErrorJsonResponse

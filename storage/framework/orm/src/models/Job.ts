@@ -9,7 +9,7 @@ import { BaseOrm } from '../utils/base'
 
 export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
   private readonly hidden: Array<keyof JobJsonResponse> = []
-  private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
+  private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at']
   private readonly guarded: Array<keyof JobJsonResponse> = []
   protected attributes = {} as JobJsonResponse
   protected originalAttributes = {} as JobJsonResponse

@@ -1,15 +1,17 @@
 import type { ActivityJsonResponse } from '@stacksjs/orm'
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { log } from '@stacksjs/logging'
 import { Activity } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'StoreActivities',
   description: 'Stores a new activity in the database.',
 
-  async handle(request: Request) {
+  async handle(request: RequestInstance) {
     try {
-      const data = await request.json() as Partial<ActivityJsonResponse>
+      const data = await request.all() as Partial<ActivityJsonResponse>
 
       // Validate required fields
       if (!data.title || !data.description) {
@@ -39,19 +41,13 @@ export default new Action({
 
       log.info('Activity created', { activityId: activity.id })
 
-      return {
-        status: 201,
-        activity,
-      }
+      return response.json(activity, 201)
     }
     catch (error) {
+      console.error(error)
       log.error('Error creating activity', { error })
 
-      return {
-        status: 500,
-        message: 'Failed to create activity',
-        error: error instanceof Error ? error.message : 'Unknown error',
-      }
+      return response.error(error instanceof Error ? error.message : 'Unknown error')
     }
   },
 })

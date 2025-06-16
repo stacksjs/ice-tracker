@@ -9,7 +9,7 @@ import { BaseOrm } from '../utils/base'
 
 export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
   private readonly hidden: Array<keyof LogJsonResponse> = []
-  private readonly fillable: Array<keyof LogJsonResponse> = ['timestamp', 'type', 'source', 'message', 'project', 'stacktrace', 'file', 'uuid']
+  private readonly fillable: Array<keyof LogJsonResponse> = ['timestamp', 'type', 'source', 'message', 'project', 'stacktrace', 'file']
   private readonly guarded: Array<keyof LogJsonResponse> = []
   protected attributes = {} as LogJsonResponse
   protected originalAttributes = {} as LogJsonResponse

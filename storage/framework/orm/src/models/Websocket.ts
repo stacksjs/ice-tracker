@@ -10,7 +10,7 @@ import { BaseOrm } from '../utils/base'
 
 export class WebsocketModel extends BaseOrm<WebsocketModel, WebsocketsTable, WebsocketJsonResponse> {
   private readonly hidden: Array<keyof WebsocketJsonResponse> = []
-  private readonly fillable: Array<keyof WebsocketJsonResponse> = ['type', 'socket', 'details', 'time', 'uuid']
+  private readonly fillable: Array<keyof WebsocketJsonResponse> = ['type', 'socket', 'details', 'time']
   private readonly guarded: Array<keyof WebsocketJsonResponse> = []
   protected attributes = {} as WebsocketJsonResponse
   protected originalAttributes = {} as WebsocketJsonResponse

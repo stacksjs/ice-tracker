@@ -11,7 +11,7 @@ import { BaseOrm } from '../utils/base'
 
 export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, OrderItemJsonResponse> {
   private readonly hidden: Array<keyof OrderItemJsonResponse> = []
-  private readonly fillable: Array<keyof OrderItemJsonResponse> = ['quantity', 'price', 'special_instructions', 'uuid', 'order_id']
+  private readonly fillable: Array<keyof OrderItemJsonResponse> = ['quantity', 'price', 'special_instructions', 'order_id']
   private readonly guarded: Array<keyof OrderItemJsonResponse> = []
   protected attributes = {} as OrderItemJsonResponse
   protected originalAttributes = {} as OrderItemJsonResponse

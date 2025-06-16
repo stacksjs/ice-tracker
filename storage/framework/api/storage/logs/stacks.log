@@ -1,2 +1,10 @@
 [2025-05-28T12:30:41.833Z] ERROR: Error executing middleware "auth": undefined is not an object (evaluating 'request.bearerToken')
 [2025-05-28T12:52:09.828Z] ERROR: Error executing middleware "auth": undefined is not an object (evaluating 'request.bearerToken')
+[2025-06-16T14:40:19.898Z] ERROR: Error creating activity
+Context: {
+  "error": {}
+}
+[2025-06-16T14:44:16.196Z] ERROR: Error creating activity
+Context: {
+  "error": {}
+}

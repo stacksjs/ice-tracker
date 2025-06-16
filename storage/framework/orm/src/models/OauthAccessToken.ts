@@ -11,7 +11,7 @@ import { BaseOrm } from '../utils/base'
 
 export class OauthAccessTokenModel extends BaseOrm<OauthAccessTokenModel, OauthAccessTokensTable, OauthAccessTokenJsonResponse> {
   private readonly hidden: Array<keyof OauthAccessTokenJsonResponse> = []
-  private readonly fillable: Array<keyof OauthAccessTokenJsonResponse> = ['token', 'name', 'scopes', 'revoked', 'expires_at', 'uuid', 'oauth_client_id', 'user_id']
+  private readonly fillable: Array<keyof OauthAccessTokenJsonResponse> = ['token', 'name', 'scopes', 'revoked', 'expires_at', 'oauth_client_id', 'user_id']
   private readonly guarded: Array<keyof OauthAccessTokenJsonResponse> = []
   protected attributes = {} as OauthAccessTokenJsonResponse
   protected originalAttributes = {} as OauthAccessTokenJsonResponse
