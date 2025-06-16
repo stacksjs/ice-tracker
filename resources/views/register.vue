@@ -2,6 +2,7 @@
 import { useAuth } from '../functions/auth'
 import { useRouter } from 'vue-router'
 import { Toaster, notification } from '@stacksjs/notification'
+import type { RegisterResponse } from '../types/ice'
 
 const router = useRouter()
 
@@ -11,21 +12,34 @@ const name = ref('')
 const email = ref('')
 const password = ref('')
 const validationErrors = ref<Record<string, { message: string }[]>>({})
+const error = ref('')
 
 async function submitRegistration() {
   try {
     validationErrors.value = {}
-    const response = await register({ name: name.value, email: email.value, password: password.value })
+    error.value = ''
+    const response = await register<RegisterResponse>({ name: name.value, email: email.value, password: password.value })
 
     if (response.errors) {
       validationErrors.value = response.errors
       return
     }
 
-    notification('Registration successful!')
+    if (response.errors) {
+      console.log(response.errors)
+      error.value = response.errors.error || 'Registration failed. Please try again.'
+      return
+    }
+
+    setTimeout(() => {
+      notification('Registration successful!')
+     
+    }, 2000)
+
     router.push('/map')
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    error.value = error.error || error.message || 'Registration failed. Please try again.'
     notification('Registration failed. Please try again.')
   }
 }
@@ -96,6 +110,10 @@ useHead({
 
           <div>
             <button @click="submitRegistration" type="submit" class="flex w-full justify-center rounded-md bg-gray-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600">Sign up</button>
+          </div>
+
+          <div v-if="error" class="mt-4">
+            <p class="text-sm text-red-600">{{ error }}</p>
           </div>
         </div>
 

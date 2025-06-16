@@ -14,12 +14,6 @@ export class PusherDriver implements RealtimeDriver, Broadcastable {
   private channelType: ChannelType = 'public'
   private shouldExcludeCurrentUser = false
 
-  constructor() {
-    if (!config.realtime.pusher?.appId || !config.realtime.pusher?.key || !config.realtime.pusher?.secret) {
-      throw new Error('Pusher driver requires appId, key, and secret in realtime configuration')
-    }
-  }
-
   async connect(): Promise<void> {
     if (this.pusher) {
       return

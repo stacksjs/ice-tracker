@@ -1,27 +1,4 @@
-interface User {
-  name: string
-  email: string
-  password: string
-}
-
-interface ErrorResponse {
-  message: string
-}
-
-interface Response<T> {
-  errors: Record<string, { message: string }[]>
-  data: T
-}
-
-interface UserData {
-  id: number
-  email: string
-  name: string
-}
-
-interface MeResponse {
-  user: UserData
-}
+import type { User, UserData, MeResponse, Response, ErrorResponse } from '../types/ice'
 
 const baseUrl = 'http://localhost:3008'
 
