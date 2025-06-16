@@ -1,11 +1,13 @@
 import type { ErrorResponse, MeResponse, RegisterError, RegisterResponse, User, UserData } from '../types/ice'
+import { ref } from 'vue'
 
 const baseUrl = 'http://localhost:3008'
 
-export function useAuth() {
-  const user = ref<UserData | null>(null)
-  const isAuthenticated = ref(false)
+// Create singleton state
+const user = ref<UserData | null>(null)
+const isAuthenticated = ref(false)
 
+export function useAuth() {
   async function fetchUser() {
     try {
       const token = localStorage.getItem('token')
@@ -22,6 +24,8 @@ export function useAuth() {
         },
       })
 
+      console.log(response)
+
       if (!response.ok) {
         localStorage.removeItem('token')
         isAuthenticated.value = false
@@ -32,6 +36,8 @@ export function useAuth() {
       const data = await response.json() as MeResponse
       user.value = data.user
       isAuthenticated.value = true
+
+      console.log(isAuthenticated.value)
       return data.user
     }
     catch (error) {

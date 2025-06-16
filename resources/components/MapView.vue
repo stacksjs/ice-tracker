@@ -4,6 +4,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useGeolocation } from '@vueuse/core'
 import type { Activity } from '@/types/ice'
 import DialogForm from './DIalogForm.vue'
+import { useRouter } from 'vue-router'
 
 // -- Component emits
 const emit = defineEmits(['report'])
@@ -12,6 +13,9 @@ const props = defineProps<{
   activities: Activity[]
   onReport?: (report: Partial<Activity>) => void
 }>()
+
+const router = useRouter()
+const { isAuthenticated, checkAuthentication } = useAuth()
 
 const activities = ref<Activity[]>(props.activities)
 const activityMarkers = ref<any[]>([])
@@ -178,8 +182,8 @@ function initTouchEvents(container: HTMLElement, mapInstance: any) {
 }
 
 // -- Map initialization
-onMounted(() => {
-  if (!isBrowser || !mapContainer.value) return
+onMounted(async () => {
+  await checkAuthentication()
 
   try {
     // Default coordinates
@@ -339,6 +343,14 @@ function upvoteActivity() {
   }
 }
 
+function openReportDialog() {
+  if (!isAuthenticated.value) {
+    router.push('/login')
+    return
+  }
+  showActivityDialog.value = true
+}
+
 // -- Function to display activity markers
 function displayActivityMarkers() {
   if (!map.value) return
@@ -351,7 +363,7 @@ function displayActivityMarkers() {
   activities.value.forEach(activity => {
     if (activity.latlng) {
       const [lat, lng] = activity.latlng.split(',').map(Number)
-      if (isValidLatLng(lat, lng)) {
+      if (typeof lat === 'number' && typeof lng === 'number' && isValidLatLng(lat, lng)) {
         const marker = L.marker([lat, lng])
           .bindPopup(`<div class="text-sm">${activity.title}</div>`)
           .addTo(map.value!)
@@ -370,7 +382,7 @@ function displayActivityMarkers() {
 
       <!-- Floating Button to open the Activity Dialog -->
       <button
-        @click="showActivityDialog = true"
+        @click="openReportDialog"
         class="absolute bottom-24 right-4 bg-teal-600 text-white rounded-full p-4 shadow-lg z-[400]"
       >
         <div i-hugeicons-add-01 class="text-2xl" />

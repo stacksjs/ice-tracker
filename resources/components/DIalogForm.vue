@@ -137,7 +137,7 @@ function submitActivity() {
             <p class="mt-1 text-sm/6 text-gray-600">Share information about the activity you want to report.</p>
 
             <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-              <div class="sm:col-span-4">
+              <div class="sm:col-span-full">
                 <label class="block text-sm/6 font-medium text-gray-900 text-left">Title</label>
                 <div class="mt-2">
                   <input
