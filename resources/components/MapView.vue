@@ -67,8 +67,6 @@ const cleanupMap = () => {
   }
 }
 
-const isBrowser = typeof window !== 'undefined'
-
 // -- Utility function to validate coordinates
 function isValidLatLng(lat: number, lng: number): boolean {
   return (
