@@ -20,10 +20,7 @@ export default new Action({
 
       password: {
         rule: schema.password()
-          .min(8)
-          .hasUppercase()
-          .hasLowercase()
-          .hasNumbers(),
+          .min(6)
       },
 
       name: {

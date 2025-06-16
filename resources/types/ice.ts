@@ -27,11 +27,13 @@ export interface RegisterError {
 }
 
 export interface RegisterResponse {
-  token: string
-  user: {
-    id: number
-    email: string
-    name: string
+  data: {
+    token: string
+    user: {
+      id: number
+      email: string
+      name: string
+    }
   }
 }
 

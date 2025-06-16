@@ -12,7 +12,7 @@ export async function register(credentials: NewUser): Promise<{ token: AuthToken
   const existingUser = await User.where('email', '=', email).first()
 
   if (existingUser)
-    throw new Error(`User with email ${email} already exists`)
+    throw new Error(`Email already exists!`)
 
   // Hash the password
   const hashedPassword = await makeHash(password, { algorithm: 'bcrypt' })

@@ -2,7 +2,6 @@
 import { useAuth } from '../functions/auth'
 import { useRouter } from 'vue-router'
 import { Toaster, notification } from '@stacksjs/notification'
-import type { RegisterResponse } from '../types/ice'
 
 const router = useRouter()
 
@@ -18,25 +17,28 @@ async function submitRegistration() {
   try {
     validationErrors.value = {}
     error.value = ''
-    const response = await register<RegisterResponse>({ name: name.value, email: email.value, password: password.value })
+    const response = await register({ name: name.value, email: email.value, password: password.value })
 
-    if (response.errors) {
+    if ('errors' in response) {
       validationErrors.value = response.errors
+
+      if ('error' in response.errors) {
+        error.value = response.errors.error || 'Registration failed. Please try again.'
+      }
+      else {
+        error.value = 'Registration failed. Please try again.'
+      }
       return
     }
-
-    if (response.errors) {
-      console.log(response.errors)
-      error.value = response.errors.error || 'Registration failed. Please try again.'
-      return
-    }
-
+    
+    notification('Registration successful!')
+    
     setTimeout(() => {
-      notification('Registration successful!')
      
+      router.push('/map')
     }, 2000)
 
-    router.push('/map')
+   
   } catch (error: any) {
     console.error(error)
     error.value = error.error || error.message || 'Registration failed. Please try again.'

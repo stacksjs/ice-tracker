@@ -1,10 +1,23 @@
 <script setup lang="ts">
-// const router = useRouter()
+import { onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 
-// onMounted(() => {
-//   if (app.maintenanceMode && router.currentRoute.value.path !== '/maintenance')
-//     router.push('/maintenance')
-// })
+const route = useRoute()
+const { checkAuthentication } = useAuth()
+
+// Check auth status on mount
+onMounted(async () => {
+  console.log('onMounted')
+  await checkAuthentication()
+})
+
+// Check auth status on route changes
+watch(
+  () => route.path,
+  async () => {
+    await checkAuthentication()
+  }
+)
 </script>
 
 <template>

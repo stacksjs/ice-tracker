@@ -1,4 +1,4 @@
-import type { User, UserData, MeResponse, Response, ErrorResponse } from '../types/ice'
+import type { User, UserData, MeResponse, ErrorResponse, RegisterResponse, RegisterError } from '../types/ice'
 
 const baseUrl = 'http://localhost:3008'
 
@@ -43,12 +43,18 @@ export function useAuth() {
     }
   }
 
-  // Check auth status on mount
-  onMounted(() => {
-    fetchUser()
-  })
+  async function checkAuthentication(): Promise<boolean> {
+    try {
+      const userData = await fetchUser()
+      return userData !== null
+    }
+    catch (error) {
+      console.error('Error checking authentication:', error)
+      return false
+    }
+  }
 
-  async function register<T>(user: User): Promise<Response<T>> {
+  async function register(user: User): Promise<RegisterResponse | RegisterError> {
     const url = `${baseUrl}/register`
     const response = await fetch(url, {
       method: 'POST',
@@ -58,9 +64,27 @@ export function useAuth() {
       body: JSON.stringify(user),
     })
 
-    const data = await response.json() as Response<T>
+    const data = await response.json() as RegisterResponse | RegisterError
+
+    if (isRegisterError(data)) {
+      return data
+    }
+
+    if (isRegisterResponse(data)) {
+      console.log(data.data.token)
+      localStorage.setItem('token', data.data.token)
+      return data
+    }
 
     return data
+  }
+
+  function isRegisterError(data: RegisterResponse | RegisterError): data is RegisterError {
+    return 'errors' in data
+  }
+
+  function isRegisterResponse(data: RegisterResponse | RegisterError): data is RegisterResponse {
+    return 'data' in data && 'token' in data.data
   }
 
   async function login(user: User) {
@@ -79,8 +103,8 @@ export function useAuth() {
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
-      const data = await response.json() as { token: string }
-      localStorage.setItem('token', data.token)
+      const data = await response.json() as RegisterResponse
+      localStorage.setItem('token', data.data.token)
       await fetchUser() // Fetch user data after successful login
       return data
     }
@@ -120,5 +144,6 @@ export function useAuth() {
     login,
     logout,
     fetchUser,
+    checkAuthentication,
   }
 }
