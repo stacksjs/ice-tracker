@@ -12,7 +12,7 @@ export interface Activity {
   images?: File[]
 }
 
-export type ValidationError = {
+export interface ValidationError {
   [key: string]: {
     message: string
   }[]

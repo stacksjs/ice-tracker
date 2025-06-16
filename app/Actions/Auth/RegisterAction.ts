@@ -20,7 +20,7 @@ export default new Action({
 
       password: {
         rule: schema.password()
-          .min(6)
+          .min(6),
       },
 
       name: {

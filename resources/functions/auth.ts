@@ -1,4 +1,4 @@
-import type { User, UserData, MeResponse, ErrorResponse, RegisterResponse, RegisterError } from '../types/ice'
+import type { ErrorResponse, MeResponse, RegisterError, RegisterResponse, User, UserData } from '../types/ice'
 
 const baseUrl = 'http://localhost:3008'
 
@@ -109,7 +109,6 @@ export function useAuth() {
       return data
     }
     catch (error) {
-      console.error(error)
       return error
     }
   }
