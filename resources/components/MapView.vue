@@ -3,9 +3,7 @@ import { Dialog, DialogPanel } from '@stacksjs/dialog'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useGeolocation } from '@vueuse/core'
 import type { Activity } from '@/types/ice'
-import DialogForm from './DIalogForm.vue'
 import { useRouter } from 'vue-router'
-import { useTracker } from '@/functions/tracker'
 
 // -- Component emits
 const emit = defineEmits(['report'])

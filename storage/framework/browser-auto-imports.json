@@ -431,6 +431,7 @@
     "useToNumber": true,
     "useToString": true,
     "useToggle": true,
+    "useTracker": true,
     "useTransition": true,
     "useTrunc": true,
     "useUrlSearchParams": true,

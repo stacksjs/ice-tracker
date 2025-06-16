@@ -394,6 +394,7 @@ declare global {
   const useToNumber: typeof import('../core/browser/src/utils/vendors')['useToNumber']
   const useToString: typeof import('../core/browser/src/utils/vendors')['useToString']
   const useToggle: typeof import('../core/browser/src/utils/vendors')['useToggle']
+  const useTracker: typeof import('../../../resources/functions/tracker')['useTracker']
   const useTransition: typeof import('../core/browser/src/utils/vendors')['useTransition']
   const useTrunc: typeof import('../core/browser/src/utils/math')['useTrunc']
   const useUrlSearchParams: typeof import('../core/browser/src/utils/vendors')['useUrlSearchParams']
@@ -842,6 +843,7 @@ declare module 'vue' {
     readonly useToNumber: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useToNumber']>
     readonly useToString: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useToString']>
     readonly useToggle: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useToggle']>
+    readonly useTracker: UnwrapRef<typeof import('../../../resources/functions/tracker')['useTracker']>
     readonly useTransition: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useTransition']>
     readonly useTrunc: UnwrapRef<typeof import('../core/browser/src/utils/math')['useTrunc']>
     readonly useUrlSearchParams: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useUrlSearchParams']>
