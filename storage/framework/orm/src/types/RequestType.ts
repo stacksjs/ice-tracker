@@ -11,7 +11,7 @@ export interface RequestsTable {
   memory_usage?: number
   user_agent?: string
   error_message?: string
-  uuid?: string
+
   created_at?: string
   updated_at?: string
 }

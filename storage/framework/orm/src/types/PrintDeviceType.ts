@@ -10,7 +10,7 @@ export interface PrintDevicesTable {
   status: string | string[]
   last_ping: number
   print_count: number
-  uuid?: string
+
   created_at?: string
   updated_at?: string
 }

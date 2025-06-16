@@ -7,7 +7,7 @@ export interface WebsocketsTable {
   socket: string
   details: string
   time: number
-  uuid?: string
+
   created_at?: string
   updated_at?: string
 }

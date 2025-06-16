@@ -10,7 +10,7 @@ export interface LogsTable {
   project: string
   stacktrace?: string
   file?: string
-  uuid?: string
+
   created_at?: string
   updated_at?: string
 }

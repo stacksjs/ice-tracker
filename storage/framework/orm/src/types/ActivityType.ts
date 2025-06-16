@@ -9,7 +9,7 @@ export interface ActivitiesTable {
   latlng?: string
   info_source?: string | string[]
   were_detained?: boolean
-  uuid?: string
+
   created_at?: string
   updated_at?: string
 }

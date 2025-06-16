@@ -10,7 +10,7 @@ export interface OauthClientsTable {
   personal_access_client: boolean
   password_client: boolean
   revoked: boolean
-  uuid?: string
+
   created_at?: string
   updated_at?: string
 }

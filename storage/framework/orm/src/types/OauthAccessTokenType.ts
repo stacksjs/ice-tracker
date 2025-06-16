@@ -8,7 +8,7 @@ export interface OauthAccessTokensTable {
   scopes?: string
   revoked: boolean
   expires_at?: Date | string
-  uuid?: string
+
   created_at?: string
   updated_at?: string
 }

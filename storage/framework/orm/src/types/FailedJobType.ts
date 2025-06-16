@@ -8,7 +8,7 @@ export interface FailedJobsTable {
   payload: string
   exception: string
   failed_at?: Date | string
-  uuid?: string
+
   created_at?: string
   updated_at?: string
 }

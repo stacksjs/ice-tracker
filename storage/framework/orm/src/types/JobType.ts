@@ -8,7 +8,7 @@ export interface JobsTable {
   attempts?: number
   available_at?: number
   reserved_at?: Date | string
-  uuid?: string
+
   created_at?: string
   updated_at?: string
 }

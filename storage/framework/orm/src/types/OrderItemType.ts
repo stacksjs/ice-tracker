@@ -6,7 +6,7 @@ export interface OrderItemsTable {
   quantity: number
   price: number
   special_instructions?: string
-  uuid?: string
+
   created_at?: string
   updated_at?: string
 }

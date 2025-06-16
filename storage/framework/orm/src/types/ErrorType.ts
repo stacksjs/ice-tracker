@@ -8,7 +8,7 @@ export interface ErrorsTable {
   stack?: string
   status: number
   additional_info?: string
-  uuid?: string
+
   created_at?: string
   updated_at?: string
 }

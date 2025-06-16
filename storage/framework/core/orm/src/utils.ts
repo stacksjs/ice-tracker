@@ -1654,7 +1654,7 @@ export interface ${formattedTableName}Table {
   }
 
   // Add common fields
-  typeString += `  uuid?: string
+  typeString += `
   created_at?: string
   updated_at?: string
 }`

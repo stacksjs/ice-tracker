@@ -10,7 +10,7 @@ export interface PaymentProductsTable {
   status?: string
   image?: string
   provider_id?: string
-  uuid?: string
+
   created_at?: string
   updated_at?: string
 }
