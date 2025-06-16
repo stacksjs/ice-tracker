@@ -274,7 +274,7 @@ export class ActivityModel extends BaseOrm<ActivityModel, ActivitiesTable, Activ
 
   static async findMany(ids: number[]): Promise<ActivityModel[]> {
     const instance = new ActivityModel(undefined)
-    
+
     if (instance.softDeletes) {
       query = query.where('deleted_at', 'is', null)
     }
