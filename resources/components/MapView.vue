@@ -3,6 +3,7 @@ import { Dialog, DialogPanel } from '@stacksjs/dialog'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useGeolocation } from '@vueuse/core'
 import type { Activity } from '@/types/ice'
+import DialogForm from './DialogForm.vue'
 import { useRouter } from 'vue-router'
 
 // -- Component emits
