@@ -11,14 +11,11 @@ export default {
   traits: {
     useTimestamps: true,
     useSoftDeletes: true,
+    likeable: true,
     useSeeder: {
       count: 10,
     },
     useApi: true,
-    likeable: {
-      table: 'likes',
-      foreignKey: 'activity_id',
-    },
   },
 
   attributes: {

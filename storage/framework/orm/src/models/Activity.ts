@@ -274,6 +274,7 @@ export class ActivityModel extends BaseOrm<ActivityModel, ActivitiesTable, Activ
 
   static async findMany(ids: number[]): Promise<ActivityModel[]> {
     const instance = new ActivityModel(undefined)
+    
     if (instance.softDeletes) {
       query = query.where('deleted_at', 'is', null)
     }
@@ -807,7 +808,7 @@ export class ActivityModel extends BaseOrm<ActivityModel, ActivitiesTable, Activ
 
   async getLikeCount(): Promise<number> {
     const result = await DB.instance
-      .selectFrom('likes')
+      .selectFrom('activities_likes')
       .select('count(*) as count')
       .where('activity_id', '=', this.id)
       .executeTakeFirst()
@@ -823,7 +824,7 @@ export class ActivityModel extends BaseOrm<ActivityModel, ActivitiesTable, Activ
     const authUserId = userId || 1
 
     await DB.instance
-      .insertInto('likes')
+      .insertInto('activities_likes')
       .values({
         activity_id: this.id,
         user_id: authUserId,
@@ -834,7 +835,7 @@ export class ActivityModel extends BaseOrm<ActivityModel, ActivitiesTable, Activ
   async unlike(userId: number): Promise<void> {
     const authUserId = userId || 1
     await DB.instance
-      .deleteFrom('likes')
+      .deleteFrom('activities_likes')
       .where('activity_id', '=', this.id)
       .where('user_id', '=', authUserId)
       .execute()
@@ -844,7 +845,7 @@ export class ActivityModel extends BaseOrm<ActivityModel, ActivitiesTable, Activ
     const authUserId = userId || 1
 
     const like = await DB.instance
-      .selectFrom('likes')
+      .selectFrom('activities_likes')
       .select('id')
       .where('activity_id', '=', this.id)
       .where('user_id', '=', authUserId)

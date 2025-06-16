@@ -24,8 +24,6 @@ export function useAuth() {
         },
       })
 
-      console.log(response)
-
       if (!response.ok) {
         localStorage.removeItem('token')
         isAuthenticated.value = false
@@ -37,7 +35,6 @@ export function useAuth() {
       user.value = data.user
       isAuthenticated.value = true
 
-      console.log(isAuthenticated.value)
       return data.user
     }
     catch (error) {
@@ -77,7 +74,6 @@ export function useAuth() {
     }
 
     if (isRegisterResponse(data)) {
-      console.log(data.data.token)
       localStorage.setItem('token', data.data.token)
       return data
     }

@@ -5,6 +5,7 @@ import { useGeolocation } from '@vueuse/core'
 import type { Activity } from '@/types/ice'
 import DialogForm from './DIalogForm.vue'
 import { useRouter } from 'vue-router'
+import { useTracker } from '@/functions/tracker'
 
 // -- Component emits
 const emit = defineEmits(['report'])
@@ -16,6 +17,7 @@ const props = defineProps<{
 
 const router = useRouter()
 const { isAuthenticated, checkAuthentication } = useAuth()
+const { createActivity, isLoading: isSubmitting } = useTracker()
 
 const activities = ref<Activity[]>(props.activities)
 const activityMarkers = ref<any[]>([])
@@ -271,43 +273,19 @@ function useCurrentLocation() {
   }
 }
 
-// -- Submit the "activity"
-function submitActivity(activityForm: Activity) {
-  // Basic validation
-  if (!activityForm.latlng && !activityForm.address) {
-    alert('Please select a location on the map or enter an address.')
-    return
+// Handle new activity creation
+async function handleActivitySubmit(activityData: Partial<Activity>) {
+  try {
+    const newActivity = await createActivity(activityData)
+    if (newActivity) {
+      activities.value.push(newActivity)
+      displayActivityMarkers() // Refresh markers with new activity
+      showActivityDialog.value = false
+    }
   }
-
-  // Emit event with activity data
-  emit('report', {
-    ...activityForm,
-    images: activityForm.images,
-  })
-
-  // Reset form while preserving location data
-  const currentLocation = selectedLocation.value
-  activityForm = {
-    title: '',
-    description: '',
-    address: '',
-    latlng: currentLocation ? `${currentLocation[0]}, ${currentLocation[1]}` : '',
-    location: currentLocation || [0, 0],
-    date: new Date().toISOString(),
-    severity: 'minor',
-    infoSource: 'news',
-    wereDetained: false,
-    images: [],
+  catch (error) {
+    console.error('Error submitting activity:', error)
   }
-
-  // Only clear the marker if we're not keeping the location
-  if (!currentLocation && currentMarker.value && map.value) {
-    currentMarker.value.remove()
-    currentMarker.value = null
-  }
-
-  showActivityDialog.value = false
-  isSelectingLocation.value = false
 }
 
 // -- Handling a long-press on the map
@@ -410,8 +388,9 @@ function displayActivityMarkers() {
         :show="showActivityDialog"
         :selected-location="selectedLocation"
         :coords="coords"
+        :is-submitting="isSubmitting"
         @close="showActivityDialog = false"
-        @submit="submitActivity"
+        @submit="handleActivitySubmit"
         @start-location-selection="startLocationSelection"
         @use-current-location="useCurrentLocation"
       />
